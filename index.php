@@ -146,7 +146,7 @@ if (isset($_POST['submit'])) {
 <div id="login">
     <div><img src="img/cea_logo.png" style="width:30vmin;display: block;margin:0 auto;"></div>
     <div class="container">
-        <h1 class="glyphicons text-dark">Pogi christian<i class="text-dark"></i></h1>
+        <h1 class="glyphicons text-dark">CEA Reviewer System<i class="text-dark"></i></h1>
         <div class="wrapper">
             <div class="widget widget-heading-simple widget-body-gray">
                 <div class="widget-body">
