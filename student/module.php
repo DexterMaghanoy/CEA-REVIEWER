@@ -2,7 +2,14 @@
 require("../api/db-connect.php");
 session_start();
 
-$course_id = $_GET['course_id'];
+if(isset($_GET['course_id'])) {
+    $course_id = $_GET['course_id'];
+} else {
+    // Redirect or handle the case where course_id is not provided in the URL
+    // For example, you could redirect to a default course or display an error message.
+    // header("Location: some_page.php");
+    // exit();
+}
 
 if(isset($_SESSION['program_id']) && isset($_SESSION['year_id'])) {
     $program_id = $_SESSION['program_id'];

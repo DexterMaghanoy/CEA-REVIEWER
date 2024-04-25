@@ -6,7 +6,7 @@ require '../api/db-connect.php';
 if(isset($_SESSION['program_id'])){
     $program_id = $_SESSION['program_id'];
 } else {
-    header("Location: ./student/1styr.php");
+    header("Location: ./student/firstyear.php");
     exit();
 }
 ?>
@@ -154,7 +154,7 @@ try {
     require("../api/db-connect.php");
 
     
-    $stmt = $conn->prepare("SELECT course_code, course_name 
+    $stmt = $conn->prepare("SELECT course_id, course_code, course_name 
     FROM tbl_course 
     WHERE course_status = 1 
     AND program_id = ? 
@@ -168,7 +168,7 @@ try {
 
     if ($enrolled_course) {
         
-        echo '<a href="activity.php" class="card-link">';
+        echo '<a href="module.php?course_id=1" class="card-link">';
         echo '<h5><p class="card-text" style="color: white;">' . $enrolled_course['course_code'] . ': ' . $enrolled_course['course_name'] . '</p></h5>';
         echo '</a>';
     } else {
