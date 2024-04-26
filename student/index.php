@@ -14,7 +14,7 @@ if(isset($_SESSION['lock']) && $_SESSION['lock'] === true) {
             header("Location: thirdyear.php");
             exit();
 	case 4: 
-            header("Location: fourthyear.php");
+            header("Location: dashboard.php");
             exit();
         default:
             header("Location: index.php");
@@ -77,7 +77,7 @@ if (isset($_POST['submit'])) {
                         header("Location: thirdyear.php");
                         exit();
 			case 4: 
-            		header("Location: fourthyear.php");
+            		header("Location: dashboard.php");
             		exit();
                     default:
                         header("Location: index.php ");

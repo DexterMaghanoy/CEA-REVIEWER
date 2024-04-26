@@ -158,7 +158,7 @@ try {
     FROM tbl_course 
     WHERE course_status = 1 
     AND program_id = ? 
-    AND year_id = 1
+    AND year_id = 4
     LIMIT 1
     OFFSET 0"); 
     $stmt->execute([$program_id]);
@@ -195,7 +195,7 @@ try {
     FROM tbl_course 
     WHERE course_status = 1 
     AND program_id = ? 
-    AND year_id = 1
+    AND year_id = 4
     LIMIT 1
     OFFSET 1"); 
     $stmt->execute([$program_id]);
@@ -230,7 +230,7 @@ try {
     FROM tbl_course 
     WHERE course_status = 1 
     AND program_id = ? 
-    AND year_id = 1
+    AND year_id = 4
     LIMIT 1
     OFFSET 3"); 
     $stmt->execute([$program_id]);
