@@ -78,63 +78,9 @@ $totalPages = ceil($totalCount / $recordsPerPage);
 </head>
 <body>
     <div class="wrapper">
-        <aside id="sidebar">
-            <div class="d-flex">
-                <button class="toggle-btn" type="button">
-                    <i class="lni lni-grid-alt"></i>
-                </button>
-                <div class="sidebar-logo">
-                    <a href="index.php">Dashboard</a>
-                </div>
-            </div>
-            <ul class="sidebar-nav">
-                <li class="sidebar-item">
-                    <a href="profile.php" class="sidebar-link">
-                        <i class="lni lni-user"></i>
-                        <span>Profile</span>
-                    </a>
-                </li>
-                <li class="sidebar-item">
-                    <a href="#" class="sidebar-link">
-                        <i class="lni lni-agenda"></i>
-                        <span>User</span>
-                    </a>
-                </li>
-                <li class="sidebar-item">
-                    <a href="student.php" class="sidebar-link">
-                        <i class="lni lni-graduation"></i>
-                        <span>Student</span>
-                    </a>
-                </li>
-                <li class="sidebar-item">
-                    <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
-                        data-bs-target="#auth" aria-expanded="false" aria-controls="auth">
-                        <i class="lni lni-library"></i>
-                        <span>Category</span>
-                    </a>
-                    <ul id="auth" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
-                        <li class="sidebar-item">
-                            <a href="program.php" class="sidebar-link">Program</a>
-                        </li>
-                        <li class="sidebar-item">
-                            <a href="course.php" class="sidebar-link">Course</a>
-                        </li>
-                    </ul>
-                </li>
-                <li class="sidebar-item">
-                    <a href="report.php" class="sidebar-link">
-                        <i class="lni lni-popup"></i>
-                        <span>Report</span>
-                    </a>
-                </li>
-            </ul>
-            <div class="sidebar-footer">
-                <a href="../logout.php" class="sidebar-link">
-                    <i class="lni lni-exit"></i>
-                    <span>Logout</span>
-                </a>
-            </div>
-        </aside>
+    <?php
+        include 'sidebar.php';
+        ?>
         <div class="main p-3">
             <div class="container">
                 <div class="row justify-content-center mt-5">
@@ -358,7 +304,7 @@ a.sidebar-link:hover {
 const hamBurger = document.querySelector(".toggle-btn");
 
 hamBurger.addEventListener("click", function () {
-  document.querySelector("#sidebar").classList.toggle("expand");
+document.querySelector("#sidebar").classList.toggle("expand");
 });
 </script>
 </html>

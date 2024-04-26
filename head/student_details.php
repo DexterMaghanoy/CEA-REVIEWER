@@ -44,8 +44,8 @@ if (isset($_GET['program_id']) && isset($_GET['year_id'])) {
 
 <body>
     <div class="wrapper">
-        <?php
-        include '../sidebar.php';
+    <?php
+        include 'sidebar.php';
         ?>
         <div class="main p-3">
             <div class="container">

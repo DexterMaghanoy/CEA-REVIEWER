@@ -52,6 +52,8 @@ if(isset($_SESSION['user_id'])){
     header("Location: ../login.php");
     exit();
 }
+
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -68,7 +70,7 @@ if(isset($_SESSION['user_id'])){
 <body>
 <div class="wrapper">
 <?php
-include '../sidebar.php';
+include 'sidebar.php';
 ?>
         <div class="main p-3">
             <div class="container">

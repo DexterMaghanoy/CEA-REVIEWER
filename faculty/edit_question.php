@@ -117,7 +117,7 @@ if (isset($_GET['question_id'])) {
 <div class="wrapper">
       
 <?php
-include '../sidebar.php';
+include 'sidebar.php';
 ?>
         <div class="main py-3">
     <div class="text-center mb-4">

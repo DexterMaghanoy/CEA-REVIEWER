@@ -48,7 +48,7 @@ $totalPages = ceil($totalCount / $recordsPerPage);
 <body>
 <div class="wrapper">
 <?php
-include '../sidebar.php';
+include 'sidebar.php';
 ?>
         <div class="main p-3">
             <div class="container">

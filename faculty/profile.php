@@ -23,6 +23,8 @@
     $stmt->bindParam(':user_id', $user_id, PDO::PARAM_INT);
     $stmt->execute();
 
+
+    
     // Check if the query was successful and if there is a user with the given emp_id
     if ($stmt->rowCount() > 0) {
         $user = $stmt->fetch(PDO::FETCH_ASSOC); // Fetch the user data
@@ -44,7 +46,7 @@
 <div class="wrapper">
      
 <?php
-include '../sidebar.php';
+include 'sidebar.php';
 ?>
         <div class="main p-3">
     <div class="text-center">

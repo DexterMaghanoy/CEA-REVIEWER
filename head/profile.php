@@ -42,8 +42,8 @@ if ($stmt->rowCount() > 0) {
 
 <body>
     <div class="wrapper">
-        <?php
-        include '../sidebar.php';
+    <?php
+        include 'sidebar.php';
         ?>
         <div class="main p-3">
             <div class="text-center">

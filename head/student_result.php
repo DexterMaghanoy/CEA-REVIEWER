@@ -76,8 +76,8 @@ if (isset($_GET['stud_id']) && isset($_GET['course_id'])) {
 
 <body>
     <div class="wrapper">
-        <?php
-        include '../sidebar.php';
+    <?php
+        include 'sidebar.php';
         ?>
         <div class="main p-3">
             <div class="container">

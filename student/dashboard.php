@@ -33,79 +33,79 @@ include 'sidebar.php';
                     Dashboard
                 </h1>
             </div>
-            <div class="container mt-5">
+            <div class="container mt-3">
             <div class="row">
     
     <style>
     
     .card-bg1 {
         background-image: url('https://www.gstatic.com/classroom/themes/Honors.jpg');
-        background-size: 200%;
+        background-size: 175%;
         background-repeat: no-repeat;
         background-position: top center;
-        height: 220px; 
+        height: 190px; 
         width: 85%;
         
     }
     .card-bg2 {
         background-image: url('https://www.gstatic.com/classroom/themes/img_bookclub.jpg');
-        background-size: 200%;
+        background-size: 175%;
         background-repeat: no-repeat;
         background-position: top center;
-        height: 220px;
+        height: 190px; 
         width: 85%;
     }
     .card-bg3 {
         background-image: url('https://www.gstatic.com/classroom/themes/img_breakfast.jpg');
-        background-size: 200%;
+        background-size: 175%;
         background-repeat: no-repeat;
         background-position: top center;
-        height: 220px;
+        height: 190px; 
         width: 85%; 
     }
     .card-bg4 {
         background-image: url('https://www.gstatic.com/classroom/themes/img_backtoschool.jpg');
-        background-size: 200%;
+        background-size: 175%;
         background-repeat: no-repeat;
         background-position: top center;
-        height: 220px; 
+        height: 190px; 
         width: 85%;
     }
     .card-bg5 {
         background-image: url('https://www.gstatic.com/classroom/themes/img_code.jpg');
-        background-size: 200%;
+        background-size: 175%;
         background-repeat: no-repeat;
         background-position: top center;
-        height: 220px; 
+        height: 190px; 
         width: 85%; 
     }
     .card-bg6 {
         background-image: url('https://www.gstatic.com/classroom/themes/img_graduation.jpg');
-        background-size: 200%;
+        background-size: 175%;
         background-repeat: no-repeat;
         background-position: top center;
-        height: 220px; 
+        height: 190px; 
         width: 85%;
     }
     .card-bg7 {
         background-image: url('https://www.gstatic.com/classroom/themes/img_reachout.jpg');
-        background-size: 200%;
+        background-size: 175%;
         background-repeat: no-repeat;
         background-position: top center;
-        height: 220px; 
+        height: 190px; 
         width: 85%; 
     }
     .card-bg8 {
         background-image: url('https://www.gstatic.com/classroom/themes/img_read.jpg');
-        background-size: 200%;
+        background-size: 175%;
         background-repeat: no-repeat;
         background-position: top center;
-        height: 220px; 
+        height: 190px; 
         width: 85%;
     }
     
     .card-body {
-        height: 50%; 
+        height: 40%; 
         overflow: auto; 
         width: 70%; 
     }

@@ -124,8 +124,8 @@ if (isset($_GET['user_id'])) {
 
 <body>
     <div class="wrapper">
-        <?php
-        include '../sidebar.php';
+    <?php
+        include 'sidebar.php';
         ?>
         <div class="main py-3">
             <div class="text-center mb-4">

@@ -101,8 +101,8 @@ if (isset($_POST["import"])) {
 
 <body>
     <div class="wrapper">
-        <?php
-        include '../sidebar.php';
+    <?php
+        include 'sidebar.php';
         ?>
         <div class="main p-3">
             <div class="container">
