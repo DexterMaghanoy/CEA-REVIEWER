@@ -58,7 +58,7 @@ include 'sidebar.php';
           <div class="row g-0">
             <div class="col-md-4 gradient-custom text-center text-white"
               style="border-top-left-radius: .5rem; border-bottom-left-radius: .5rem;">
-              <img src="data:image/jpg;base64,<?php echo base64_encode($user['user_image']); ?>" alt="Avatar" class="rounded-circle img-fluid my-5" style="width: 100px;">
+              <img src="../img/student.png" alt="Avatar" class="rounded-circle img-fluid my-5" style="width: 100px;">
               <h5><?php echo $user['stud_fname'] . ' ' . $user['stud_lname'] ?></h5>
               <p><?php echo $user['year_level'];?></p>
               <i class="far fa-edit mb-5"></i>
