@@ -103,7 +103,7 @@ if(isset($_SESSION['program_id']) && isset($_SESSION['year_id'])) {
                                                 echo '<button class="btn btn-secondary btn-sm" disabled><i class="lni lni-invention"></i></button>';
                                             } else {
                                                 // Otherwise, display the link normally
-                                                echo '<button class="btn btn-success btn-sm action-test-btn" data-bs-toggle="modal" data-bs-target="#moduleModal" data-module-id="' . $row['module_id'] . '"><i class="lni lni-invention"></i></button>';
+                                                echo '<button class="btn btn-success btn-sm action-test-btn" data-bs-toggle="modal" data-bs-target="question.php" data-module-id="' . $row['module_id'] . '"><i class="lni lni-invention"></i></button>';
                                             }
                                             ?>
                                         </td>
@@ -154,18 +154,14 @@ if(isset($_SESSION['program_id']) && isset($_SESSION['year_id'])) {
         integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe"
         crossorigin="anonymous">
     </script>
-    <script>
-      const viewModuleButtons = document.querySelectorAll('.view-module-btn');
+   <script>
+    const viewModuleButtons = document.querySelectorAll('.view-module-btn');
     const actionTestButtons = document.querySelectorAll('.action-test-btn');
     const moduleIframe = document.getElementById('moduleIframe');
 
     // Function to handle opening modal with module content
-    function openModuleModal(moduleId, actionTest = false) {
-        if (actionTest) {
-            moduleIframe.src = `question.php?module_id=${moduleId}`;
-        } else {
-            moduleIframe.src = `pdf_viewer.php?module_id=${moduleId}`;
-        }
+    function openModuleModal(moduleId) {
+        moduleIframe.src = `pdf_viewer.php?module_id=${moduleId}`;
         $('#moduleModal').modal('show'); // Trigger modal manually using jQuery
     }
 
@@ -180,7 +176,7 @@ if(isset($_SESSION['program_id']) && isset($_SESSION['year_id'])) {
     actionTestButtons.forEach(button => {
         button.addEventListener('click', function() {
             const moduleId = this.getAttribute('data-module-id');
-            openModuleModal(moduleId, true); // Pass true to indicate action test
+            window.location.href = `question.php?module_id=${moduleId}`;
         });
     });
 
@@ -190,7 +186,9 @@ if(isset($_SESSION['program_id']) && isset($_SESSION['year_id'])) {
     hamBurger.addEventListener("click", function () {
         document.querySelector("#sidebar").classList.toggle("expand");
     });
-    </script>
+</script>
+
+
 </body>
 <style>
       @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');

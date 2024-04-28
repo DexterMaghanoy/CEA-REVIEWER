@@ -2,6 +2,25 @@
 require_once "../api/db-connect.php"; // Adjust the path as needed
 session_start();
 
+if(isset($_SESSION['program_id']) && isset($_SESSION['year_id'])) {
+    
+    $program_id = $_SESSION['program_id'];
+    $year_id = $_SESSION['year_id'];
+
+    // Prepare SQL query to fetch courses for the given program and year
+    $sql = "SELECT * FROM tbl_course WHERE program_id = :program_id AND year_id = :year_id AND sem_id = 1";
+    $result = $conn->prepare($sql);
+    $result->bindParam(':program_id', $program_id, PDO::PARAM_INT);
+    $result->bindParam(':year_id', $year_id, PDO::PARAM_INT);
+    $result->execute();
+
+    // Fetch the result and store it in a variable to use later
+    $courses = $result->fetchAll(PDO::FETCH_ASSOC);
+} else {
+    // Redirect to login page if session data is not set
+    header("Location: ../login.php");
+    exit();
+}
 // Function to sanitize user input
 function sanitizeInput($input) {
     return htmlspecialchars(trim($input), ENT_QUOTES, 'UTF-8');
@@ -15,6 +34,7 @@ function handleDatabaseError($errorMessage) {
     header("Location: error.php");
     exit();
 }
+
 
 // Ensure module_id is provided
 if (!isset($_GET['module_id'])) {
@@ -32,6 +52,7 @@ if (!$stmt->execute()) {
 }
 $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+
 shuffle($result);
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
@@ -47,7 +68,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $answers[$question_id] = sanitizeInput($value);
             }
         }
-
+        $_SESSION['test_completed'] = true;
         // Fetch correct answers from the database
         $sql = "SELECT question_id, question_answer FROM tbl_question WHERE module_id = :module_id";
         $stmt = $conn->prepare($sql);
@@ -96,7 +117,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -107,13 +127,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css">
     <!-- Include FontAwesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <style>
+    <link href="https://cdn.lineicons.com/4.0/lineicons.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous">
+    <link rel="shortcut icon" href="../img/cea_logo.png" type="image/x-icon">
+    <link rel="stylesheet" href="style.css" type="text/css">
+   <style>
         /* Custom CSS */
         body {
             background-color: #f8f9fa;
         }
         #content {
-            max-width: 800px;
+            max-width: 100000px; /* Adjust the max-width here */
             margin: 50px auto;
             background-color: #fff;
             padding: 30px;
@@ -122,6 +147,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
         .question-box {
             margin-bottom: 30px;
+            width: 10000%;
         }
         .question-text {
             font-weight: bold;
@@ -152,6 +178,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     </style>
 </head>
 <body>
+<div class="wrapper">
+<?php
+include 'sidebar.php';
+?>
 <main id="content">
     <form method="post">
       <input type="hidden" name="user_id" value="<?php echo isset($_SESSION['user_id']) ? $_SESSION['user_id'] : ''; ?>">
