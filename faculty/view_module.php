@@ -115,20 +115,21 @@ $totalPages = ceil($totalCount / $recordsPerPage);
         </div>
     </div>
 
-    <!-- Module Modal -->
-    <div class="modal fade" id="moduleModal" tabindex="-1" aria-labelledby="moduleModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-lg modal-lg-custom"> <!-- Added 'modal-dialog-centered' class -->
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="moduleModalLabel">Module Details</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <iframe id="moduleIframe" width="100%" height="550px" frameborder="0"></iframe>
-                </div>
+<!-- Module Modal -->
+<div class="modal fade" id="moduleModal" tabindex="-1" aria-labelledby="moduleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-xl"> <!-- Removed 'modal-lg' class and added 'modal-xl' class for extra-large width -->
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="moduleModalLabel">Module Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <iframe id="moduleIframe" style="width: 100%; height: 80vh;" frameborder="0"></iframe> <!-- Set height to 80vh (80% of the viewport height) -->
             </div>
         </div>
     </div>
+</div>
+
 
     <!-- Delete Module Modal -->
     <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
