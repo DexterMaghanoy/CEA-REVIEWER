@@ -116,7 +116,7 @@ if(isset($_SESSION['program_id']) && isset($_SESSION['year_id'])) {
                                 <tr>
                                     <th scope="col">No.</th>
                                     <th scope="col">Module Title</th>
-                                    <th scope="col">Quiz</th>
+                                    <th scope="col">Action</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -125,9 +125,7 @@ if(isset($_SESSION['program_id']) && isset($_SESSION['year_id'])) {
                                     <tr>
                                         <td><?php echo $row['module_number']; ?></td>
                                         <td>
-                                            <a href="pdf_viewer.php?module_id=<?php echo $row['module_id']; ?>" target="_blank">
-                                                <?php echo $row['module_name']; ?>
-                                            </a>
+                                            <a href="#" class="view-module-btn" data-bs-toggle="modal" data-bs-target="#moduleModal" data-module-id="<?php echo $row['module_id']; ?>"><?php echo $row['module_name']; ?></a>
                                         </td>
                                         <td>
                                             <?php
@@ -144,7 +142,7 @@ if(isset($_SESSION['program_id']) && isset($_SESSION['year_id'])) {
                                                 echo '<button class="btn btn-secondary btn-sm" disabled><i class="lni lni-invention"></i></button>';
                                             } else {
                                                 // Otherwise, display the link normally
-                                                echo '<a class="btn btn-success btn-sm" href="question.php?module_id=' . $row['module_id'] . '"><i class="lni lni-invention"></i></a>';
+                                                echo '<button class="btn btn-success btn-sm action-test-btn" data-bs-toggle="modal" data-bs-target="#moduleModal" data-module-id="' . $row['module_id'] . '"><i class="lni lni-invention"></i></button>';
                                             }
                                             ?>
                                         </td>
@@ -176,12 +174,65 @@ if(isset($_SESSION['program_id']) && isset($_SESSION['year_id'])) {
         </div>
     </div>
 
+    <!-- Module Modal -->
+    <div class="modal fade" id="moduleModal" tabindex="-1" aria-labelledby="moduleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl"> <!-- Adjust modal size as needed -->
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="moduleModalLabel"></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <iframe id="moduleIframe" style="width: 100%; height: 80vh;" frameborder="0"></iframe> <!-- Set height to 80vh (80% of the viewport height) -->
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe"
-        crossorigin="anonymous"></script>
+        crossorigin="anonymous">
+    </script>
+    <script>
+      const viewModuleButtons = document.querySelectorAll('.view-module-btn');
+    const actionTestButtons = document.querySelectorAll('.action-test-btn');
+    const moduleIframe = document.getElementById('moduleIframe');
+
+    // Function to handle opening modal with module content
+    function openModuleModal(moduleId, actionTest = false) {
+        if (actionTest) {
+            moduleIframe.src = `question.php?module_id=${moduleId}`;
+        } else {
+            moduleIframe.src = `pdf_viewer.php?module_id=${moduleId}`;
+        }
+        $('#moduleModal').modal('show'); // Trigger modal manually using jQuery
+    }
+
+    viewModuleButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const moduleId = this.getAttribute('data-module-id');
+            openModuleModal(moduleId);
+        });
+    });
+
+    // Handle action test button clicks
+    actionTestButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const moduleId = this.getAttribute('data-module-id');
+            openModuleModal(moduleId, true); // Pass true to indicate action test
+        });
+    });
+
+    // Optional: JavaScript for toggling the sidebar
+    const hamBurger = document.querySelector(".toggle-btn");
+
+    hamBurger.addEventListener("click", function () {
+        document.querySelector("#sidebar").classList.toggle("expand");
+    });
+    </script>
 </body>
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+      @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
 
 ::after,
 ::before {
@@ -324,11 +375,4 @@ a.sidebar-link:hover {
     transition: all .2s ease-out;
 }
 </style>
-<script>
-const hamBurger = document.querySelector(".toggle-btn");
-
-hamBurger.addEventListener("click", function () {
-  document.querySelector("#sidebar").classList.toggle("expand");
-});
-</script>
 </html>

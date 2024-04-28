@@ -157,22 +157,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
       <!-- Instructor Select -->
         <div class="mb-3">
             <div class="col-md-6"> <!-- Adjust the column width as needed -->
-                <select class="form-select" id="user_id" name="user_id">
-                    <option value="">-- Select Instructor --</option>
-                    <?php
-                    $program_id = $_SESSION['program_id'];
-                    // Retrieve the list of instructors from the database and populate the options
-                    $sqlUser = "SELECT user_id, user_fname, user_mname, user_lname FROM tbl_user WHERE program_id = :program_id AND type_id = 3";
-                    $stmtUser = $conn->prepare($sqlUser);
-                    $stmtUser->bindParam(":program_id", $program_id, PDO::PARAM_INT);
-                    $stmtUser->execute();
-                    $users = $stmtUser->fetchAll(PDO::FETCH_ASSOC);
-
-                    foreach ($users as $user) {
-                        echo "<option value='" . $user['user_id'] . "'>" . $user['user_lname'] . ', '. $user['user_fname'] . ' ' . $user['user_mname'] . "</option>";
-                    }
-                    ?>
-                </select>
             </div>
         </div>
         <?php if (!empty($result)): ?>
