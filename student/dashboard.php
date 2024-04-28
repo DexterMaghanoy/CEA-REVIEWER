@@ -156,70 +156,65 @@ include 'sidebar.php';
     <div class="card text-dark rounded-3 shadow card-bg1">
         <div class="card-body">
         <?php
-try {
-    require("../api/db-connect.php");
+        try {
+            require("../api/db-connect.php");
 
-    
-    $stmt = $conn->prepare("SELECT course_code, course_name 
-    FROM tbl_course 
-    WHERE course_status = 1 
-    AND program_id = ? 
-    AND year_id = 4
-    LIMIT 1
-    OFFSET 0"); 
-    $stmt->execute([$program_id]);
+            $stmt = $conn->prepare("SELECT course_code, course_name, course_id 
+                                    FROM tbl_course 
+                                    WHERE course_status = 1 
+                                    AND program_id = ? 
+                                    AND year_id = 1
+                                    LIMIT 1
+                                    OFFSET 0"); 
+            $stmt->execute([$program_id]);
 
-    
-    $enrolled_course = $stmt->fetch(PDO::FETCH_ASSOC);
+            $enrolled_course = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    if ($enrolled_course) {
-        
-        echo '<a href="activity.php" class="card-link">';
-        echo '<h5><p class="card-text" style="color: white;">' . $enrolled_course['course_code'] . ': ' . $enrolled_course['course_name'] . '</p></h5>';
-        echo '</a>';
-    } else {
-        echo '<p class="card-text">No enrolled Fourth Year course found for the student.</p>';
-    }
-} catch (PDOException $e) {
-    echo '<p class="card-text">Database Error: ' . $e->getMessage() . '</p>';
-}
-?>
-
-
+            if ($enrolled_course) {
+                echo '<a href="module.php?course_id=' . $enrolled_course['course_id'] . '" class="card-link">';
+                echo '<h5><p class="card-text" style="color: white;">' . $enrolled_course['course_code'] . ': ' . $enrolled_course['course_name'] . '</p></h5>';
+                echo '</a>';
+            } else {
+                echo '<p class="card-text">No enrolled Fourth Year course found for the student.</p>';
+            }
+        } catch (PDOException $e) {
+            echo '<p class="card-text">Database Error: ' . $e->getMessage() . '</p>';
+        }
+        ?>
         </div>
     </div>
 </div>
+
 
 <div class="col-md-4">
     <div class="card text-dark rounded-3 shadow card-bg2">
         <div class="card-body">
         <?php
-try {
-    require("../api/db-connect.php"); 
-    
-    $stmt = $conn->prepare("SELECT course_code, course_name 
-    FROM tbl_course 
-    WHERE course_status = 1 
-    AND program_id = ? 
-    AND year_id = 4
-    LIMIT 1
-    OFFSET 1"); 
-    $stmt->execute([$program_id]);
+        try {
+            require("../api/db-connect.php");
 
-    $enrolled_course = $stmt->fetch(PDO::FETCH_ASSOC);
+            $stmt = $conn->prepare("SELECT course_code, course_name, course_id 
+                                    FROM tbl_course 
+                                    WHERE course_status = 1 
+                                    AND program_id = ? 
+                                    AND year_id = 1
+                                    LIMIT 1
+                                    OFFSET 1"); 
+            $stmt->execute([$program_id]);
 
-    if ($enrolled_course) {
-        
-        echo '<a href="activity.php" class="card-link">';
-        echo '<h5><p class="card-text" style="color: white;">' . $enrolled_course['course_code'] . ': ' . $enrolled_course['course_name'] . '</p></h5>';
-        echo '</a>';
-    } else {
-        echo '<p class="card-text">No enrolled Fourth Year course found for the student.</p>';
-    }
-} catch (PDOException $e) {
-    echo '<p class="card-text">Database Error: ' . $e->getMessage() . '</p>';
-}
-?>
+            $enrolled_course = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if ($enrolled_course) {
+                echo '<a href="module.php?course_id=' . $enrolled_course['course_id'] . '" class="card-link">';
+                echo '<h5><p class="card-text" style="color: white;">' . $enrolled_course['course_code'] . ': ' . $enrolled_course['course_name'] . '</p></h5>';
+                echo '</a>';
+            } else {
+                echo '<p class="card-text">No enrolled Fourth Year course found for the student.</p>';
+            }
+        } catch (PDOException $e) {
+            echo '<p class="card-text">Database Error: ' . $e->getMessage() . '</p>';
+        }
+        ?>
         </div>
     </div>
 </div>
@@ -227,34 +222,31 @@ try {
     <div class="card text-dark rounded-3 shadow card-bg3">
         <div class="card-body">
         <?php
-try {
-    require("../api/db-connect.php"); 
+        try {
+            require("../api/db-connect.php");
 
-    
-    $stmt = $conn->prepare("SELECT course_code, course_name 
-    FROM tbl_course 
-    WHERE course_status = 1 
-    AND program_id = ? 
-    AND year_id = 4
-    LIMIT 1
-    OFFSET 2"); 
-    $stmt->execute([$program_id]);
+            $stmt = $conn->prepare("SELECT course_code, course_name, course_id 
+                                    FROM tbl_course 
+                                    WHERE course_status = 1 
+                                    AND program_id = ? 
+                                    AND year_id = 1
+                                    LIMIT 1
+                                    OFFSET 2"); 
+            $stmt->execute([$program_id]);
 
+            $enrolled_course = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    $enrolled_course = $stmt->fetch(PDO::FETCH_ASSOC);
-
-    if ($enrolled_course) {
-        
-        echo '<a href="activity.php" class="card-link">';
-        echo '<h5><p class="card-text" style="color: white;">' . $enrolled_course['course_code'] . ': ' . $enrolled_course['course_name'] . '</p></h5>';
-        echo '</a>';
-    } else {
-        echo '<p class="card-text">No enrolled Fourth Year course found for the student.</p>';
-    }
-} catch (PDOException $e) {
-    echo '<p class="card-text">Database Error: ' . $e->getMessage() . '</p>';
-}
-?>
+            if ($enrolled_course) {
+                echo '<a href="module.php?course_id=' . $enrolled_course['course_id'] . '" class="card-link">';
+                echo '<h5><p class="card-text" style="color: white;">' . $enrolled_course['course_code'] . ': ' . $enrolled_course['course_name'] . '</p></h5>';
+                echo '</a>';
+            } else {
+                echo '<p class="card-text">No enrolled Fourth Year course found for the student.</p>';
+            }
+        } catch (PDOException $e) {
+            echo '<p class="card-text">Database Error: ' . $e->getMessage() . '</p>';
+        }
+        ?>
         </div>
     </div>
 </div>
@@ -262,34 +254,31 @@ try {
     <div class="card text-dark rounded-3 shadow card-bg4">
         <div class="card-body">
         <?php
-try {
-    require("../api/db-connect.php"); 
+        try {
+            require("../api/db-connect.php");
 
-    
-    $stmt = $conn->prepare("SELECT course_code, course_name 
-    FROM tbl_course 
-    WHERE course_status = 1 
-    AND program_id = ? 
-    AND year_id = 4
-    LIMIT 1
-    OFFSET 3"); 
-    $stmt->execute([$program_id]);
+            $stmt = $conn->prepare("SELECT course_code, course_name, course_id 
+                                    FROM tbl_course 
+                                    WHERE course_status = 1 
+                                    AND program_id = ? 
+                                    AND year_id = 1
+                                    LIMIT 1
+                                    OFFSET 3"); 
+            $stmt->execute([$program_id]);
 
-    
-    $enrolled_course = $stmt->fetch(PDO::FETCH_ASSOC);
+            $enrolled_course = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    if ($enrolled_course) {
-        
-        echo '<a href="activity.php" class="card-link">';
-        echo '<h5><p class="card-text" style="color: white;">' . $enrolled_course['course_code'] . ': ' . $enrolled_course['course_name'] . '</p></h5>';
-        echo '</a>';
-    } else {
-        echo '<p class="card-text">No enrolled Fourth Year course found for the student.</p>';
-    }
-} catch (PDOException $e) {
-    echo '<p class="card-text">Database Error: ' . $e->getMessage() . '</p>';
-}
-?>
+            if ($enrolled_course) {
+                echo '<a href="module.php?course_id=' . $enrolled_course['course_id'] . '" class="card-link">';
+                echo '<h5><p class="card-text" style="color: white;">' . $enrolled_course['course_code'] . ': ' . $enrolled_course['course_name'] . '</p></h5>';
+                echo '</a>';
+            } else {
+                echo '<p class="card-text">No enrolled Fourth Year course found for the student.</p>';
+            }
+        } catch (PDOException $e) {
+            echo '<p class="card-text">Database Error: ' . $e->getMessage() . '</p>';
+        }
+        ?>
         </div>
     </div>
 </div>
@@ -297,70 +286,96 @@ try {
     <div class="card text-dark rounded-3 shadow card-bg5">
         <div class="card-body">
         <?php
-try {
-    require("../api/db-connect.php"); 
+        try {
+            require("../api/db-connect.php");
 
-   
-    $stmt = $conn->prepare("SELECT course_code, course_name 
-    FROM tbl_course 
-    WHERE course_status = 1 
-    AND program_id = ? 
-    AND year_id = 4
-    LIMIT 1
-    OFFSET 4"); 
-    $stmt->execute([$program_id]);
+            $stmt = $conn->prepare("SELECT course_code, course_name, course_id 
+                                    FROM tbl_course 
+                                    WHERE course_status = 1 
+                                    AND program_id = ? 
+                                    AND year_id = 1
+                                    LIMIT 1
+                                    OFFSET 4"); 
+            $stmt->execute([$program_id]);
 
-    
-    $enrolled_course = $stmt->fetch(PDO::FETCH_ASSOC);
+            $enrolled_course = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    if ($enrolled_course) {
-        
-        echo '<a href="activity.php" class="card-link">';
-        echo '<h5><p class="card-text" style="color: white;">' . $enrolled_course['course_code'] . ': ' . $enrolled_course['course_name'] . '</p></h5>';
-        echo '</a>';
-    } else {
-        echo '<p class="card-text">No enrolled Fourth Year course found for the student.</p>';
-    }
-} catch (PDOException $e) {
-    echo '<p class="card-text">Database Error: ' . $e->getMessage() . '</p>';
-}
-?>
+            if ($enrolled_course) {
+                echo '<a href="module.php?course_id=' . $enrolled_course['course_id'] . '" class="card-link">';
+                echo '<h5><p class="card-text" style="color: white;">' . $enrolled_course['course_code'] . ': ' . $enrolled_course['course_name'] . '</p></h5>';
+                echo '</a>';
+            } else {
+                echo '<p class="card-text">No enrolled Fourth Year course found for the student.</p>';
+            }
+        } catch (PDOException $e) {
+            echo '<p class="card-text">Database Error: ' . $e->getMessage() . '</p>';
+        }
+        ?>
         </div>
     </div>
 </div>
 
 <div class="col-md-4">
+    <div class="card text-dark rounded-3 shadow card-bg5">
+        <div class="card-body">
+        <?php
+        try {
+            require("../api/db-connect.php");
+
+            $stmt = $conn->prepare("SELECT course_code, course_name, course_id 
+                                    FROM tbl_course 
+                                    WHERE course_status = 1 
+                                    AND program_id = ? 
+                                    AND year_id = 1
+                                    LIMIT 1
+                                    OFFSET 5"); 
+            $stmt->execute([$program_id]);
+
+            $enrolled_course = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if ($enrolled_course) {
+                echo '<a href="module.php?course_id=' . $enrolled_course['course_id'] . '" class="card-link">';
+                echo '<h5><p class="card-text" style="color: white;">' . $enrolled_course['course_code'] . ': ' . $enrolled_course['course_name'] . '</p></h5>';
+                echo '</a>';
+            } else {
+                echo '<p class="card-text">No enrolled Fourth Year course found for the student.</p>';
+            }
+        } catch (PDOException $e) {
+            echo '<p class="card-text">Database Error: ' . $e->getMessage() . '</p>';
+        }
+        ?>
+        </div>
+    </div>
+</div>
+<div class="col-md-4">
     <div class="card text-dark rounded-3 shadow card-bg6">
         <div class="card-body">
         <?php
-try {
-    require("../api/db-connect.php"); 
+        try {
+            require("../api/db-connect.php");
 
-    
-    $stmt = $conn->prepare("SELECT course_code, course_name 
-    FROM tbl_course 
-    WHERE course_status = 1 
-    AND program_id = ? 
-    AND year_id = 4
-    LIMIT 1
-    OFFSET 5"); 
-    $stmt->execute([$program_id]);
+            $stmt = $conn->prepare("SELECT course_code, course_name, course_id 
+                                    FROM tbl_course 
+                                    WHERE course_status = 1 
+                                    AND program_id = ? 
+                                    AND year_id = 1
+                                    LIMIT 1
+                                    OFFSET 6"); 
+            $stmt->execute([$program_id]);
 
-    
-    $enrolled_course = $stmt->fetch(PDO::FETCH_ASSOC);
+            $enrolled_course = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    if ($enrolled_course) {
-        
-        echo '<a href="activity.php" class="card-link">';
-        echo '<h5><p class="card-text" style="color: white;">' . $enrolled_course['course_code'] . ': ' . $enrolled_course['course_name'] . '</p></h5>';
-        echo '</a>';
-    } else {
-        echo '<p class="card-text">No enrolled Fourth Year course found for the student.</p>';
-    }
-} catch (PDOException $e) {
-    echo '<p class="card-text">Database Error: ' . $e->getMessage() . '</p>';
-}
-?>
+            if ($enrolled_course) {
+                echo '<a href="module.php?course_id=' . $enrolled_course['course_id'] . '" class="card-link">';
+                echo '<h5><p class="card-text" style="color: white;">' . $enrolled_course['course_code'] . ': ' . $enrolled_course['course_name'] . '</p></h5>';
+                echo '</a>';
+            } else {
+                echo '<p class="card-text">No enrolled Fourth Year course found for the student.</p>';
+            }
+        } catch (PDOException $e) {
+            echo '<p class="card-text">Database Error: ' . $e->getMessage() . '</p>';
+        }
+        ?>
         </div>
     </div>
 </div>
@@ -368,69 +383,31 @@ try {
     <div class="card text-dark rounded-3 shadow card-bg7">
         <div class="card-body">
         <?php
-try {
-    require("../api/db-connect.php");
+        try {
+            require("../api/db-connect.php");
 
-    
-    $stmt = $conn->prepare("SELECT course_code, course_name 
-    FROM tbl_course 
-    WHERE course_status = 1 
-    AND program_id = ? 
-    AND year_id = 4
-    LIMIT 1
-    OFFSET 6"); 
-    $stmt->execute([$program_id]);
+            $stmt = $conn->prepare("SELECT course_code, course_name, course_id 
+                                    FROM tbl_course 
+                                    WHERE course_status = 1 
+                                    AND program_id = ? 
+                                    AND year_id = 1
+                                    LIMIT 1
+                                    OFFSET 7"); 
+            $stmt->execute([$program_id]);
 
-    
-    $enrolled_course = $stmt->fetch(PDO::FETCH_ASSOC);
+            $enrolled_course = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    if ($enrolled_course) {
-        // Display course_code and course_name for the enrolled Fourth Year subject
-        echo '<a href="activity.php" class="card-link">';
-        echo '<h5><p class="card-text" style="color: white;">' . $enrolled_course['course_code'] . ': ' . $enrolled_course['course_name'] . '</p></h5>';
-        echo '</a>';
-    } else {
-        echo '<p class="card-text">No enrolled Fourth Year course found for the student.</p>';
-    }
-} catch (PDOException $e) {
-    echo '<p class="card-text">Database Error: ' . $e->getMessage() . '</p>';
-}
-?>
-        </div>
-    </div>
-</div>
-<div class="col-md-4">
-    <div class="card text-dark rounded-3 shadow card-bg8">
-        <div class="card-body">
-        <?php
-try {
-    require("../api/db-connect.php"); // Include your database connection file here
-
-    // Prepare and execute the SQL query to fetch one enrolled Fourth Year course for the student
-    $stmt = $conn->prepare("SELECT course_code, course_name 
-    FROM tbl_course 
-    WHERE course_status = 1 
-    AND program_id = ? 
-    AND year_id = 4
-    LIMIT 1
-    OFFSET 7"); // Limit to one record
-    $stmt->execute([$program_id]);
-
-    // Fetch the enrolled Fourth Year course for the student
-    $enrolled_course = $stmt->fetch(PDO::FETCH_ASSOC);
-
-    if ($enrolled_course) {
-        // Display course_code and course_name for the enrolled Fourth Year subject
-        echo '<a href="activity.php" class="card-link">';
-        echo '<h5><p class="card-text" style="color: white;">' . $enrolled_course['course_code'] . ': ' . $enrolled_course['course_name'] . '</p></h5>';
-        echo '</a>';
-    } else {
-        echo '<p class="card-text">No enrolled Fourth Year course found for the student.</p>';
-    }
-} catch (PDOException $e) {
-    echo '<p class="card-text">Database Error: ' . $e->getMessage() . '</p>';
-}
-?>
+            if ($enrolled_course) {
+                echo '<a href="module.php?course_id=' . $enrolled_course['course_id'] . '" class="card-link">';
+                echo '<h5><p class="card-text" style="color: white;">' . $enrolled_course['course_code'] . ': ' . $enrolled_course['course_name'] . '</p></h5>';
+                echo '</a>';
+            } else {
+                echo '<p class="card-text">No enrolled Fourth Year course found for the student.</p>';
+            }
+        } catch (PDOException $e) {
+            echo '<p class="card-text">Database Error: ' . $e->getMessage() . '</p>';
+        }
+        ?>
         </div>
     </div>
 </div>
