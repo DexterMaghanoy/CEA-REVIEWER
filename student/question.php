@@ -154,7 +154,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <body>
 <main id="content">
     <form method="post">
-      <!-- Instructor Select -->
+      <input type="hidden" name="user_id" value="<?php echo isset($_SESSION['user_id']) ? $_SESSION['user_id'] : ''; ?>">
         <div class="mb-3">
             <div class="col-md-6"> <!-- Adjust the column width as needed -->
             </div>

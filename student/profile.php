@@ -27,6 +27,25 @@
     if ($stmt->rowCount() > 0) {
         $user = $stmt->fetch(PDO::FETCH_ASSOC); // Fetch the user data
     }
+    if(isset($_SESSION['program_id']) && isset($_SESSION['year_id'])) {
+    
+        $program_id = $_SESSION['program_id'];
+        $year_id = $_SESSION['year_id'];
+    
+        // Prepare SQL query to fetch courses for the given program and year
+        $sql = "SELECT * FROM tbl_course WHERE program_id = :program_id AND year_id = :year_id AND sem_id = 1";
+        $result = $conn->prepare($sql);
+        $result->bindParam(':program_id', $program_id, PDO::PARAM_INT);
+        $result->bindParam(':year_id', $year_id, PDO::PARAM_INT);
+        $result->execute();
+    
+        // Fetch the result and store it in a variable to use later
+        $courses = $result->fetchAll(PDO::FETCH_ASSOC);
+    } else {
+        // Redirect to login page if session data is not set
+        header("Location: ../login.php");
+        exit();
+    }
 ?>
 <!DOCTYPE html>
 <html lang="en">
