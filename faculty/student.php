@@ -28,7 +28,6 @@ if (isset($_POST['toggle_status']) && isset($_POST['stud_id'])) {
     header("Location: " . $_SERVER['PHP_SELF']);
     exit;
 }
-
 $recordsPerPage = 5;
 $page = isset($_GET['page']) ? $_GET['page'] : 1;
 $offset = ($page - 1) * $recordsPerPage;
@@ -40,7 +39,7 @@ $sql = "SELECT s.*, y.year_level, p.program_name
         FROM tbl_student AS s
         JOIN tbl_year AS y ON s.year_id = y.year_id
         JOIN tbl_program AS p ON s.program_id = p.program_id";
-        // -- where p.program_id = 1"
+// -- where p.program_id = 1"
 
 if (!empty($search)) {
     $sql .= " WHERE s.stud_lname LIKE '%$search%' OR s.stud_fname LIKE '%$search%' OR y.year_level LIKE '%$search%' OR s.stud_mname LIKE '%$search%' OR s.stud_no LIKE '%$search%' OR p.program_name LIKE '%$search%'";
@@ -65,9 +64,6 @@ $countStmt->execute();
 $totalCount = $countStmt->fetch(PDO::FETCH_ASSOC)['total'];
 $totalPages = ceil($totalCount / $recordsPerPage);
 ?>
-
-
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -80,6 +76,7 @@ $totalPages = ceil($totalCount / $recordsPerPage);
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous">
     <link rel="shortcut icon" href="../img/cea_logo.png" type="image/x-icon">
     <link rel="stylesheet" href="style.css" type="text/css">
+
 </head>
 
 <body>
@@ -95,10 +92,7 @@ $totalPages = ceil($totalCount / $recordsPerPage);
                         <div class="text-center mb-4">
                             <h1>Students<?php $user['program_id'] ?></h1>
                         </div>
-                        <div class="d-flex">
-                            <a class="btn btn-outline-success btn-sm me-2" href="add_student.php"><i class="lni lni-plus"></i></a>
-                            <a class="btn btn-outline-primary btn-sm" href="import_student.php"><i class="lni lni-upload"></i></a>
-                        </div><br>
+                        <br>
                         <!-- Search bar -->
                         <form action="" method="GET" class="mb-3">
                             <div class="input-group">
@@ -115,7 +109,6 @@ $totalPages = ceil($totalCount / $recordsPerPage);
                                         <th scope="col">Program</th>
                                         <th scope="col">Fullname</th>
                                         <th scope="col">Year Level</th>
-                                        <th scope="col">Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -126,19 +119,6 @@ $totalPages = ceil($totalCount / $recordsPerPage);
                                                 <td><?php echo $row['program_name']; ?></td>
                                                 <td><?php echo $row['stud_lname'] . ', ' . $row['stud_fname'] . ' ' . $row['stud_mname']; ?></td>
                                                 <td><?php echo $row['year_level']; ?></td>
-                                                <td>
-                                                    <a class="btn btn-primary btn-sm" href="edit_student.php?stud_id=<?php echo $row['stud_id']; ?>"><i class="lni lni-pencil"></i></a>
-                                                    <form method="post" style="display: inline;">
-                                                        <input type="hidden" name="stud_id" value="<?php echo $row['stud_id']; ?>">
-                                                        <button type="submit" name="toggle_status" class="btn btn-sm <?php echo $row['stud_status'] == 1 ? 'btn-success' : 'btn-warning'; ?>">
-                                                            <?php if ($row['stud_status'] == 1) : ?>
-                                                                <i class="lni lni-checkmark-circle"></i> <!-- Green circle icon for activated -->
-                                                            <?php else : ?>
-                                                                <i class="lni lni-checkmark-circle"></i> <!-- Yellow circle icon for deactivated -->
-                                                            <?php endif; ?>
-                                                        </button>
-                                                    </form>
-                                                </td>
                                             </tr>
                                         <?php endwhile; ?>
                                     <?php else : ?>

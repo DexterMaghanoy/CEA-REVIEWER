@@ -40,24 +40,26 @@ include 'sidebar.php';
             <div class="row">
     <!-- Card 3: Calendar -->
     <div class="col-md-4">
-        <div class="card bg-primary text-white rounded-3 shadow">
-            <div class="card-header">Date</div>
-            <div class="card-body">
-                <!-- You can place your calendar content here -->
-                <div id="calendar">
+    <div class="card bg-primary text-white rounded-3 shadow" style="background-image: linear-gradient(to bottom, #4e73df, #224abe); box-shadow: 0px 5px 15px 5px rgba(0,0,0,0.3);">
+        <div class="card-header">Date</div>
+        <div class="card-body">
+            <!-- You can place your calendar content here -->
+            <div id="calendar">
                 <?php
                 // Get the current day, month, and year using PHP's date() function
                 $currentDay = date('d');       // Day (01 - 31)
                 $currentMonth = date('F');     // Month (January - December)
                 $currentYear = date('Y');      // Year (e.g., 2023)
 
-                                        // Display the day, month, and year
+                // Display the day, month, and year
                 echo "<h5>$currentMonth $currentDay , $currentYear</h5>";
-                 ?>
-                </div>
+                ?>
             </div>
         </div>
     </div>
+</div>
+
+
 </div>
         </div>
     </div>

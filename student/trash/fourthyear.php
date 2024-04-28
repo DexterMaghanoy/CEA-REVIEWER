@@ -1,46 +1,14 @@
-<?php
-    session_start();
-
-    require '../api/db-connect.php';
-    
-    if(isset($_SESSION['program_id'])){
-        $program_id = $_SESSION['program_id'];
-    } else {
-        header("Location: index.php");
-        exit();
-    }
-
-    $user_id = $_SESSION['stud_id'];
-
-    // Use JOIN to get user_type and course_name from related tables
-    $sql = "SELECT s.*, y.year_level, p.program_name
-            FROM tbl_student s
-            INNER JOIN tbl_year y ON s.year_id = y.year_id
-            INNER JOIN tbl_program p ON s.program_id = p.program_id
-            WHERE s.stud_id = :stud_id";
-
-    $stmt = $conn->prepare($sql);
-    $stmt->bindParam(':stud_id', $user_id, PDO::PARAM_INT);
-    $stmt->execute();
-
-    // Check if the query was successful and if there is a user with the given emp_id
-    if ($stmt->rowCount() > 0) {
-        $user = $stmt->fetch(PDO::FETCH_ASSOC); // Fetch the user data
-    }
-?>
-
-
 <?php 
-// session_start();
+session_start();
 
-// require '../api/db-connect.php';
+require '../api/db-connect.php';
 
-// if(isset($_SESSION['program_id'])){
-//     $program_id = $_SESSION['program_id'];
-// } else {
-//     header("Location: ../student/4thyr.php");
-//     exit();
-// }
+if(isset($_SESSION['program_id'])){
+    $program_id = $_SESSION['program_id'];
+} else {
+    header("Location: ../student/4thyr.php");
+    exit();
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -56,89 +24,115 @@
 </head>
 <body>
     <div class="wrapper">
-
-    <?php
-include 'sidebar.php';
-?>
+        <aside id="sidebar">
+            <div class="d-flex">
+                <button class="toggle-btn" type="button">
+                    <i class="lni lni-grid-alt"></i>
+                </button>
+                <div class="sidebar-logo">
+                    <a href="#">Dashboard</a>
+                </div>
+            </div>
+            <ul class="sidebar-nav">
+                <li class="sidebar-item">
+                    <a href="profile.php" class="sidebar-link">
+                        <i class="lni lni-user"></i>
+                        <span>Profile</span>
+                    </a>
+                </li>
+                <li class="sidebar-item">
+                    <a href="report.php" class="sidebar-link">
+                        <i class="lni lni-popup"></i>
+                        <span>Report</span>
+                    </a>
+                </li>
+            </ul>
+            <div class="sidebar-footer">
+                <a href="logout.php" class="sidebar-link">
+                    <i class="lni lni-exit"></i>
+                    <span>Logout</span>
+                </a>
+            </div>
+        </aside>
         <div class="main p-3">
             <div class="text-center">
                 <h1>
                     Dashboard
                 </h1>
             </div>
-            <div class="container mt-3">
+            <div class="container mt-5">
             <div class="row">
     
     <style>
     
     .card-bg1 {
         background-image: url('https://www.gstatic.com/classroom/themes/Honors.jpg');
-        background-size: 175%;
+        background-size: 200%;
         background-repeat: no-repeat;
         background-position: top center;
-        height: 190px; 
+        height: 220px; 
         width: 85%;
         
     }
     .card-bg2 {
         background-image: url('https://www.gstatic.com/classroom/themes/img_bookclub.jpg');
-        background-size: 175%;
+        background-size: 200%;
         background-repeat: no-repeat;
         background-position: top center;
-        height: 190px; 
+        height: 220px;
         width: 85%;
     }
     .card-bg3 {
         background-image: url('https://www.gstatic.com/classroom/themes/img_breakfast.jpg');
-        background-size: 175%;
+        background-size: 200%;
         background-repeat: no-repeat;
         background-position: top center;
-        height: 190px; 
+        height: 220px;
         width: 85%; 
     }
     .card-bg4 {
         background-image: url('https://www.gstatic.com/classroom/themes/img_backtoschool.jpg');
-        background-size: 175%;
+        background-size: 200%;
         background-repeat: no-repeat;
         background-position: top center;
-        height: 190px; 
+        height: 220px; 
         width: 85%;
     }
     .card-bg5 {
         background-image: url('https://www.gstatic.com/classroom/themes/img_code.jpg');
-        background-size: 175%;
+        background-size: 200%;
         background-repeat: no-repeat;
         background-position: top center;
-        height: 190px; 
+        height: 220px; 
         width: 85%; 
     }
     .card-bg6 {
         background-image: url('https://www.gstatic.com/classroom/themes/img_graduation.jpg');
-        background-size: 175%;
+        background-size: 200%;
         background-repeat: no-repeat;
         background-position: top center;
-        height: 190px; 
+        height: 220px; 
         width: 85%;
     }
     .card-bg7 {
         background-image: url('https://www.gstatic.com/classroom/themes/img_reachout.jpg');
-        background-size: 175%;
+        background-size: 200%;
         background-repeat: no-repeat;
         background-position: top center;
-        height: 190px; 
+        height: 220px; 
         width: 85%; 
     }
     .card-bg8 {
         background-image: url('https://www.gstatic.com/classroom/themes/img_read.jpg');
-        background-size: 175%;
+        background-size: 200%;
         background-repeat: no-repeat;
         background-position: top center;
-        height: 190px; 
+        height: 220px; 
         width: 85%;
     }
     
     .card-body {
-        height: 40%; 
+        height: 50%; 
         overflow: auto; 
         width: 70%; 
     }

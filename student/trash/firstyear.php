@@ -1,46 +1,14 @@
-<?php
-    session_start();
-
-    require '../api/db-connect.php';
-    
-    if(isset($_SESSION['program_id'])){
-        $program_id = $_SESSION['program_id'];
-    } else {
-        header("Location: index.php");
-        exit();
-    }
-
-    $user_id = $_SESSION['stud_id'];
-
-    // Use JOIN to get user_type and course_name from related tables
-    $sql = "SELECT s.*, y.year_level, p.program_name
-            FROM tbl_student s
-            INNER JOIN tbl_year y ON s.year_id = y.year_id
-            INNER JOIN tbl_program p ON s.program_id = p.program_id
-            WHERE s.stud_id = :stud_id";
-
-    $stmt = $conn->prepare($sql);
-    $stmt->bindParam(':stud_id', $user_id, PDO::PARAM_INT);
-    $stmt->execute();
-
-    // Check if the query was successful and if there is a user with the given emp_id
-    if ($stmt->rowCount() > 0) {
-        $user = $stmt->fetch(PDO::FETCH_ASSOC); // Fetch the user data
-    }
-?>
-
-
 <?php 
-// session_start();
+session_start();
 
-// require '../api/db-connect.php';
+require '../api/db-connect.php';
 
-// if(isset($_SESSION['program_id'])){
-//     $program_id = $_SESSION['program_id'];
-// } else {
-//     header("Location: ../student/4thyr.php");
-//     exit();
-// }
+if(isset($_SESSION['program_id'])){
+    $program_id = $_SESSION['program_id'];
+} else {
+    header("Location: ./student/firstyear.php");
+    exit();
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -56,89 +24,115 @@
 </head>
 <body>
     <div class="wrapper">
-
-    <?php
-include 'sidebar.php';
-?>
+        <aside id="sidebar">
+            <div class="d-flex">
+                <button class="toggle-btn" type="button">
+                    <i class="lni lni-grid-alt"></i>
+                </button>
+                <div class="sidebar-logo">
+                    <a href="#">Dashboard</a>
+                </div>
+            </div>
+            <ul class="sidebar-nav">
+                <li class="sidebar-item">
+                    <a href="profile.php" class="sidebar-link">
+                        <i class="lni lni-user"></i>
+                        <span>Profile</span>
+                    </a>
+                </li>
+                <li class="sidebar-item">
+                    <a href="report.php" class="sidebar-link">
+                        <i class="lni lni-popup"></i>
+                        <span>Report</span>
+                    </a>
+                </li>
+            </ul>
+            <div class="sidebar-footer">
+                <a href="../student/logout.php" class="sidebar-link">
+                    <i class="lni lni-exit"></i>
+                    <span>Logout</span>
+                </a>
+            </div>
+        </aside>
         <div class="main p-3">
             <div class="text-center">
                 <h1>
                     Dashboard
                 </h1>
             </div>
-            <div class="container mt-3">
+            <div class="container mt-5">
             <div class="row">
     
     <style>
     
     .card-bg1 {
         background-image: url('https://www.gstatic.com/classroom/themes/Honors.jpg');
-        background-size: 175%;
+        background-size: 200%;
         background-repeat: no-repeat;
         background-position: top center;
-        height: 190px; 
+        height: 220px; 
         width: 85%;
         
     }
     .card-bg2 {
         background-image: url('https://www.gstatic.com/classroom/themes/img_bookclub.jpg');
-        background-size: 175%;
+        background-size: 200%;
         background-repeat: no-repeat;
         background-position: top center;
-        height: 190px; 
+        height: 220px;
         width: 85%;
     }
     .card-bg3 {
         background-image: url('https://www.gstatic.com/classroom/themes/img_breakfast.jpg');
-        background-size: 175%;
+        background-size: 200%;
         background-repeat: no-repeat;
         background-position: top center;
-        height: 190px; 
+        height: 220px;
         width: 85%; 
     }
     .card-bg4 {
         background-image: url('https://www.gstatic.com/classroom/themes/img_backtoschool.jpg');
-        background-size: 175%;
+        background-size: 200%;
         background-repeat: no-repeat;
         background-position: top center;
-        height: 190px; 
+        height: 220px; 
         width: 85%;
     }
     .card-bg5 {
         background-image: url('https://www.gstatic.com/classroom/themes/img_code.jpg');
-        background-size: 175%;
+        background-size: 200%;
         background-repeat: no-repeat;
         background-position: top center;
-        height: 190px; 
+        height: 220px; 
         width: 85%; 
     }
     .card-bg6 {
         background-image: url('https://www.gstatic.com/classroom/themes/img_graduation.jpg');
-        background-size: 175%;
+        background-size: 200%;
         background-repeat: no-repeat;
         background-position: top center;
-        height: 190px; 
+        height: 220px; 
         width: 85%;
     }
     .card-bg7 {
         background-image: url('https://www.gstatic.com/classroom/themes/img_reachout.jpg');
-        background-size: 175%;
+        background-size: 200%;
         background-repeat: no-repeat;
         background-position: top center;
-        height: 190px; 
+        height: 220px; 
         width: 85%; 
     }
     .card-bg8 {
         background-image: url('https://www.gstatic.com/classroom/themes/img_read.jpg');
-        background-size: 175%;
+        background-size: 200%;
         background-repeat: no-repeat;
         background-position: top center;
-        height: 190px; 
+        height: 220px; 
         width: 85%;
     }
     
     .card-body {
-        height: 40%; 
+        height: 50%; 
         overflow: auto; 
         width: 70%; 
     }
@@ -160,7 +154,7 @@ try {
     require("../api/db-connect.php");
 
     
-    $stmt = $conn->prepare("SELECT course_code, course_name 
+    $stmt = $conn->prepare("SELECT course_id, course_code, course_name 
     FROM tbl_course 
     WHERE course_status = 1 
     AND program_id = ? 
@@ -174,11 +168,11 @@ try {
 
     if ($enrolled_course) {
         
-        echo '<a href="activity.php" class="card-link">';
+        echo '<a href="module.php?course_id=1" class="card-link">';
         echo '<h5><p class="card-text" style="color: white;">' . $enrolled_course['course_code'] . ': ' . $enrolled_course['course_name'] . '</p></h5>';
         echo '</a>';
     } else {
-        echo '<p class="card-text">No enrolled Fourth Year course found for the student.</p>';
+        echo '<p class="card-text">No enrolled First Year course found for the student.</p>';
     }
 } catch (PDOException $e) {
     echo '<p class="card-text">Database Error: ' . $e->getMessage() . '</p>';
@@ -186,75 +180,6 @@ try {
 ?>
 
 
-        </div>
-    </div>
-</div>
-
-<div class="col-md-4">
-    <div class="card text-dark rounded-3 shadow card-bg2">
-        <div class="card-body">
-        <?php
-try {
-    require("../api/db-connect.php"); 
-    
-    $stmt = $conn->prepare("SELECT course_code, course_name 
-    FROM tbl_course 
-    WHERE course_status = 1 
-    AND program_id = ? 
-    AND year_id = 4
-    LIMIT 1
-    OFFSET 1"); 
-    $stmt->execute([$program_id]);
-
-    $enrolled_course = $stmt->fetch(PDO::FETCH_ASSOC);
-
-    if ($enrolled_course) {
-        
-        echo '<a href="activity.php" class="card-link">';
-        echo '<h5><p class="card-text" style="color: white;">' . $enrolled_course['course_code'] . ': ' . $enrolled_course['course_name'] . '</p></h5>';
-        echo '</a>';
-    } else {
-        echo '<p class="card-text">No enrolled Fourth Year course found for the student.</p>';
-    }
-} catch (PDOException $e) {
-    echo '<p class="card-text">Database Error: ' . $e->getMessage() . '</p>';
-}
-?>
-        </div>
-    </div>
-</div>
-<div class="col-md-4">
-    <div class="card text-dark rounded-3 shadow card-bg3">
-        <div class="card-body">
-        <?php
-try {
-    require("../api/db-connect.php"); 
-
-    
-    $stmt = $conn->prepare("SELECT course_code, course_name 
-    FROM tbl_course 
-    WHERE course_status = 1 
-    AND program_id = ? 
-    AND year_id = 4
-    LIMIT 1
-    OFFSET 2"); 
-    $stmt->execute([$program_id]);
-
-
-    $enrolled_course = $stmt->fetch(PDO::FETCH_ASSOC);
-
-    if ($enrolled_course) {
-        
-        echo '<a href="activity.php" class="card-link">';
-        echo '<h5><p class="card-text" style="color: white;">' . $enrolled_course['course_code'] . ': ' . $enrolled_course['course_name'] . '</p></h5>';
-        echo '</a>';
-    } else {
-        echo '<p class="card-text">No enrolled Fourth Year course found for the student.</p>';
-    }
-} catch (PDOException $e) {
-    echo '<p class="card-text">Database Error: ' . $e->getMessage() . '</p>';
-}
-?>
         </div>
     </div>
 </div>
@@ -272,7 +197,7 @@ try {
     AND program_id = ? 
     AND year_id = 4
     LIMIT 1
-    OFFSET 3"); 
+    OFFSET 1"); 
     $stmt->execute([$program_id]);
 
     
@@ -284,7 +209,7 @@ try {
         echo '<h5><p class="card-text" style="color: white;">' . $enrolled_course['course_code'] . ': ' . $enrolled_course['course_name'] . '</p></h5>';
         echo '</a>';
     } else {
-        echo '<p class="card-text">No enrolled Fourth Year course found for the student.</p>';
+        echo '<p class="card-text">No enrolled First Year course found for the student.</p>';
     }
 } catch (PDOException $e) {
     echo '<p class="card-text">Database Error: ' . $e->getMessage() . '</p>';
@@ -307,7 +232,7 @@ try {
     AND program_id = ? 
     AND year_id = 4
     LIMIT 1
-    OFFSET 4"); 
+    OFFSET 3"); 
     $stmt->execute([$program_id]);
 
     
@@ -319,113 +244,7 @@ try {
         echo '<h5><p class="card-text" style="color: white;">' . $enrolled_course['course_code'] . ': ' . $enrolled_course['course_name'] . '</p></h5>';
         echo '</a>';
     } else {
-        echo '<p class="card-text">No enrolled Fourth Year course found for the student.</p>';
-    }
-} catch (PDOException $e) {
-    echo '<p class="card-text">Database Error: ' . $e->getMessage() . '</p>';
-}
-?>
-        </div>
-    </div>
-</div>
-
-<div class="col-md-4">
-    <div class="card text-dark rounded-3 shadow card-bg6">
-        <div class="card-body">
-        <?php
-try {
-    require("../api/db-connect.php"); 
-
-    
-    $stmt = $conn->prepare("SELECT course_code, course_name 
-    FROM tbl_course 
-    WHERE course_status = 1 
-    AND program_id = ? 
-    AND year_id = 4
-    LIMIT 1
-    OFFSET 5"); 
-    $stmt->execute([$program_id]);
-
-    
-    $enrolled_course = $stmt->fetch(PDO::FETCH_ASSOC);
-
-    if ($enrolled_course) {
-        
-        echo '<a href="activity.php" class="card-link">';
-        echo '<h5><p class="card-text" style="color: white;">' . $enrolled_course['course_code'] . ': ' . $enrolled_course['course_name'] . '</p></h5>';
-        echo '</a>';
-    } else {
-        echo '<p class="card-text">No enrolled Fourth Year course found for the student.</p>';
-    }
-} catch (PDOException $e) {
-    echo '<p class="card-text">Database Error: ' . $e->getMessage() . '</p>';
-}
-?>
-        </div>
-    </div>
-</div>
-<div class="col-md-4">
-    <div class="card text-dark rounded-3 shadow card-bg7">
-        <div class="card-body">
-        <?php
-try {
-    require("../api/db-connect.php");
-
-    
-    $stmt = $conn->prepare("SELECT course_code, course_name 
-    FROM tbl_course 
-    WHERE course_status = 1 
-    AND program_id = ? 
-    AND year_id = 4
-    LIMIT 1
-    OFFSET 6"); 
-    $stmt->execute([$program_id]);
-
-    
-    $enrolled_course = $stmt->fetch(PDO::FETCH_ASSOC);
-
-    if ($enrolled_course) {
-        // Display course_code and course_name for the enrolled Fourth Year subject
-        echo '<a href="activity.php" class="card-link">';
-        echo '<h5><p class="card-text" style="color: white;">' . $enrolled_course['course_code'] . ': ' . $enrolled_course['course_name'] . '</p></h5>';
-        echo '</a>';
-    } else {
-        echo '<p class="card-text">No enrolled Fourth Year course found for the student.</p>';
-    }
-} catch (PDOException $e) {
-    echo '<p class="card-text">Database Error: ' . $e->getMessage() . '</p>';
-}
-?>
-        </div>
-    </div>
-</div>
-<div class="col-md-4">
-    <div class="card text-dark rounded-3 shadow card-bg8">
-        <div class="card-body">
-        <?php
-try {
-    require("../api/db-connect.php"); // Include your database connection file here
-
-    // Prepare and execute the SQL query to fetch one enrolled Fourth Year course for the student
-    $stmt = $conn->prepare("SELECT course_code, course_name 
-    FROM tbl_course 
-    WHERE course_status = 1 
-    AND program_id = ? 
-    AND year_id = 4
-    LIMIT 1
-    OFFSET 7"); // Limit to one record
-    $stmt->execute([$program_id]);
-
-    // Fetch the enrolled Fourth Year course for the student
-    $enrolled_course = $stmt->fetch(PDO::FETCH_ASSOC);
-
-    if ($enrolled_course) {
-        // Display course_code and course_name for the enrolled Fourth Year subject
-        echo '<a href="activity.php" class="card-link">';
-        echo '<h5><p class="card-text" style="color: white;">' . $enrolled_course['course_code'] . ': ' . $enrolled_course['course_name'] . '</p></h5>';
-        echo '</a>';
-    } else {
-        echo '<p class="card-text">No enrolled Fourth Year course found for the student.</p>';
+        echo '<p class="card-text">No enrolled First Year course found for the student.</p>';
     }
 } catch (PDOException $e) {
     echo '<p class="card-text">Database Error: ' . $e->getMessage() . '</p>';

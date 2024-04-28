@@ -5,20 +5,20 @@ require("../api/db-connect.php");
 if(isset($_SESSION['lock']) && $_SESSION['lock'] === true) {
     switch ($_SESSION['stud_id']) {
         case 1: 
-            header("Location: firstyear.php");
-            exit();
-        case 2:
-            header("Location: secondyear.php");
-            exit();
-        case 3: 
-            header("Location: thirdyear.php");
-            exit();
-	case 4: 
             header("Location: dashboard.php");
             exit();
-        default:
-            header("Location: index.php");
-            exit();
+    //     case 2:
+    //         header("Location: secondyear.php");
+    //         exit();
+    //     case 3: 
+    //         header("Location: thirdyear.php");
+    //         exit();
+	// case 4: 
+    //         header("Location: dashboard.php");
+    //         exit();
+    //     default:
+    //         header("Location: index.php");
+    //         exit();
     }
 }
 
@@ -68,20 +68,20 @@ if (isset($_POST['submit'])) {
                 
                 switch ($result['year_id']) {
                     case 1: 
-                        header("Location: firstyear.php");
+                        header("Location: dashboard.php");
                         exit();
-                    case 2:
-                        header("Location: secondyear.php");
-                        exit();
-                    case 3: 
-                        header("Location: thirdyear.php");
-                        exit();
-			case 4: 
-            		header("Location: dashboard.php");
-            		exit();
-                    default:
-                        header("Location: index.php ");
-                        exit();
+            //         case 2:
+            //             header("Location: secondyear.php");
+            //             exit();
+            //         case 3: 
+            //             header("Location: thirdyear.php");
+            //             exit();
+			// case 4: 
+            // 		header("Location: dashboard.php");
+            // 		exit();
+            //         default:
+            //             header("Location: index.php ");
+            //             exit();
                 }
             } else {
                 echo '<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>';

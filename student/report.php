@@ -4,6 +4,7 @@ session_start();
 require '../api/db-connect.php';
 
 if(isset($_SESSION['program_id']) && isset($_SESSION['year_id'])) {
+    
     $program_id = $_SESSION['program_id'];
     $year_id = $_SESSION['year_id'];
 
