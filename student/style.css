@@ -1,7 +1,5 @@
-/* index.php */
-   
-   
-   @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
 
 ::after,
 ::before {
@@ -29,6 +27,7 @@ body {
 
 .wrapper {
     display: flex;
+    
 }
 
 .main {
@@ -52,6 +51,7 @@ body {
     flex-direction: column;
 }
 
+
 #sidebar.expand {
     width: 260px;
     min-width: 260px;
@@ -147,6 +147,87 @@ a.sidebar-link:hover {
     transition: all .2s ease-out;
 }
 
+
+
+
+    
+.card-bg1 {
+    background-image: url('https://www.gstatic.com/classroom/themes/Honors.jpg');
+    background-size: 175%;
+    background-repeat: no-repeat;
+    background-position: top center;
+    height: 190px; 
+    width: 85%;
+    
+}
+.card-bg2 {
+    background-image: url('https://www.gstatic.com/classroom/themes/img_bookclub.jpg');
+    background-size: 175%;
+    background-repeat: no-repeat;
+    background-position: top center;
+    height: 190px; 
+    width: 85%;
+}
+.card-bg3 {
+    background-image: url('https://www.gstatic.com/classroom/themes/img_breakfast.jpg');
+    background-size: 175%;
+    background-repeat: no-repeat;
+    background-position: top center;
+    height: 190px; 
+    width: 85%; 
+}
+.card-bg4 {
+    background-image: url('https://www.gstatic.com/classroom/themes/img_backtoschool.jpg');
+    background-size: 175%;
+    background-repeat: no-repeat;
+    background-position: top center;
+    height: 190px; 
+    width: 85%;
+}
+.card-bg5 {
+    background-image: url('https://www.gstatic.com/classroom/themes/img_code.jpg');
+    background-size: 175%;
+    background-repeat: no-repeat;
+    background-position: top center;
+    height: 190px; 
+    width: 85%; 
+}
+.card-bg6 {
+    background-image: url('https://www.gstatic.com/classroom/themes/img_graduation.jpg');
+    background-size: 175%;
+    background-repeat: no-repeat;
+    background-position: top center;
+    height: 190px; 
+    width: 85%;
+}
+.card-bg7 {
+    background-image: url('https://www.gstatic.com/classroom/themes/img_reachout.jpg');
+    background-size: 175%;
+    background-repeat: no-repeat;
+    background-position: top center;
+    height: 190px; 
+    width: 85%; 
+}
+.card-bg8 {
+    background-image: url('https://www.gstatic.com/classroom/themes/img_read.jpg');
+    background-size: 175%;
+    background-repeat: no-repeat;
+    background-position: top center;
+    height: 190px; 
+    width: 85%;
+}
+
+.card-body {
+    height: 40%; 
+    overflow: auto; 
+    width: 70%; 
+}
+.card-text:hover {
+    text-decoration: underline;
+}
+.card {
+    margin-bottom: 20px; 
+}
 
 
 
@@ -291,11 +372,23 @@ a.sidebar-link:hover {
     transform: rotate(45deg);
     transition: all .2s ease-out;
 }
-.gradient-custom {
-    background: #c7f3be; /* fallback for old browsers */
-    background: -webkit-linear-gradient(to right bottom, #c7f3be, #6ebf71); /* Chrome 10-25, Safari 5.1-6 */
-    background: linear-gradient(to right bottom, #c7f3be, #6ebf71); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
-    display: inline-block; /* Ensures the container fits the content */
-    padding: 10px; /* Adjust padding as needed */
-    border-radius: 50%; /* Makes the container round */
-}
+.card {
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        
+        /* Define different colors for cards */
+        .card.subject-1 {
+            background-color: #f9d5e5;
+        }
+        
+        .card.subject-2 {
+            background-color: #c9e4e7;
+        }
+        
+        .card.subject-3 {
+            background-color: #ffe5d9;
+        }
+

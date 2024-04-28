@@ -1,5 +1,5 @@
 <?php 
-
+   $user1 = $_SESSION['user_fname'];
     $user_id = $_SESSION['user_id'];
 
     // Use JOIN to get user_type and course_name from related tables
@@ -24,9 +24,11 @@
                 <button class="toggle-btn" type="button">
                     <i class="lni lni-grid-alt"></i>
                 </button>
-                <div class="sidebar-logo">
-                    <a href="index.php">Dashboard</a>
-                </div>
+                <div class="sidebar-logo mt-3">
+            <h6> <a href="index.php">Hello, <?php echo $user1 ?>!<p style="text-align: center;font-size:13px;"><?php echo $user['type_name']; ?></p>
+            </h6>
+            </a>
+        </div>
             </div>
             <ul class="sidebar-nav">
                 <li class="sidebar-item">

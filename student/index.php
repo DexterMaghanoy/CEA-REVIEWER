@@ -7,21 +7,8 @@ if(isset($_SESSION['lock']) && $_SESSION['lock'] === true) {
         case 1: 
             header("Location: dashboard.php");
             exit();
-    //     case 2:
-    //         header("Location: secondyear.php");
-    //         exit();
-    //     case 3: 
-    //         header("Location: thirdyear.php");
-    //         exit();
-	// case 4: 
-    //         header("Location: dashboard.php");
-    //         exit();
-    //     default:
-    //         header("Location: index.php");
-    //         exit();
     }
 }
-
 if (isset($_POST['submit'])) {
     if (!empty($_POST['g-recaptcha-response'])) {
         $captcha_response = $_POST['g-recaptcha-response'];
@@ -70,18 +57,7 @@ if (isset($_POST['submit'])) {
                     case 1: 
                         header("Location: dashboard.php");
                         exit();
-            //         case 2:
-            //             header("Location: secondyear.php");
-            //             exit();
-            //         case 3: 
-            //             header("Location: thirdyear.php");
-            //             exit();
-			// case 4: 
-            // 		header("Location: dashboard.php");
-            // 		exit();
-            //         default:
-            //             header("Location: index.php ");
-            //             exit();
+
                 }
             } else {
                 echo '<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>';

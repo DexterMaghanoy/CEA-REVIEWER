@@ -1,77 +1,7 @@
 <?php 
-
-require '../api/db-connect.php';
-
 $Student_user = $_SESSION['stud_fname'];
-if(isset($_SESSION['program_id']) && isset($_SESSION['year_id'])) {
-    $program_id = $_SESSION['program_id'];
-    $year_id = $_SESSION['year_id'];
-
-    // Prepare SQL query to fetch courses for the given program and year
-    $sql = "SELECT * FROM tbl_course WHERE program_id = :program_id AND year_id = :year_id AND sem_id = 1";
-    $result = $conn->prepare($sql);
-    $result->bindParam(':program_id', $program_id, PDO::PARAM_INT);
-    $result->bindParam(':year_id', $year_id, PDO::PARAM_INT);
-    $result->execute();
-
-    // Fetch the result and store it in a variable to use later
-    $courses = $result->fetchAll(PDO::FETCH_ASSOC);
-} else {
-    // Redirect to login page if session data is not set
-    header("Location: ../login.php");
-    exit();
-}
 
 
-// Check if stud_id and course_id are set
-if(isset($_SESSION['stud_id']) && isset($_GET['course_id'])) {
-    $stud_id = $_SESSION['stud_id'];
-    $course_id = $_GET['course_id'];
-
-    // Define pagination variables
-    $recordsPerPage = 5;
-    $page = isset($_GET['page']) ? $_GET['page'] : 1;
-    $offset = ($page - 1) * $recordsPerPage;
-
-    // Define search term
-    $search = isset($_GET['search']) ? $_GET['search'] : '';
-
-    // Prepare SQL query to fetch student scores for the specified course
-    $sql = "SELECT tbl_result.result_score, tbl_module.course_id, tbl_module.module_number, tbl_module.module_name
-            FROM tbl_result
-            INNER JOIN tbl_module ON tbl_result.module_id = tbl_module.module_id
-            WHERE tbl_result.stud_id = :stud_id AND tbl_module.course_id = :course_id";
-
-    // Prepare and execute the query
-    $result = $conn->prepare($sql);
-    $result->bindParam(':stud_id', $stud_id);
-    $result->bindParam(':course_id', $course_id);
-    $result->execute();
-
-    // Fetch all results
-    $results = $result->fetchAll(PDO::FETCH_ASSOC);
-
-    // Count total number of records
-    $countSql = "SELECT COUNT(*) as total FROM tbl_result 
-                 INNER JOIN tbl_module ON tbl_result.module_id = tbl_module.module_id
-                 WHERE tbl_result.stud_id = :stud_id AND tbl_module.course_id = :course_id";
-
-    // Add search condition if applicable
-    if (!empty($search)) {
-        $countSql .= " AND (stud_lname LIKE '%$search%' OR stud_fname LIKE '%$search%')";
-    }
-
-    // Prepare and execute the count query
-    $countStmt = $conn->prepare($countSql);
-    $countStmt->bindParam(':stud_id', $stud_id);
-    $countStmt->bindParam(':course_id', $course_id);
-    $countStmt->execute();
-    $totalCount = $countStmt->fetch(PDO::FETCH_ASSOC)['total'];
-    $totalPages = ceil($totalCount / $recordsPerPage);
-} else {
-    // Handle case when stud_id or course_id is not set
-    // Redirect or display an error message
-}
 ?>
 <aside id="sidebar">
     <div class="d-flex">
