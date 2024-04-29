@@ -1,0 +1,70 @@
+ /* Custom CSS */
+          body {
+            
+            background-color: #dce5ef;
+        }
+
+        #content {
+            /* /* max-width: 100%; */
+            margin: auto;
+            background-color: #ffffff;
+            padding-top: 2%;
+            padding-left: 13%;
+            padding-right: 13%;
+            border-radius: 40px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); 
+            margin-bottom: 1%;
+            margin-top: 1%;
+        }
+
+
+        .question-box {
+            
+            margin-bottom: 30px;
+            max-width: 800px;
+            width: 100%;
+            margin-left: auto;
+            margin-right: auto;
+            
+        }
+
+
+        .question-text {
+            font-weight: bold;
+            font-size: 18px;
+            margin-bottom: 20px;
+        }
+
+        .form-check-label {
+            margin-left: 5px;
+            font-size: 15px;
+            font-weight: normal;
+        }
+
+        .btn-primary {
+            background-color: #4CAF50;
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            transition-duration: 0.4s;
+            cursor: pointer;
+            border-radius: 10px;
+        }
+
+        .btn-primary:hover {
+            background-color: #45a049;
+            color: white;
+        }
+
+
+        #quiz-title {
+            font-size: 50px;
+            text-align: center; /* Center the text horizontally */
+            margin-bottom: 50px; /* Add margin to create space between the title and the rest of the content */
+        }
+        

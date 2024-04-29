@@ -392,3 +392,20 @@ a.sidebar-link:hover {
             background-color: #ffe5d9;
         }
 
+
+/* answers */
+        .eye-button {
+            background-color: #ffeeba; /* Light yellow background color */
+            border: 1px solid #ffc107; /* Button border color */
+            border-radius: 5px; /* Button border radius */
+          }
+          
+          .eye-button:hover {
+            background-color: #ffd666; /* Lighter yellow background color on hover */
+            border-color: #ffc107; /* Button border color on hover */
+          }
+          
+          .eye-icon {
+            color: #ffc107; /* Yellow icon color */
+          }
+          

@@ -144,7 +144,8 @@ include 'sidebar.php';
                     </div>
                     
                     <!-- Hidden Employee ID and Submit Button -->
-                    <input type="hidden" name="module_id" value="<?php echo $_GET['module_id']; ?>">
+                    <input type="hidden" name="module_id" value="<?php echo isset($_GET['module_id']) ? $_GET['module_id'] : ''; ?>">
+
                     <input type="submit" class="btn btn-success mt-2" value="Save" name="save">
                 </form>
             </div>
