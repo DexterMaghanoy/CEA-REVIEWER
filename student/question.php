@@ -86,36 +86,58 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
         // Calculate the score
         $score = 0;
+        $total_questions = count($answers); // Get the total number of questions attempted
+        // Loop through each question and process the answers
         foreach ($answers as $question_id => $answer) {
-            $sql = "SELECT question_answer FROM tbl_question WHERE question_id = :question_id";
-            $stmt = $conn->prepare($sql);
-            $stmt->bindParam(":question_id", $question_id, PDO::PARAM_INT);
-            $stmt->execute();
-            $correct_answer = $stmt->fetch(PDO::FETCH_ASSOC)['question_answer'];
+            // Fetch the maximum attempt_id for the current combination
+            $sqlMaxAttempt = "SELECT COALESCE(MAX(attempt_id), 0) AS max_attempt FROM tbl_quiz_answers WHERE quiz_id = :quiz_id AND student_id = :student_id AND question_id = :question_id";
+            $stmtMaxAttempt = $conn->prepare($sqlMaxAttempt);
+            $stmtMaxAttempt->bindParam(":quiz_id", $module_id, PDO::PARAM_INT);
+            $stmtMaxAttempt->bindParam(":student_id", $stud_id, PDO::PARAM_INT);
+            $stmtMaxAttempt->bindParam(":question_id", $question_id, PDO::PARAM_INT);
+            $stmtMaxAttempt->execute();
+            $max_attempt_row = $stmtMaxAttempt->fetch(PDO::FETCH_ASSOC);
+            $new_attempt_id = $max_attempt_row['max_attempt'] + 1; // Increment the maximum attempt_id by 1
+
+            // Fetch the correct answer for the question
+            $sqlCorrectAnswer = "SELECT question_answer FROM tbl_question WHERE question_id = :question_id";
+            $stmtCorrectAnswer = $conn->prepare($sqlCorrectAnswer);
+            $stmtCorrectAnswer->bindParam(":question_id", $question_id, PDO::PARAM_INT);
+            $stmtCorrectAnswer->execute();
+            $correct_answer = $stmtCorrectAnswer->fetch(PDO::FETCH_ASSOC)['question_answer'];
+
+            // Compare the answer with the correct answer to calculate the score
             if ($answer === $correct_answer) {
                 $score++;
             }
-            // Insert the answer into tbl_quiz_answers
-            $sql = "INSERT INTO tbl_quiz_answers (quiz_id, student_id, question_id, chosen_answer) VALUES (:quiz_id, :student_id, :question_id, :chosen_answer)";
-            $stmt = $conn->prepare($sql);
-            $stmt->bindParam(":quiz_id", $module_id, PDO::PARAM_INT);
-            $stmt->bindParam(":student_id", $stud_id, PDO::PARAM_INT);
-            $stmt->bindParam(":question_id", $question_id, PDO::PARAM_INT);
-            $stmt->bindParam(":chosen_answer", $answer, PDO::PARAM_STR);
-            if (!$stmt->execute()) {
+
+            // Insert the answer into tbl_quiz_answers with the new attempt_id
+            $sqlInsertAnswer = "INSERT INTO tbl_quiz_answers (quiz_id, student_id, question_id, chosen_answer, attempt_id) VALUES (:quiz_id, :student_id, :question_id, :chosen_answer, :attempt_id)";
+            $stmtInsertAnswer = $conn->prepare($sqlInsertAnswer);
+            $stmtInsertAnswer->bindParam(":quiz_id", $module_id, PDO::PARAM_INT);
+            $stmtInsertAnswer->bindParam(":student_id", $stud_id, PDO::PARAM_INT);
+            $stmtInsertAnswer->bindParam(":question_id", $question_id, PDO::PARAM_INT);
+            $stmtInsertAnswer->bindParam(":chosen_answer", $answer, PDO::PARAM_STR);
+            $stmtInsertAnswer->bindParam(":attempt_id", $new_attempt_id, PDO::PARAM_INT);
+            if (!$stmtInsertAnswer->execute()) {
                 handleDatabaseError("Failed to insert quiz answer into the database.");
             }
+
+            // Additional processing as needed...
         }
+
         // Insert the result into tbl_result
-        $sql = "INSERT INTO tbl_result (module_id, user_id, stud_id, result_score) VALUES (:module_id, :user_id, :stud_id, :result_score)";
+        $sql = "INSERT INTO tbl_result (module_id, stud_id, result_score, total_questions) 
+                VALUES (:module_id, :stud_id, :result_score, :total_questions)";
         $stmt = $conn->prepare($sql);
         $stmt->bindParam(":module_id", $module_id, PDO::PARAM_INT);
-        $stmt->bindParam(":user_id", $_POST['user_id'], PDO::PARAM_INT);
         $stmt->bindParam(":stud_id", $stud_id, PDO::PARAM_INT);
         $stmt->bindParam(":result_score", $score, PDO::PARAM_INT);
+        $stmt->bindParam(":total_questions", $total_questions, PDO::PARAM_INT); // Pass the total questions attempted
         if (!$stmt->execute()) {
             handleDatabaseError("Failed to insert result into the database.");
         }
+
         // Redirect to index page after submission
         echo '<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>';
         echo '<script src="https://cdn.jsdelivr.net/npm/sweetalert2@10.16.6/dist/sweetalert2.min.js"></script>';
@@ -176,7 +198,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 ?>
                 <form method="post">
                     <input type="hidden" name="user_id" value="<?php echo isset($_SESSION['user_id']) ? $_SESSION['user_id'] : ''; ?>">
-             
+
                     <?php if (!empty($result)) : ?>
                         <?php $counter = 1; ?>
                         <?php foreach ($result as $question) : ?>
@@ -257,37 +279,36 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     });
 
     // Function to check if any question is answered
-function anyQuestionAnswered() {
-    const questions = document.querySelectorAll('.question-box');
-    for (let question of questions) {
-        const radioButtons = question.querySelectorAll('input[type="radio"]');
-        for (let radioButton of radioButtons) {
-            if (radioButton.checked) {
-                return true; // At least one question answered
+    function anyQuestionAnswered() {
+        const questions = document.querySelectorAll('.question-box');
+        for (let question of questions) {
+            const radioButtons = question.querySelectorAll('input[type="radio"]');
+            for (let radioButton of radioButtons) {
+                if (radioButton.checked) {
+                    return true; // At least one question answered
+                }
             }
         }
+        return false; // No question answered
     }
-    return false; // No question answered
-}
 
-// Function to update the visibility of the submit button
-function updateSubmitButtonVisibility() {
-    const submitBtn = document.getElementById('submit-btn');
-    const noQuestionsFound = <?php echo $noQuestionsFound ? 'true' : 'false'; ?>;
-    if (!noQuestionsFound && anyQuestionAnswered()) {
-        submitBtn.removeAttribute('hidden');
-    } else {
-        submitBtn.setAttribute('hidden', 'hidden');
+    // Function to update the visibility of the submit button
+    function updateSubmitButtonVisibility() {
+        const submitBtn = document.getElementById('submit-btn');
+        const noQuestionsFound = <?php echo $noQuestionsFound ? 'true' : 'false'; ?>;
+        if (!noQuestionsFound && anyQuestionAnswered()) {
+            submitBtn.removeAttribute('hidden');
+        } else {
+            submitBtn.setAttribute('hidden', 'hidden');
+        }
     }
-}
 
-// Event listener to check and update submit button visibility
-document.addEventListener('DOMContentLoaded', function() {
-    updateSubmitButtonVisibility();
-    const radioButtons = document.querySelectorAll('input[type="radio"]');
-    for (let radioButton of radioButtons) {
-        radioButton.addEventListener('change', updateSubmitButtonVisibility);
-    }
-});
-
+    // Event listener to check and update submit button visibility
+    document.addEventListener('DOMContentLoaded', function() {
+        updateSubmitButtonVisibility();
+        const radioButtons = document.querySelectorAll('input[type="radio"]');
+        for (let radioButton of radioButtons) {
+            radioButton.addEventListener('change', updateSubmitButtonVisibility);
+        }
+    });
 </script>

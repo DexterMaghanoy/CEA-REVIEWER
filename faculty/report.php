@@ -1,141 +1,137 @@
-<?php 
+<?php
 session_start();
 
 require '../api/db-connect.php';
 
-// Pagination
-$resultsPerPage = 10; // Number of results per page
-$search = isset($_GET['search']) ? $_GET['search'] : '';
-$page = isset($_GET['page']) ? $_GET['page'] : 1;
-$offset = ($page - 1) * $resultsPerPage;
-
-if(isset($_SESSION['user_id'])){
-    $user_id = $_SESSION['user_id'];
-
-    // Query with search functionality
-    $sql = "SELECT s.stud_fname, s.stud_mname, s.stud_lname, c.course_name, m.module_name, SUM(r.result_score) AS total_score
-            FROM tbl_result r
-            INNER JOIN tbl_student s ON r.stud_id = s.stud_id
-            INNER JOIN tbl_module m ON r.module_id = m.module_id
-            INNER JOIN tbl_course c ON m.course_id = c.course_id
-            WHERE r.user_id = :user_id ";
-
-    if (!empty($search)) {
-        $sql .= "AND (s.stud_fname LIKE :search OR s.stud_lname LIKE :search OR c.course_name LIKE :search OR m.module_name LIKE :search) ";
-    }
-
-    $sql .= "GROUP BY s.stud_id, c.course_id ";
-
-    // Count total number of results for pagination
-    $countQuery = "SELECT COUNT(*) AS count FROM ($sql) AS sub";
-    $stmtCount = $conn->prepare($countQuery);
-    $stmtCount->bindParam(':user_id', $user_id, PDO::PARAM_INT);
-    if (!empty($search)) {
-        $stmtCount->bindValue(':search', '%' . $search . '%');
-    }
-    $stmtCount->execute();
-    $countResult = $stmtCount->fetch(PDO::FETCH_ASSOC);
-    $totalCount = $countResult['count'];
-    $totalPages = ceil($totalCount / $resultsPerPage);
-
-    // Add pagination to the main query
-    $sql .= " LIMIT $resultsPerPage OFFSET $offset";
-
-    $stmt = $conn->prepare($sql);
-    $stmt->bindParam(':user_id', $user_id, PDO::PARAM_INT);
-    if (!empty($search)) {
-        $stmt->bindValue(':search', '%' . $search . '%');
-    }
-    $stmt->execute();
-    $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+if (isset($_SESSION['program_id'])) {
+    $program_id = $_SESSION['program_id'];
 } else {
     header("Location: ../login.php");
     exit();
 }
 
+$user_id = $_SESSION['user_id'];
 
+$recordsPerPage = 10;
+$page = isset($_GET['page']) ? $_GET['page'] : 1;
+$offset = ($page - 1) * $recordsPerPage;
+
+$search = isset($_GET['search']) ? $_GET['search'] : '';
+
+// Build the SQL query with search functionality
+$sql = "SELECT c.*, s.sem_name, p.program_name
+        FROM tbl_course AS c
+        JOIN tbl_semester AS s ON c.sem_id = s.sem_id
+        JOIN tbl_program AS p ON c.program_id = p.program_id";
+
+if (!empty($search)) {
+    $searchParam = '%' . $search . '%';
+    $sql .= " WHERE (c.course_code LIKE :search OR c.course_name LIKE :search OR p.program_name LIKE :search OR s.sem_name LIKE :search) AND c.user_id = :user_id";
+} else {
+    $sql .= " WHERE c.user_id = :user_id";
+}
+
+$result = $conn->prepare($sql);
+
+if (!empty($search)) {
+    $result->bindParam(':search', $searchParam, PDO::PARAM_STR);
+}
+$result->bindParam(':user_id', $user_id, PDO::PARAM_INT);
+$result->execute();
+
+// Count total number of records
+$countSql = "SELECT COUNT(*) as total FROM tbl_course WHERE course_id = :course_id";
+if (!empty($search)) {
+    $countSql .= " AND (course_code LIKE :search OR course_name LIKE :search)";
+}
+
+$countStmt = $conn->prepare($countSql);
+$countStmt->bindParam(':course_id', $course_id, PDO::PARAM_INT);
+if (!empty($search)) {
+    $countStmt->bindParam(':search', $searchParam, PDO::PARAM_STR);
+}
+$countStmt->execute();
+$totalCount = $countStmt->fetch(PDO::FETCH_ASSOC)['total'];
+$totalPages = ceil($totalCount / $recordsPerPage);
 ?>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Report</title>
+    <title>Course</title>
     <link href="https://cdn.lineicons.com/4.0/lineicons.css" rel="stylesheet" />
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet"
-        integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous">
     <link rel="shortcut icon" href="../img/cea_logo.png" type="image/x-icon">
     <link rel="stylesheet" href="style.css" type="text/css">
 </head>
+
 <body>
-<div class="wrapper">
-<?php
-include 'sidebar.php';
-?>
+    <div class="wrapper">
+        <?php include 'sidebar.php'; ?>
         <div class="main p-3">
             <div class="container">
                 <div class="row justify-content-center mt-5">
                     <div class="col-md-8">
                         <div class="text-center mb-4">
-                            <h1>Student Report</h1>
+                            <h1>Report</h1>
                         </div>
+                        <!-- Search bar -->
                         <form action="" method="GET" class="mb-3">
                             <div class="input-group">
-                                <input type="text" class="form-control" name="search" placeholder="Search..." value="">
+                                <input type="text" class="form-control" name="search" placeholder="Search...">
                                 <button class="btn btn-primary" type="submit">Search</button>
                             </div>
                         </form>
-                        <div class="table-responsive">
-                            <table class="table table-bordered border-secondary">
-                                <caption>List of Scores</caption>
-                                <thead class="table-dark">
-                                    <tr>
-                                        <th scope="col">Student</th>
-                                        <th scope="col">Course</th>
-                                        <th scope="col">Total Score</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <?php if (!empty($result)): ?>
-                                        <?php foreach ($result as $row): ?>
-                                            <tr>
-                                                <td><?php echo $row['stud_lname'] . ', ' . $row['stud_fname']?></td>
-                                                <td><?php echo $row['course_name']; ?></td>
-                                                <td><?php echo $row['total_score']; ?></td>
-                                            </tr>
-                                        <?php endforeach; ?>
-                                    <?php else: ?>
-                                        <tr>
-                                            <td colspan="4" class="text-center">No records found for students.</td>
-                                        </tr>
-                                    <?php endif; ?>
-                                </tbody>
-                            </table>
+                        <div class="row row-cols-1 row-cols-md-2 g-4">
+                            <?php if ($result->rowCount() > 0) : ?>
+                                <?php while ($row = $result->fetch(PDO::FETCH_ASSOC)) : ?>
+                                    <div class="col">
+                                        <div class="card h-100">
+                                            <div class="card-body">
+                                                <h5 class="card-title"><?php echo $row['course_name']; ?></h5>
+                                                <h6 class="card-subtitle mb-2 text-muted"><?php echo $row['program_name'] . ' - ' . $row['sem_name']; ?></h6>
+                                                <p class="card-text"><?php echo $row['course_code']; ?></p>
+                                                <a href="view_students.php?program_id=<?php echo $program_id; ?>&course_id=<?php echo $row['course_id']; ?>&sem_id=<?php echo $row['sem_id']; ?>" class="btn btn-primary btn-sm"><i class="lni lni-radio-button"></i> View Students</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                <?php endwhile; ?>
+                            <?php else : ?>
+                                <div class="col">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <p class="card-text">No records found for course.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            <?php endif; ?>
                         </div>
+                        <!-- Pagination -->
                         <nav aria-label="Page navigation">
-                        <ul class="pagination justify-content-center">
-                            <?php for ($i = 1; $i <= $totalPages; $i++): ?>
-                                <li class="page-item <?php echo $i == $page ? 'active' : ''; ?>">
-                                    <a class="page-link" href="?page=<?php echo $i; ?>&search=<?php echo $search; ?>"><?php echo $i; ?></a>
-                                </li>
-                            <?php endfor; ?>
-                        </ul>
-                    </nav>
+                            <ul class="pagination justify-content-center">
+                                <?php for ($i = 1; $i <= $totalPages; $i++) : ?>
+                                    <li class="page-item <?php echo $i == $page ? 'active' : ''; ?>">
+                                        <a class="page-link" href="?page=<?php echo $i; ?>&search=<?php echo $search; ?>"><?php echo $i; ?></a>
+                                    </li>
+                                <?php endfor; ?>
+                            </ul>
+                        </nav>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"
-        integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe"
-        crossorigin="anonymous"></script>
-</body>
-<script>
-const hamBurger = document.querySelector(".toggle-btn");
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe" crossorigin="anonymous"></script>
+    <script>
+        const hamBurger = document.querySelector(".toggle-btn");
 
-hamBurger.addEventListener("click", function () {
-  document.querySelector("#sidebar").classList.toggle("expand");
-});
-</script>
+        hamBurger.addEventListener("click", function() {
+            document.querySelector("#sidebar").classList.toggle("expand");
+        });
+    </script>
+</body>
+
 </html>

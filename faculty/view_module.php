@@ -124,7 +124,7 @@ $totalPages = ceil($totalCount / $recordsPerPage);
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <iframe id="moduleIframe" style="width: 100%; height: 80vh;" frameborder="0"></iframe> <!-- Set height to 80vh (80% of the viewport height) -->
+                <iframe id="moduleIframe" style="width: 100%; height: 75vh;" frameborder="0"></iframe> 
             </div>
         </div>
     </div>

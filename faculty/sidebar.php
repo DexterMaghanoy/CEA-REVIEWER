@@ -56,6 +56,7 @@
                 <span>Report</span>
             </a>
         </li>
+     
     </ul>
     <div class="sidebar-footer">
         <a href="../logout.php" class="sidebar-link">

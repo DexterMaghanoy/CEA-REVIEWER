@@ -42,6 +42,7 @@ if (isset($_SESSION['program_id']) && isset($_SESSION['year_id'])) {
     header("Location: ../login.php");
     exit();
 }
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -80,13 +81,18 @@ if (isset($_SESSION['program_id']) && isset($_SESSION['year_id'])) {
                                     <th scope="col">No.</th>
                                     <th scope="col">Module Title</th>
                                     <th scope="col">Action</th>
+                                    <th scope="col">Attempts</th>
+                                    <th scope="col">Result</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <?php if ($result->rowCount() > 0) : ?>
-                                    <?php foreach ($result as $row) : ?>
+                                <?php
+                                $counter = 1; // Initialize counter variable outside the loop
+                                if ($result->rowCount() > 0) :
+                                    foreach ($result as $row) :
+                                ?>
                                         <tr>
-                                            <td><?php echo $row['module_number']; ?></td>
+                                            <td><?php echo $counter; ?></td>
                                             <td>
                                                 <a href="#" class="view-module-btn" data-bs-toggle="modal" data-bs-target="#moduleModal" data-module-id="<?php echo $row['module_id']; ?>"><?php echo $row['module_name']; ?></a>
                                             </td>
@@ -100,50 +106,144 @@ if (isset($_SESSION['program_id']) && isset($_SESSION['year_id'])) {
                                                 $stmt->execute();
                                                 $resultCount = $stmt->fetch(PDO::FETCH_ASSOC)['count'];
 
-                                                // If the user has completed the quiz, disable the link
+                                                // Retrieve the user's score for the module if attempted
                                                 if ($resultCount > 0) {
-                                                    echo '<button style="margin-left: 5px;" class="btn btn-secondary btn-sm" disabled><i class="lni lni-invention"></i></button>';
-                                                    echo '<button style="margin-left: 5px;" class="btn btn-warning btn-sm action-test-btn eye-icon-btn" data-bs-toggle="modal" data-bs-target="question-answers.php" data-module-id="' . $row['module_id'] . '">';
-                                                    echo '<i class="lni lni-eye eye-icon text-white"></i></button>';
-                                                } else {
-                                                    // Otherwise, display the link normally
-                                                    echo '<button style="margin-left: 5px;" class="btn btn-success btn-sm action-test-btn" data-bs-toggle="modal" data-bs-target="question.php" data-module-id="' . $row['module_id'] . '"><i class="lni lni-invention"></i></button>';
-                                                    echo '<button style="margin-left: 5px;" class="btn btn-warning btn-sm action-test-btn eye-icon-btn" data-bs-toggle="modal" data-bs-target="question-answers.php" data-module-id="' . $row['module_id'] . '"disabled>';
-                                                    echo '<i class="lni lni-eye eye-icon text-white"></i></button>';
-                                                }
-                                                
+                                                    $sql = "SELECT tbl_result.result_score, COUNT(tbl_question.question_id) AS total_questions
+                                                    FROM tbl_result 
+                                                    LEFT JOIN tbl_question ON tbl_result.module_id = tbl_question.module_id
+                                                    WHERE tbl_result.result_id = (
+                                                        SELECT MAX(result_id) 
+                                                        FROM tbl_result 
+                                                        WHERE module_id = :module_id 
+                                                        AND stud_id = :stud_id
+                                                    )";
 
+
+                                                    $stmt = $conn->prepare($sql);
+                                                    $stmt->bindParam(":module_id", $row['module_id'], PDO::PARAM_INT);
+                                                    $stmt->bindParam(":stud_id", $_SESSION['stud_id'], PDO::PARAM_INT);
+                                                    $stmt->execute();
+                                                    $result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+                                                    // Check if the result exists and calculate percentage
+                                                    if ($result) {
+                                                        $resultScore = $result['result_score'];
+                                                        $totalQuestions = $result['total_questions'];
+
+                                                        if ($totalQuestions > 0) {
+                                                            $percentage = ($resultScore / $totalQuestions) * 100;
+                                                            if ($percentage > 50) {
+                                                                // Disable Take Quiz button
+                                                                echo '<button style="margin-left: 5px;" class="btn btn-success btn-sm action-test-btn" data-bs-toggle="modal" data-bs-target="question.php" data-module-id="' . $row['module_id'] . '" disabled><i class="lni lni-invention"></i></button>';
+
+                                                                // Enable View Answers button
+                                                                echo '<button style="margin-left: 5px;" class="btn btn-warning btn-sm action-test-btn eye-icon-btn" data-bs-toggle="modal" data-bs-target="question-answers.php" data-module-id="' . $row['module_id'] . '">';
+                                                                echo '<i class="lni lni-eye eye-icon text-white"></i></button>';
+                                                            } else {
+                                                                // Disable both buttons if not passed
+                                                                echo '<button style="margin-left: 5px;" class="btn btn-success btn-sm action-test-btn" data-bs-toggle="modal" data-bs-target="question.php" data-module-id="' . $row['module_id'] . '"><i class="lni lni-invention"></i></button>';
+                                                                echo '<button style="margin-left: 5px;" class="btn btn-warning btn-sm action-test-btn eye-icon-btn" data-bs-toggle="modal" data-bs-target="question-answers.php" data-module-id="' . $row['module_id'] . '" disabled>';
+                                                                echo '<i class="lni lni-eye eye-icon text-white"></i></button>';
+                                                            }
+                                                        } else {
+                                                            echo "No questions available";
+                                                        }
+                                                    } else {
+                                                        echo "No result found";
+                                                    }
+                                                } else {
+                                                    // For the first iteration, enable both buttons
+                                                    if ($counter == 1) {
+                                                        echo '<button style="margin-left: 5px;" class="btn btn-success btn-sm action-test-btn" data-bs-toggle="modal" data-bs-target="question.php" data-module-id="' . $row['module_id'] . '"><i class="lni lni-invention"></i></button>';
+                                                        echo '<button style="margin-left: 5px;" class="btn btn-warning btn-sm action-test-btn eye-icon-btn" data-bs-toggle="modal" data-bs-target="question-answers.php" data-module-id="' . $row['module_id'] . '"disabled>';
+                                                        echo '<i class="lni lni-eye eye-icon text-white"></i></button>';
+                                                    } else {
+                                                        // For subsequent iterations, disable both buttons
+                                                        echo '<button style="margin-left: 5px;" class="btn btn-success btn-sm action-test-btn" data-bs-toggle="modal" data-bs-target="question.php" data-module-id="' . $row['module_id'] . '"><i class="lni lni-invention"></i></button>';
+                                                        echo '<button style="margin-left: 5px;" class="btn btn-warning btn-sm action-test-btn eye-icon-btn" data-bs-toggle="modal" data-bs-target="question-answers.php" data-module-id="' . $row['module_id'] . '"disabled>';
+                                                        echo '<i class="lni lni-eye eye-icon text-white"></i></button>';
+                                                    }
+                                                }
                                                 ?>
 
-
-
-
                                             </td>
+                                            <td>
+                                                <?php
+                                                // Display the attempt count
+                                                echo $resultCount;
+                                                ?>
+                                            </td>
+                                            <td>
+                                                <?php
+                                                // Check if the user has attempted the quiz
+                                                if ($resultCount > 0) {
+                                                    // Retrieve the user's score for the module
+                                                    $sql = "SELECT tbl_result.result_score, COUNT(tbl_question.question_id) AS total_questions
+                                                    FROM tbl_result 
+                                                    LEFT JOIN tbl_question ON tbl_result.module_id = tbl_question.module_id
+                                                    WHERE tbl_result.module_id = :module_id 
+                                                    AND tbl_result.stud_id = :stud_id
+                                                    AND tbl_result.result_id = (
+                                                        SELECT MAX(result_id) 
+                                                        FROM tbl_result 
+                                                        WHERE module_id = :module_id 
+                                                        AND stud_id = :stud_id
+                                                    )";
 
 
+                                                    $stmt = $conn->prepare($sql);
+                                                    $stmt->bindParam(":module_id", $row['module_id'], PDO::PARAM_INT);
+                                                    $stmt->bindParam(":stud_id", $_SESSION['stud_id'], PDO::PARAM_INT);
+                                                    $stmt->execute();
+                                                    $result = $stmt->fetch(PDO::FETCH_ASSOC);
 
+                                                    // Check if the result exists and calculate percentage
+                                                    if ($result) {
+                                                        $resultScore = $result['result_score'];
+                                                        $totalQuestions = $result['total_questions'];
+
+                                                        if ($totalQuestions > 0) {
+                                                            $percentage = ($resultScore / $totalQuestions) * 100;
+                                                            if ($percentage >= 50) {
+                                                                echo "Passed";
+                                                            } else {
+                                                                echo "Failed";
+                                                            }
+                                                        } else {
+                                                            echo "No questions available";
+                                                        }
+                                                    } else {
+                                                        echo "No result found";
+                                                    }
+                                                } else {
+                                                    echo "No attempt";
+                                                }
+                                                ?>
+                                            </td>
                                         </tr>
-                                    <?php endforeach; ?>
-                            </tbody>
-                        </table>
-                    <?php else : ?>
-                        <div class="text-center mb-4">
-                            <h1>No records found for module.</h1>
-                        </div>
-                    <?php endif; ?>
-                    </tbody>
-                    </table>
+                                <?php
+                                        $counter++; // Increment the counter
+                                    endforeach;
+                                endif;
+                                ?>
 
-                    <!-- Pagination -->
-                    <nav aria-label="Page navigation">
-                        <ul class="pagination justify-content-center">
-                            <?php for ($i = 1; $i <= $totalPages; $i++) : ?>
-                                <li class="page-item <?php echo $i == $page ? 'active' : ''; ?>">
-                                    <a class="page-link" href="?page=<?php echo $i; ?>&course_id=<?php echo $course_id; ?>"><?php echo $i; ?></a>
-                                </li>
-                            <?php endfor; ?>
-                        </ul>
-                    </nav>
+
+                            </tbody>
+
+
+                        </table>
+
+
+                        <!-- Pagination -->
+                        <nav aria-label="Page navigation">
+                            <ul class="pagination justify-content-center">
+                                <?php for ($i = 1; $i <= $totalPages; $i++) : ?>
+                                    <li class="page-item <?php echo $i == $page ? 'active' : ''; ?>">
+                                        <a class="page-link" href="?page=<?php echo $i; ?>&course_id=<?php echo $course_id; ?>"><?php echo $i; ?></a>
+                                    </li>
+                                <?php endfor; ?>
+                            </ul>
+                        </nav>
                     </div>
                 </div>
             </div>
@@ -187,14 +287,14 @@ if (isset($_SESSION['program_id']) && isset($_SESSION['year_id'])) {
 
         // Handle action test button clicks
         actionTestButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            const moduleId = this.getAttribute('data-module-id');
-            const targetPage = this.getAttribute('data-bs-target');
-            if (targetPage) {
-                window.location.href = targetPage + `?module_id=${moduleId}`;
-            }
+            button.addEventListener('click', function() {
+                const moduleId = this.getAttribute('data-module-id');
+                const targetPage = this.getAttribute('data-bs-target');
+                if (targetPage) {
+                    window.location.href = targetPage + `?module_id=${moduleId}`;
+                }
+            });
         });
-    });
         // Optional: JavaScript for toggling the sidebar
         const hamBurger = document.querySelector(".toggle-btn");
 
@@ -205,149 +305,5 @@ if (isset($_SESSION['program_id']) && isset($_SESSION['year_id'])) {
 
 
 </body>
-<style>
-    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
-
-    ::after,
-    ::before {
-        box-sizing: border-box;
-        margin: 0;
-        padding: 0;
-    }
-
-    a {
-        text-decoration: none;
-    }
-
-    li {
-        list-style: none;
-    }
-
-    h1 {
-        font-weight: 600;
-        font-size: 1.5rem;
-    }
-
-    body {
-        font-family: 'Poppins', sans-serif;
-    }
-
-    .wrapper {
-        display: flex;
-    }
-
-    .main {
-        min-height: 100vh;
-        width: 100%;
-        overflow: hidden;
-        transition: all 0.35s ease-in-out;
-        background-color: #fafbfe;
-    }
-
-    #sidebar {
-        width: 70px;
-        min-width: 70px;
-        z-index: 1000;
-        transition: all .25s ease-in-out;
-        background-color: #0e2238;
-        display: flex;
-        flex-direction: column;
-    }
-
-    #sidebar.expand {
-        width: 260px;
-        min-width: 260px;
-    }
-
-    .toggle-btn {
-        background-color: transparent;
-        cursor: pointer;
-        border: 0;
-        padding: 1rem 1.5rem;
-    }
-
-    .toggle-btn i {
-        font-size: 1.5rem;
-        color: #FFF;
-    }
-
-    .sidebar-logo {
-        margin: auto 0;
-    }
-
-    .sidebar-logo a {
-        color: #FFF;
-        font-size: 1.15rem;
-        font-weight: 600;
-    }
-
-    #sidebar:not(.expand) .sidebar-logo,
-    #sidebar:not(.expand) a.sidebar-link span {
-        display: none;
-    }
-
-    .sidebar-nav {
-        padding: 2rem 0;
-        flex: 1 1 auto;
-    }
-
-    a.sidebar-link {
-        padding: .625rem 1.625rem;
-        color: #FFF;
-        display: block;
-        font-size: 0.9rem;
-        white-space: nowrap;
-        border-left: 3px solid transparent;
-    }
-
-    .sidebar-link i {
-        font-size: 1.1rem;
-        margin-right: .75rem;
-    }
-
-    a.sidebar-link:hover {
-        background-color: rgba(255, 255, 255, .075);
-        border-left: 3px solid #3b7ddd;
-    }
-
-    .sidebar-item {
-        position: relative;
-    }
-
-    #sidebar:not(.expand) .sidebar-item .sidebar-dropdown {
-        position: absolute;
-        top: 0;
-        left: 70px;
-        background-color: #0e2238;
-        padding: 0;
-        min-width: 15rem;
-        display: none;
-    }
-
-    #sidebar:not(.expand) .sidebar-item:hover .has-dropdown+.sidebar-dropdown {
-        display: block;
-        max-height: 15em;
-        width: 100%;
-        opacity: 1;
-    }
-
-    #sidebar.expand .sidebar-link[data-bs-toggle="collapse"]::after {
-        border: solid;
-        border-width: 0 .075rem .075rem 0;
-        content: "";
-        display: inline-block;
-        padding: 2px;
-        position: absolute;
-        right: 1.5rem;
-        top: 1.4rem;
-        transform: rotate(-135deg);
-        transition: all .2s ease-out;
-    }
-
-    #sidebar.expand .sidebar-link[data-bs-toggle="collapse"].collapsed::after {
-        transform: rotate(45deg);
-        transition: all .2s ease-out;
-    }
-</style>
 
 </html>

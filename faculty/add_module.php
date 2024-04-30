@@ -13,11 +13,10 @@ if(isset($_SESSION['program_id'])){
 if (isset($_POST['save'])) {
 
     $course_id = $_POST['course_id'];
-    $module_number = $_POST['module_number'];
     $module_name = $_POST['module_name'];
     $module_file = file_get_contents($_FILES["module_file"]["tmp_name"]);
 
-    if (empty($course_id) || empty($module_number) || empty($module_name) || empty($module_file)) {
+    if (empty($course_id) || empty($module_name) || empty($module_file)) {
         echo '<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>';
         echo '<script src="https://cdn.jsdelivr.net/npm/sweetalert2@10.16.6/dist/sweetalert2.min.js"></script>';
         echo '<link href="https://cdn.jsdelivr.net/npm/sweetalert2@10.16.6/dist/sweetalert2.min.css" rel="stylesheet">';
@@ -31,7 +30,10 @@ if (isset($_POST['save'])) {
             });
         </script>';
     } else {
-            // Insert new program
+            // Generate module number automatically
+            $module_number = generateModuleNumber(); // Call a function to generate module number
+
+            // Insert new module
             $sql = "INSERT INTO `tbl_module`(`course_id`, `module_number`, `module_name`, `module_file`)
              VALUES (:course_id,:module_number,:module_name,:module_file)";
             $stmt = $conn->prepare($sql);
@@ -70,6 +72,19 @@ if (isset($_POST['save'])) {
             }
         }
     }
+
+// Function to generate module number
+function generateModuleNumber() {
+    // You can implement your logic here to generate the module number dynamically
+    // For example, you can query the database to get the last module number and increment it
+    // Here's a simple example:
+    // $lastModuleNumber = 100; // Example last module number
+    // $newModuleNumber = $lastModuleNumber + 1;
+    // return $newModuleNumber;
+    // Modify this logic based on your requirements
+    // For simplicity, let's return a static value for now
+    return 1;
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -100,12 +115,6 @@ include 'sidebar.php';
             <div class="col-md-5">
                 <form action="add_module.php" method="post" enctype="multipart/form-data">
 
-                <!-- Module Number Input -->
-                <div class="mb-3">
-                        <label for="module_number" class="form-label">Module No.</label>
-                        <input type="number" class="form-control" id="module_number" name="module_number" required>
-                    </div>
-
                     <!-- Module Title Input -->
                     <div class="mb-3">
                         <label for="module_name" class="form-label">Module Title</label>
@@ -120,7 +129,8 @@ include 'sidebar.php';
                     </div>
                     
                     <!-- Hidden Employee ID and Submit Button -->
-                    <input type="hidden" name="course_id" value="<?php echo $_GET['course_id']; ?>">
+                    <input type="hidden" name="course_id" value="<?php echo isset($_GET['course_id']) ? $_GET['course_id'] : ''; ?>">
+
                     <input type="submit" class="btn btn-success mt-2" value="Save" name="save">
                 </form>
             </div>
