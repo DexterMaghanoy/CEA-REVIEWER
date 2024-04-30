@@ -103,10 +103,6 @@ include 'sidebar.php';
                     <h6>Username</h6>
                     <p class="text-muted"><?php echo $user['stud_no']; ?></p>
                   </div>
-                  <div class="col-6 mb-3">
-                    <h6>Password</h6>
-                    <p class="text-muted"><?php echo $user['stud_password']; ?></p>
-                  </div>
                 </div>
               </div>
             </div>
