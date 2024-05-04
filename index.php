@@ -139,6 +139,9 @@ if (isset($_POST['submit'])) {
             transform: translateY(-50%);
             cursor: pointer;
         }
+        /* .wrapper {
+            height: 100%;
+        } */
     </style>
 </head>
 <body class="login ">

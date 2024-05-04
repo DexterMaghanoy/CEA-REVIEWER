@@ -5,7 +5,7 @@ require("../api/db-connect.php");
 if (isset($_SESSION['program_id'])) {
     $program_id = $_SESSION['program_id'];
 } else {
-    header("Location: ../login.php");
+    header("Location: ../index.php");
     exit();
 }
 

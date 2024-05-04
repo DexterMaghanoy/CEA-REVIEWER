@@ -6,7 +6,7 @@ if (isset($_SESSION['program_id'])) {
     $program_id = $_SESSION['program_id'];
     $type_id = 3;
 } else {
-    header("Location: ../login.php");
+    header("Location: ../index.php");
     exit();
 }
 

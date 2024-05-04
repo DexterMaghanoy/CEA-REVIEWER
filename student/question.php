@@ -18,32 +18,26 @@ if (isset($_SESSION['program_id']) && isset($_SESSION['year_id'])) {
     $courses = $result->fetchAll(PDO::FETCH_ASSOC);
 } else {
     // Redirect to login page if session data is not set
-    header("Location: ../login.php");
+    header("Location: ../index.php");
     exit();
 }
 
-// Function to sanitize user input
 function sanitizeInput($input)
 {
     return htmlspecialchars(trim($input), ENT_QUOTES, 'UTF-8');
 }
 
-// Function to handle database errors
 function handleDatabaseError($errorMessage)
 {
-    // Log the error or display a generic message
     error_log("Database Error: " . $errorMessage);
-    // Redirect the user to an error page
     header("Location: error.php");
     exit();
 }
 
-// Ensure module_id is provided
 if (!isset($_GET['module_id'])) {
     handleDatabaseError("Module ID is not provided.");
 }
 
-// Fetching questions from the database
 $module_id = sanitizeInput($_GET['module_id']);
 
 $sql = "SELECT * FROM tbl_question WHERE module_id = :module_id";
@@ -54,10 +48,8 @@ if (!$stmt->execute()) {
 }
 $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// Set a flag to indicate if questions are found
 $questionsFound = !empty($result);
 
-// Set a flag to check if all questions are answered
 $allQuestionsAnswered = false;
 if ($questionsFound) {
     $allQuestionsAnswered = true;
@@ -90,9 +82,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         // Loop through each question and process the answers
         foreach ($answers as $question_id => $answer) {
             // Fetch the maximum attempt_id for the current combination
-            $sqlMaxAttempt = "SELECT COALESCE(MAX(attempt_id), 0) AS max_attempt FROM tbl_quiz_answers WHERE quiz_id = :quiz_id AND student_id = :student_id AND question_id = :question_id";
+            $sqlMaxAttempt = "SELECT COALESCE(MAX(attempt_id), 0) AS max_attempt FROM tbl_quiz_answers WHERE module_id = :module_id AND student_id = :student_id AND question_id = :question_id";
             $stmtMaxAttempt = $conn->prepare($sqlMaxAttempt);
-            $stmtMaxAttempt->bindParam(":quiz_id", $module_id, PDO::PARAM_INT);
+            $stmtMaxAttempt->bindParam(":module_id", $module_id, PDO::PARAM_INT);
             $stmtMaxAttempt->bindParam(":student_id", $stud_id, PDO::PARAM_INT);
             $stmtMaxAttempt->bindParam(":question_id", $question_id, PDO::PARAM_INT);
             $stmtMaxAttempt->execute();
@@ -110,15 +102,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             if ($answer === $correct_answer) {
                 $score++;
             }
-
+            $quiz_type = 1;
             // Insert the answer into tbl_quiz_answers with the new attempt_id
-            $sqlInsertAnswer = "INSERT INTO tbl_quiz_answers (quiz_id, student_id, question_id, chosen_answer, attempt_id) VALUES (:quiz_id, :student_id, :question_id, :chosen_answer, :attempt_id)";
+            $sqlInsertAnswer = "INSERT INTO tbl_quiz_answers (module_id, student_id, question_id, chosen_answer, attempt_id, quiz_type) VALUES (:module_id, :student_id, :question_id, :chosen_answer, :attempt_id, :quiz_type)";
             $stmtInsertAnswer = $conn->prepare($sqlInsertAnswer);
-            $stmtInsertAnswer->bindParam(":quiz_id", $module_id, PDO::PARAM_INT);
+            $stmtInsertAnswer->bindParam(":module_id", $module_id, PDO::PARAM_INT);
             $stmtInsertAnswer->bindParam(":student_id", $stud_id, PDO::PARAM_INT);
             $stmtInsertAnswer->bindParam(":question_id", $question_id, PDO::PARAM_INT);
             $stmtInsertAnswer->bindParam(":chosen_answer", $answer, PDO::PARAM_STR);
             $stmtInsertAnswer->bindParam(":attempt_id", $new_attempt_id, PDO::PARAM_INT);
+            $stmtInsertAnswer->bindParam(":quiz_type", $quiz_type, PDO::PARAM_INT);
             if (!$stmtInsertAnswer->execute()) {
                 handleDatabaseError("Failed to insert quiz answer into the database.");
             }
@@ -127,13 +120,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
 
         // Insert the result into tbl_result
-        $sql = "INSERT INTO tbl_result (module_id, stud_id, result_score, total_questions) 
-                VALUES (:module_id, :stud_id, :result_score, :total_questions)";
+        $quiz_type = 1;
+        $sql = "INSERT INTO tbl_result (module_id, stud_id, result_score, total_questions, quiz_type) 
+                VALUES (:module_id, :stud_id, :result_score, :total_questions, :quiz_type)";
         $stmt = $conn->prepare($sql);
         $stmt->bindParam(":module_id", $module_id, PDO::PARAM_INT);
         $stmt->bindParam(":stud_id", $stud_id, PDO::PARAM_INT);
         $stmt->bindParam(":result_score", $score, PDO::PARAM_INT);
         $stmt->bindParam(":total_questions", $total_questions, PDO::PARAM_INT); // Pass the total questions attempted
+        $stmt->bindParam(":quiz_type", $quiz_type, PDO::PARAM_INT);
         if (!$stmt->execute()) {
             handleDatabaseError("Failed to insert result into the database.");
         }
@@ -149,7 +144,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     text: "Good Job!",
                     icon: "success"
                 }).then(() => {
-                    window.location.href = "index.php";
+                    window.location.href = "dashboard.php";
                 });
             });
         </script>';
@@ -166,7 +161,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quiz</title>
+    <title>Questions</title>
     <!-- Include Bootstrap CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css">
     <!-- Include FontAwesome for icons -->
@@ -174,10 +169,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <link href="https://cdn.lineicons.com/4.0/lineicons.css" rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous">
     <link rel="shortcut icon" href="../img/cea_logo.png" type="image/x-icon">
-    <link rel="stylesheet" href="quiz.css" type="text/css">
     <link rel="stylesheet" href="style.css" type="text/css">
     <style>
-
+        .question-text {
+            font-size: 20px;
+            /* Adjust the font size as needed */
+            font-weight: bold;
+            /* Optionally make the text bold */
+            margin-bottom: 10px;
+            /* Add some space between questions */
+        }
     </style>
 </head>
 
@@ -186,129 +187,115 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <?php
         include 'sidebar.php';
         ?>
-        <main id="content">
-            <form method="post">
-                <input type="hidden" name="user_id" value="<?php echo isset($_SESSION['user_id']) ? $_SESSION['user_id'] : ''; ?>">
-                <div class="mb-3">
-                    <h1 id="quiz-title">QUIZ</h1>
-                </div>
-                <?php
-                $noQuestionsFound = empty($result); // Check if no questions are found
-                $allQuestionsAnswered = $questionsFound && $allQuestionsAnswered; // Check if all questions are answered
-                ?>
-                <form method="post">
-                    <input type="hidden" name="user_id" value="<?php echo isset($_SESSION['user_id']) ? $_SESSION['user_id'] : ''; ?>">
+        <div class="container">
+            <div class="row justify-content-center mt-5">
+                <div class="col-lg-8">
+                    <br> <br>
+                    <h1 id="quiz-title" class="text-center mb-4">Questions</h1>
+                    <br> <br>
+                    <form id="quiz-form" method="post">
+                        <input type="hidden" name="user_id" value="<?php echo isset($_SESSION['user_id']) ? $_SESSION['user_id'] : ''; ?>">
 
-                    <?php if (!empty($result)) : ?>
-                        <?php $counter = 1; ?>
-                        <?php foreach ($result as $question) : ?>
-                            <div class="question-box">
-                                <div class="question-text"><?php echo $counter . ". " . sanitizeInput($question['question_text']); ?></div>
-                                <?php foreach (['A', 'B', 'C', 'D'] as $option) : ?>
-                                    <?php $optionKey = 'question_' . $option; ?>
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="radio" name="answer_<?php echo $question['question_id']; ?>" id="option<?php echo $option; ?>_<?php echo $question['question_id']; ?>" value="<?php echo sanitizeInput($question[$optionKey]); ?>">
-                                        <label class="form-check-label" for="option<?php echo $option; ?>_<?php echo $question['question_id']; ?>"><?php echo sanitizeInput($question[$optionKey]); ?></label>
-                                    </div>
-                                <?php endforeach; ?>
+                        <?php if (!empty($result)) : ?>
+                            <?php $counter = 0; ?>
+                            <?php foreach ($result as $key => $question) : ?>
+                                <div class="question-box <?php echo $counter === 0 ? '' : 'd-none'; ?>">
+                                    <div class="question-text"><?php echo $counter + 1 . ". " . sanitizeInput($question['question_text']); ?></div>
+                                    <?php foreach (['A', 'B', 'C', 'D'] as $option) : ?>
+                                        <?php $optionKey = 'question_' . $option; ?>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="answer_<?php echo $question['question_id']; ?>" id="option<?php echo $option; ?>_<?php echo $question['question_id']; ?>" value="<?php echo sanitizeInput($question[$optionKey]); ?>">
+                                            <label class="form-check-label" for="option<?php echo $option; ?>_<?php echo $question['question_id']; ?>"><?php echo sanitizeInput($question[$optionKey]); ?></label>
+                                        </div>
+                                    <?php endforeach; ?>
+                                </div>
+                                <?php $counter++; ?>
+                            <?php endforeach; ?>
+                            <br> <br>
+                            <div class="text-end">
+                                <button id="submit-btn" type="submit" class="btn btn-primary">Submit</button>
+                                <button id="next-btn" class="btn btn-primary d-none" type="button">Next</button>
                             </div>
-                            <?php $counter++; ?>
-                        <?php endforeach; ?>
-                    <?php else : ?>
-                        <p>No questions found.</p>
-                        <?php $allQuestionsAnswered = false; // No questions found, so set this to false 
-                        ?>
-                    <?php endif; ?>
-                    <button id="submit-btn" type="submit" class="btn btn-primary" <?php if ($noQuestionsFound || !$allQuestionsAnswered) echo 'hidden'; ?>>Submit</button>
-                </form>
+                        <?php else : ?>
+                            <p>No questions found.</p>
+                        <?php endif; ?>
+                    </form>
+                    <br>
+                    <br>
+                </div>
+            </div>
+        </div>
 
-                <br>
-                <br>
-        </main>
-        <!-- Include Bootstrap 5 JS and Popper.js -->
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    </div>
 </body>
+
 
 </html>
 
-
-
-
 <script>
-    // Function to check if all questions are answered
-    function checkAllQuestionsAnswered() {
-        const questions = document.querySelectorAll('.question-box');
-        for (let question of questions) {
-            const radioButtons = question.querySelectorAll('input[type="radio"]');
-            let answered = false;
-            for (let radioButton of radioButtons) {
-                if (radioButton.checked) {
-                    answered = true;
-                    break;
-                }
-            }
-            if (!answered) {
-                return false; // Not all questions answered
-            }
-        }
-        return true; // All questions answered
-    }
-
-    // Function to enable or disable the submit button based on questions answered
-    function updateSubmitButton() {
-        const submitBtn = document.getElementById('submit-btn');
-        if (checkAllQuestionsAnswered()) {
-            submitBtn.removeAttribute('disabled');
-        } else {
-            submitBtn.setAttribute('disabled', 'disabled');
-        }
-    }
-
-    // Event listener to check and update submit button status
-    document.addEventListener('DOMContentLoaded', function() {
-        updateSubmitButton();
-        const radioButtons = document.querySelectorAll('input[type="radio"]');
-        for (let radioButton of radioButtons) {
-            radioButton.addEventListener('change', updateSubmitButton);
-        }
-    });
-
     const hamBurger = document.querySelector(".toggle-btn");
+
     hamBurger.addEventListener("click", function() {
         document.querySelector("#sidebar").classList.toggle("expand");
     });
+</script>
 
-    // Function to check if any question is answered
-    function anyQuestionAnswered() {
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
         const questions = document.querySelectorAll('.question-box');
-        for (let question of questions) {
-            const radioButtons = question.querySelectorAll('input[type="radio"]');
-            for (let radioButton of radioButtons) {
-                if (radioButton.checked) {
-                    return true; // At least one question answered
-                }
-            }
-        }
-        return false; // No question answered
-    }
+        const nextButton = document.getElementById('next-btn');
+        const submitButton = document.getElementById('submit-btn');
+        let currentQuestionIndex = 0;
 
-    // Function to update the visibility of the submit button
-    function updateSubmitButtonVisibility() {
-        const submitBtn = document.getElementById('submit-btn');
-        const noQuestionsFound = <?php echo $noQuestionsFound ? 'true' : 'false'; ?>;
-        if (!noQuestionsFound && anyQuestionAnswered()) {
-            submitBtn.removeAttribute('hidden');
-        } else {
-            submitBtn.setAttribute('hidden', 'hidden');
+        function showQuestion(index) {
+            questions.forEach((question, i) => {
+                question.classList.toggle('d-none', i !== index);
+            });
         }
-    }
 
-    // Event listener to check and update submit button visibility
-    document.addEventListener('DOMContentLoaded', function() {
+        function updateButtonVisibility() {
+            nextButton.classList.toggle('d-none', currentQuestionIndex === questions.length - 1);
+            submitButton.classList.toggle('d-none', currentQuestionIndex !== questions.length - 1);
+        }
+
+        function isAnyOptionSelected() {
+            const currentQuestion = questions[currentQuestionIndex];
+            return currentQuestion.querySelector('input[type="radio"]:checked') !== null;
+        }
+
+        function updateNextButtonVisibility() {
+            nextButton.disabled = !isAnyOptionSelected();
+        }
+
+        function updateSubmitButtonVisibility() {
+            submitButton.disabled = !isAnyOptionSelected();
+        }
+
+        nextButton.addEventListener('click', function() {
+            currentQuestionIndex++;
+            showQuestion(currentQuestionIndex);
+            updateButtonVisibility();
+            updateNextButtonVisibility();
+            updateSubmitButtonVisibility();
+        });
+
+        questions.forEach(question => {
+            question.addEventListener('change', function() {
+                updateNextButtonVisibility();
+                updateSubmitButtonVisibility();
+            });
+        });
+
+        showQuestion(currentQuestionIndex);
+        updateButtonVisibility();
+        updateNextButtonVisibility();
         updateSubmitButtonVisibility();
-        const radioButtons = document.querySelectorAll('input[type="radio"]');
-        for (let radioButton of radioButtons) {
-            radioButton.addEventListener('change', updateSubmitButtonVisibility);
-        }
     });
 </script>
+
+
+
+<!-- Include Bootstrap 5 JS and Popper.js -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>

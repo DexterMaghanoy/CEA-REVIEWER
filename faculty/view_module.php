@@ -6,7 +6,7 @@ require '../api/db-connect.php';
 if (isset($_SESSION['program_id'])) {
     $program_id = $_SESSION['program_id'];
 } else {
-    header("Location: ../login.php");
+    header("Location: ../index.php");
     exit();
 }
 
@@ -30,8 +30,42 @@ $countStmt->bindParam(':course_id', $course_id, PDO::PARAM_INT);
 $countStmt->execute();
 $totalCount = $countStmt->fetch(PDO::FETCH_ASSOC)['total'];
 $totalPages = ceil($totalCount / $recordsPerPage);
-?>
 
+// Check if the request is a POST request and handle accordingly
+if (isset($_POST['moduleId']) && isset($_POST['moduleStatus'])) {
+    $moduleId = $_POST['moduleId'];
+    $moduleStatus = $_POST['moduleStatus'];
+
+    // Update module status in the database
+    $updateSql = "UPDATE tbl_module SET module_status = :moduleStatus WHERE module_id = :moduleId";
+    $updateStmt = $conn->prepare($updateSql);
+    $updateStmt->bindParam(':moduleStatus', $moduleStatus, PDO::PARAM_INT);
+    $updateStmt->bindParam(':moduleId', $moduleId, PDO::PARAM_INT);
+    $updateSuccess = $updateStmt->execute();
+
+    // Check if the update was successful
+    if ($updateSuccess) {
+        // Fetch the updated module status
+        $fetchSql = "SELECT module_status FROM tbl_module WHERE module_id = :moduleId";
+        $fetchStmt = $conn->prepare($fetchSql);
+        $fetchStmt->bindParam(':moduleId', $moduleId, PDO::PARAM_INT);
+        $fetchStmt->execute();
+        $moduleData = $fetchStmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($moduleData) {
+            // Include the module status in the response
+            echo json_encode(['success' => true, 'moduleStatus' => $moduleData['module_status']]);
+        } else {
+            // Handle error if module data not found
+            echo json_encode(['success' => false, 'message' => 'Failed to fetch updated module status']);
+        }
+    } else {
+        echo json_encode(['success' => false, 'message' => 'Failed to update module status']);
+    }
+
+    exit(); // Stop further execution
+}
+?>
 
 <!DOCTYPE html>
 <html lang="en">
@@ -56,9 +90,7 @@ $totalPages = ceil($totalCount / $recordsPerPage);
 
 <body>
     <div class="wrapper">
-        <?php
-        include 'sidebar.php';
-        ?>
+        <?php include 'sidebar.php'; ?>
         <div class="main p-3">
             <div class="container">
                 <div class="row justify-content-center mt-5">
@@ -66,14 +98,14 @@ $totalPages = ceil($totalCount / $recordsPerPage);
                         <div class="text-center mb-4">
                             <h1>Module</h1>
                         </div>
-                        <a class="btn btn-outline-success btn-sm" href="add_module.php?course_id=<?php echo $course_id ?>"><i class="lni lni-plus"></i></a><br><br>
                         <table class="table table-bordered border-secondary">
-                            <caption>List of Module</caption>
+                            <caption>List of Modules</caption>
                             <thead class="table-dark">
                                 <tr>
                                     <th scope="col">No.</th>
                                     <th scope="col">Module Title</th>
                                     <th scope="col">Action</th>
+                                    <th scope="col">Status</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -82,24 +114,35 @@ $totalPages = ceil($totalCount / $recordsPerPage);
                                     <?php while ($row = $result->fetch(PDO::FETCH_ASSOC)) : ?>
                                         <tr>
                                             <td><?php echo $count++; ?></td>
+                                            <td><?php echo $row['module_name']; ?></td>
                                             <td>
-                                                <?php echo $row['module_name']; ?>
+                                                <a class="btn btn-success btn-sm view-module-btn" data-bs-toggle="modal" data-bs-target="#moduleModal" data-module-id="<?php echo $row['module_id']; ?>">
+                                                    <i class="lni lni-eye" style="font-size: 1.2rem;"></i>
+                                                </a>
+                                                <a class="btn btn-primary btn-sm" href="question.php?program_id=<?php echo $program_id ?>&module_id=<?php echo $row['module_id']; ?>&course_id=<?php echo $course_id; ?>">
+                                                    <i class="lni lni-upload" style="font-size: 1.2rem;"></i>
+                                                </a>
                                             </td>
-                                            <td>
-                                                <a class="btn btn-success btn-sm view-module-btn" data-bs-toggle="modal" data-bs-target="#moduleModal" data-module-id="<?php echo $row['module_id']; ?>">View</a>
-                                                <a class="btn btn-primary btn-sm" href="question.php?module_id=<?php echo $row['module_id']; ?>"><i class="lni lni-upload"></i></a>
-                                                <button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteModal" data-module-id="<?php echo $row['module_id']; ?>"><i class="lni lni-eraser"></i></button>
+
+                                            <td class="text-center align-middle">
+                                                <?php
+                                                $buttonType = ($row['module_status'] == 1) ? 'checked' : '';
+                                                ?>
+                                                <label class="switch m-0">
+                                                    <input id="toggleSwitch_<?php echo $row['module_id']; ?>" type="checkbox" <?php echo $buttonType; ?> onclick="toggleModuleStatus(<?php echo $row['module_id']; ?>)">
+                                                    <span class="slider round"></span>
+                                                </label>
+
                                             </td>
                                         </tr>
                                     <?php endwhile; ?>
                                 <?php else : ?>
                                     <tr>
-                                        <td colspan="3" class="text-center">No records found for module.</td>
+                                        <td colspan="5" class="text-center">No records found for modules.</td>
                                     </tr>
                                 <?php endif; ?>
                             </tbody>
                         </table>
-                        <!-- Pagination -->
                         <nav aria-label="Page navigation">
                             <ul class="pagination justify-content-center">
                                 <?php for ($i = 1; $i <= $totalPages; $i++) : ?>
@@ -115,36 +158,15 @@ $totalPages = ceil($totalCount / $recordsPerPage);
         </div>
     </div>
 
-<!-- Module Modal -->
-<div class="modal fade" id="moduleModal" tabindex="-1" aria-labelledby="moduleModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-xl"> <!-- Removed 'modal-lg' class and added 'modal-xl' class for extra-large width -->
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="moduleModalLabel">Module Details</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <iframe id="moduleIframe" style="width: 100%; height: 75vh;" frameborder="0"></iframe> 
-            </div>
-        </div>
-    </div>
-</div>
-
-
-    <!-- Delete Module Modal -->
-    <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
+    <div class="modal fade" id="moduleModal" tabindex="-1" aria-labelledby="moduleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-xl">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="deleteModalLabel">Delete Module</h5>
+                    <h5 class="modal-title" id="moduleModalLabel">Module Details</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    Are you sure you want to delete this module?
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <a id="deleteModuleButton" href="#" class="btn btn-danger">Delete</a>
+                    <iframe id="moduleIframe" style="width: 100%; height: 75vh;" frameborder="0"></iframe>
                 </div>
             </div>
         </div>
@@ -152,7 +174,6 @@ $totalPages = ceil($totalCount / $recordsPerPage);
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe" crossorigin="anonymous"></script>
     <script>
-        // JavaScript to handle passing module_id to view PDF in modal
         const viewModuleButtons = document.querySelectorAll('.view-module-btn');
         const moduleIframe = document.getElementById('moduleIframe');
 
@@ -163,13 +184,49 @@ $totalPages = ceil($totalCount / $recordsPerPage);
             });
         });
     </script>
+
     <script>
+        function toggleModuleStatus(moduleId) {
+            const toggleSwitch = document.querySelector(`#toggleSwitch_${moduleId}`);
+            const moduleStatus = toggleSwitch.checked ? 1 : 0;
+
+            const formData = new FormData();
+            formData.append('moduleId', moduleId);
+            formData.append('moduleStatus', moduleStatus);
+
+            fetch('<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => {
+                    if (response.ok) {
+                        return response.json();
+                    } else {
+                        throw new Error('Network response was not ok');
+                    }
+                })
+                .then(data => {
+                    if (data.success) {
+                        // Update the checked state of the toggle switch
+                        toggleSwitch.checked = !toggleSwitch.checked;
+                    } else {
+                        console.error('Failed to update module status');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error updating module status:', error);
+                });
+        }
+    </script>
+
+
+</body>
+
+</html>
+<script>
     const hamBurger = document.querySelector(".toggle-btn");
 
     hamBurger.addEventListener("click", function() {
         document.querySelector("#sidebar").classList.toggle("expand");
     });
 </script>
-</body>
-
-</html>

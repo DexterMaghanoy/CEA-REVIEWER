@@ -14,7 +14,7 @@ if (isset($_SESSION['program_id']) && isset($_SESSION['year_id'])) {
     $courses = $result->fetchAll(PDO::FETCH_ASSOC);
 } else {
     // Redirect to login page if session data is not set
-    header("Location: ../login.php");
+    header("Location: ../index.php");
     exit();
 }
 // Function to sanitize user input
@@ -62,6 +62,7 @@ foreach ($questions_and_answers as $item) {
 }
 ?>
 
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -74,9 +75,7 @@ foreach ($questions_and_answers as $item) {
     <!-- Include FontAwesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link href="https://cdn.lineicons.com/4.0/lineicons.css" rel="stylesheet" />
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous">
     <link rel="shortcut icon" href="../img/cea_logo.png" type="image/x-icon">
-    <link rel="stylesheet" href="quiz.css" type="text/css">
     <link rel="stylesheet" href="style.css" type="text/css">
     <style>
         .correct-answer {
@@ -93,10 +92,8 @@ foreach ($questions_and_answers as $item) {
             font-weight: bold;
         }
 
-        .attempt-separator {
-            margin-top: 20px;
-            border-top: 2px solid #ccc;
-            padding-top: 10px;
+        .attempt-table td {
+            cursor: pointer;
         }
     </style>
 </head>
@@ -104,47 +101,121 @@ foreach ($questions_and_answers as $item) {
 <body>
     <div class="wrapper">
         <?php include 'sidebar.php'; ?>
-        <main id="content">
-            <div class="mb-3">
-                <h1 id="quiz-title">Answer Key</h1>
+
+        <div class="container">
+            <div class="mb-5 mt-5">
+                <center>
+                    <h1 id="quiz-title">Answer Key</h1>
+                </center>
             </div>
+            <div class="row">
+
+            <div class="col-sm-3"></div>
+            <div class="col-sm">
+
+
             <?php if (!empty($grouped_questions_and_answers)) : ?>
+                <table style="text-align: center;" class="table table-hover attempt-table">
+                    <tbody>
+                        <?php $attemptCounter = 1; ?>
+                        <?php $totalAttempts = count($grouped_questions_and_answers); ?>
+                        <?php foreach ($grouped_questions_and_answers as $questions_and_answers) : ?>
+                            <tr class="attempt-row" data-toggle="modal" data-target="#attemptModal<?php echo $attemptCounter; ?>" style="border: 1px solid #dee2e6; padding: 5px;">
+                                <td class="attempt-cell">
+                                    Attempt <?php echo $attemptCounter; ?>
+                                    <?php if ($attemptCounter !== $totalAttempts) : ?>
+                                        <span style="color: red; font-size: 30px; float: right;">×</span>
+                                    <?php else : ?>
+                                        <span style="color: green; font-size: 25px; float: right;">✔</span>
+                                    <?php endif; ?>
+                                </td>
+                            </tr>
+                            <?php $attemptCounter++; ?>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+
+
+                <!-- Modal -->
                 <?php $attemptCounter = 1; ?>
                 <?php foreach ($grouped_questions_and_answers as $questions_and_answers) : ?>
-                    <div class="attempt-separator">
-                    <br>
-                        <h2>Attempt <?php echo $attemptCounter++; ?></h2>
-                        <br>
-                    </div>
-                    <?php foreach ($questions_and_answers as $question) : ?>
-                        <div class="question-box <?php echo ($question['user_answer'] === $question['correct_answer']) ? 'correct-answer' : 'wrong-answer'; ?>">
-                            <div class="question-text"><?php echo sanitizeInput($question['question_text']); ?></div>
-                            <?php foreach (['A', 'B', 'C', 'D'] as $option) : ?>
-                                <?php $optionKey = 'question_' . $option; ?>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="answer_<?php echo $question['question_id']; ?>" id="option<?php echo $option; ?>_<?php echo $question['question_id']; ?>" value="<?php echo sanitizeInput($question[$optionKey]); ?>" <?php echo ($question['user_answer'] === $question[$optionKey]) ? 'checked' : ''; ?> disabled>
-                                    <label class="form-check-label <?php echo ($question[$optionKey] === $question['correct_answer']) ? 'correct-indicator' : ''; ?>" for="option<?php echo $option; ?>_<?php echo $question['question_id']; ?>"><?php echo sanitizeInput($question[$optionKey]); ?></label>
+                    <div class="modal fade" id="attemptModal<?php echo $attemptCounter; ?>" tabindex="-1" role="dialog" aria-labelledby="attemptModalLabel<?php echo $attemptCounter; ?>" aria-hidden="true">
+                        <div class="modal-dialog modal-lg" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="attemptModalLabel<?php echo $attemptCounter; ?>">Attempt <?php echo $attemptCounter++; ?></h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                 </div>
-                            <?php endforeach; ?>
+                                <div class="modal-body" style="max-height: 530px; overflow-y: auto;">
+                                    <div class="modal-body-content">
+                                        <?php foreach ($questions_and_answers as $question) : ?>
+                                            <div class="question-box <?php echo ($question['user_answer'] === $question['correct_answer']) ? 'correct-answer' : 'wrong-answer'; ?>">
+                                                <div class="question-text"><?php echo sanitizeInput($question['question_text']); ?></div>
+                                                <?php foreach (['A', 'B', 'C', 'D'] as $option) : ?>
+                                                    <?php $optionKey = 'question_' . $option; ?>
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="radio" name="answer_<?php echo $question['question_id']; ?>" id="option<?php echo $option; ?>_<?php echo $question['question_id']; ?>" value="<?php echo sanitizeInput($question[$optionKey]); ?>" <?php echo ($question['user_answer'] === $question[$optionKey]) ? 'checked' : ''; ?> disabled>
+                                                        <label class="form-check-label <?php echo ($question[$optionKey] === $question['correct_answer']) ? 'correct-indicator' : ''; ?>" for="option<?php echo $option; ?>_<?php echo $question['question_id']; ?>"><?php echo sanitizeInput($question[$optionKey]); ?></label>
+                                                    </div>
+                                                <?php endforeach; ?>
+                                            </div>
+                                        <?php endforeach; ?>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="closeButton">Close</button>
+                                </div>
+                            </div>
                         </div>
-                    <?php endforeach; ?>
+                    </div>
                 <?php endforeach; ?>
+
             <?php else : ?>
                 <p>No questions found.</p>
             <?php endif; ?>
-        </main>
-        <!-- Include Bootstrap 5 JS and Popper.js -->
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
+            </div>
+
+            <div class="col-sm-3"></div>
+
+
+        </div>
     </div>
 </body>
-
 
 </html>
 
 
+<!-- Include Bootstrap 5 JS and Popper.js -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    const hamBurger = document.querySelector(".toggle-btn");
+    // Trigger modal on row click
+    document.querySelectorAll('.attempt-row').forEach(function(row) {
+        row.addEventListener('click', function() {
+            var target = this.getAttribute('data-target');
+            if (target) {
+                var modal = document.querySelector(target);
+                if (modal) {
+                    var modalInstance = new bootstrap.Modal(modal);
+                    modalInstance.show();
+                }
+            }
+        });
+    });
 
+    // Add event listener for clicking the "Close" button inside each modal
+    document.querySelectorAll('.modal-footer .btn-secondary').forEach(function(button) {
+        button.addEventListener('click', function() {
+            var modal = this.closest('.modal');
+            if (modal) {
+                var modalInstance = new bootstrap.Modal(modal);
+                modalInstance.hide();
+            }
+        });
+    });
+
+
+
+    const hamBurger = document.querySelector(".toggle-btn");
     hamBurger.addEventListener("click", function() {
         document.querySelector("#sidebar").classList.toggle("expand");
     });

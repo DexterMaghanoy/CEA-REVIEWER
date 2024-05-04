@@ -14,9 +14,8 @@ $user_id = $_SESSION['stud_id'];
 
 try {
     // Prepare the query to fetch user details
-    $user_stmt = $conn->prepare("SELECT s.*, y.year_level, p.program_name
+    $user_stmt = $conn->prepare("SELECT s.*, p.program_name
             FROM tbl_student s
-            INNER JOIN tbl_year y ON s.year_id = y.year_id
             INNER JOIN tbl_program p ON s.program_id = p.program_id
             WHERE s.stud_id = :stud_id");
     $user_stmt->bindParam(':stud_id', $user_id, PDO::PARAM_INT);
@@ -26,38 +25,27 @@ try {
     if ($user_stmt->rowCount() > 0) {
         $user = $user_stmt->fetch(PDO::FETCH_ASSOC);
     }
-
     // Prepare the query to fetch enrolled courses
     $course_stmt = $conn->prepare("SELECT course_code, course_name, course_id 
-                                    FROM tbl_course 
-                                    WHERE course_status = 1 
-                                    AND program_id = ? 
-                                    AND year_id = 1");
+                                FROM tbl_course 
+                                WHERE course_status = 1 
+                                AND program_id = ?");
+    $course_stmt->execute([$program_id]);
+    $enrolled_courses = $course_stmt->fetchAll(PDO::FETCH_ASSOC);
+
     $course_stmt->execute([$program_id]);
     $enrolled_courses = $course_stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
     echo '<p class="card-text">Database Error: ' . $e->getMessage() . '</p>';
 }
-if(isset($_SESSION['program_id']) && isset($_SESSION['year_id'])) {
-    
-    $program_id = $_SESSION['program_id'];
-    $year_id = $_SESSION['year_id'];
 
-    // Prepare SQL query to fetch courses for the given program and year
-    $sql = "SELECT * FROM tbl_course WHERE program_id = :program_id AND year_id = :year_id AND sem_id = 1";
-    $result = $conn->prepare($sql);
-    $result->bindParam(':program_id', $program_id, PDO::PARAM_INT);
-    $result->bindParam(':year_id', $year_id, PDO::PARAM_INT);
-    $result->execute();
-
-    // Fetch the result and store it in a variable to use later
-    $courses = $result->fetchAll(PDO::FETCH_ASSOC);
-} else {
+if (!isset($_SESSION['program_id'])) {
     // Redirect to login page if session data is not set
-    header("Location: ../login.php");
+    header("Location: ../index.php");
     exit();
 }
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -75,37 +63,52 @@ if(isset($_SESSION['program_id']) && isset($_SESSION['year_id'])) {
 <body>
     <div class="wrapper">
         <?php include 'sidebar.php'; ?>
-        <div class="main p-3">
-            <div class="text-center">
-                <h1>Dashboard</h1>
-            </div>
-            <div class="container mt-3">
-                <div class="row justify-content-center"> <!-- Center the cards horizontally -->
-                    <?php
-                    if (!empty($enrolled_courses)) {
-                        $background_classes = ['card-bg1', 'card-bg2', 'card-bg3', 'card-bg4', 'card-bg5', 'card-bg6', 'card-bg7', 'card-bg8'];
-                        $index = 0;
-                        foreach ($enrolled_courses as $course) {
-                            $background_class = $background_classes[$index % count($background_classes)];
-                            echo '<div class="col-md-4">';
-                            echo '<div class="card text-dark rounded-3 shadow ' . $background_class . '">';
-                            echo '<div class="card-body">';
-                            echo '<a href="module.php?course_id=' . $course['course_id'] . '" class="card-link">';
-                            echo '<h5><p class="card-text" style="color: white;">' . $course['course_code'] . ': ' . $course['course_name'] . '</p></h5>';
-                            echo '</a>';
-                            echo '</div>';
-                            echo '</div>';
-                            echo '</div>';
-                            $index++;
-                        }
-                    } else {
-                        echo '<p class="card-text">No enrolled courses found for the student.</p>';
-                    }
-                    ?>
-                </div>
-            </div>
-        </div>
+        <div class="container">
+            <center>
+                <div class="row">
+                    <div class="col-lg-1"></div>
 
+                    <div class="col-lg">
+                        <div class="text-center mt-3 mb-3">
+
+                            <h1>Dashboard</h1>
+                        </div>
+                        <div class="row justify-content-center"> <!-- Center the cards horizontally -->
+                            <?php
+                            if (!empty($enrolled_courses)) {
+                                $background_classes = ['card-bg1', 'card-bg2', 'card-bg3', 'card-bg4', 'card-bg5', 'card-bg6', 'card-bg7', 'card-bg8'];
+                                $index = 0;
+                                foreach ($enrolled_courses as $course) {
+                                    $background_class = $background_classes[$index % count($background_classes)];
+                            ?>
+                                    <div class="col-md-4">
+                                        <a href="module.php?course_id=<?php echo $course['course_id']; ?>" class="card-link text-decoration-none">
+                                            <div class="card text-dark rounded-3 shadow <?php echo $background_class; ?>">
+                                                <div class="card-body">
+                                                    <h5>
+                                                        <p class="card-text" style="color: white;"><?php echo $course['course_code'] . ': ' . $course['course_name']; ?></p>
+                                                    </h5>
+                                                </div>
+                                            </div>
+                                        </a>
+                                    </div>
+                            <?php
+                                    $index++;
+                                }
+                            } else {
+                                echo '<div class="col text-center"><p class="card-text">No enrolled courses found for the student.</p></div>';
+                            }
+                            ?>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-1"></div>
+
+                </div>
+            </center>
+
+
+        </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe" crossorigin="anonymous"></script>
     <script>
@@ -115,5 +118,7 @@ if(isset($_SESSION['program_id']) && isset($_SESSION['year_id'])) {
         });
     </script>
 </body>
+
+
 
 </html>

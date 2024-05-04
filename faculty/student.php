@@ -9,61 +9,49 @@ if (isset($_SESSION['user_id'])) {
     exit();
 }
 
-// Check if form is submitted for toggling user status
-if (isset($_POST['toggle_status']) && isset($_POST['stud_id'])) {
-    $stud_id = $_POST['stud_id'];
-    // Get current status of the user
-    $stmt = $conn->prepare("SELECT stud_status FROM tbl_student WHERE stud_id = :stud_id");
-    $stmt->bindParam(':stud_id', $stud_id, PDO::PARAM_INT);
-    $stmt->execute();
-    $row = $stmt->fetch(PDO::FETCH_ASSOC);
-    $new_status = $row['stud_status'] == 1 ? 0 : 1; // Toggle status
+// Get the program_id of the current user
+$user_program_id_stmt = $conn->prepare("SELECT program_id FROM tbl_student WHERE stud_id = :user_id");
+$user_program_id_stmt->bindParam(':user_id', $user_id, PDO::PARAM_INT);
+$user_program_id_stmt->execute();
+$user_program_id = $user_program_id_stmt->fetch(PDO::FETCH_ASSOC)['program_id'];
 
-    // Update user status
-    $updateStmt = $conn->prepare("UPDATE tbl_student SET stud_status = :new_status WHERE stud_id = :stud_id");
-    $updateStmt->bindParam(':new_status', $new_status, PDO::PARAM_INT);
-    $updateStmt->bindParam(':stud_id', $stud_id, PDO::PARAM_INT);
-    $updateStmt->execute();
-
-    header("Location: " . $_SERVER['PHP_SELF']);
-    exit;
-}
 $recordsPerPage = 5;
 $page = isset($_GET['page']) ? $_GET['page'] : 1;
 $offset = ($page - 1) * $recordsPerPage;
 
 $search = isset($_GET['search']) ? $_GET['search'] : '';
 
-// Build the SQL query with search functionality
-$sql = "SELECT s.*, y.year_level, p.program_name
+// Build the SQL query with search functionality and filtering by program_id
+$sql = "SELECT s.*, p.program_name
         FROM tbl_student AS s
-        JOIN tbl_year AS y ON s.year_id = y.year_id
-        JOIN tbl_program AS p ON s.program_id = p.program_id";
-// -- where p.program_id = 1"
+        JOIN tbl_program AS p ON s.program_id = p.program_id
+        WHERE s.program_id = :user_program_id";
 
 if (!empty($search)) {
-    $sql .= " WHERE s.stud_lname LIKE '%$search%' OR s.stud_fname LIKE '%$search%' OR y.year_level LIKE '%$search%' OR s.stud_mname LIKE '%$search%' OR s.stud_no LIKE '%$search%' OR p.program_name LIKE '%$search%'";
+    $sql .= " AND (s.stud_lname LIKE '%$search%' OR s.stud_fname LIKE '%$search%' OR s.stud_mname LIKE '%$search%' OR s.stud_no LIKE '%$search%' OR p.program_name LIKE '%$search%')";
 }
 
-$sql .= " ORDER BY s.stud_status DESC, y.year_level ASC LIMIT :offset, :recordsPerPage";
+$sql .= " ORDER BY s.stud_status DESC LIMIT :offset, :recordsPerPage";
 
 $result = $conn->prepare($sql);
-
+$result->bindParam(':user_program_id', $user_program_id, PDO::PARAM_INT);
 $result->bindParam(':offset', $offset, PDO::PARAM_INT);
 $result->bindParam(':recordsPerPage', $recordsPerPage, PDO::PARAM_INT);
 $result->execute();
 
-// Count total number of records
-$countSql = "SELECT COUNT(*) as total FROM tbl_student";
+// Count total number of records with the same program_id
+$countSql = "SELECT COUNT(*) as total FROM tbl_student WHERE program_id = :user_program_id";
 if (!empty($search)) {
-    $countSql .= " WHERE stud_lname LIKE '%$search%' OR stud_fname LIKE '%$search%'";
+    $countSql .= " AND (stud_lname LIKE '%$search%' OR stud_fname LIKE '%$search%')";
 }
 
 $countStmt = $conn->prepare($countSql);
+$countStmt->bindParam(':user_program_id', $user_program_id, PDO::PARAM_INT);
 $countStmt->execute();
 $totalCount = $countStmt->fetch(PDO::FETCH_ASSOC)['total'];
 $totalPages = ceil($totalCount / $recordsPerPage);
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -92,11 +80,10 @@ $totalPages = ceil($totalCount / $recordsPerPage);
                         <div class="text-center mb-4">
                             <h1>Students<?php $user['program_id'] ?></h1>
                         </div>
-                        <br>
                         <!-- Search bar -->
-                        <form action="" method="GET" class="mb-3">
+                        <form id="searchForm" action="" method="GET" class="mb-3">
                             <div class="input-group">
-                                <input type="text" class="form-control" name="search" placeholder="Search...">
+                                <input id="searchInput" type="text" class="form-control" name="search" placeholder="Search...">
                                 <button class="btn btn-primary" type="submit">Search</button>
                             </div>
                         </form>
@@ -108,7 +95,6 @@ $totalPages = ceil($totalCount / $recordsPerPage);
                                         <th scope="col">Student No.</th>
                                         <th scope="col">Program</th>
                                         <th scope="col">Fullname</th>
-                                        <th scope="col">Year Level</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -118,7 +104,6 @@ $totalPages = ceil($totalCount / $recordsPerPage);
                                                 <td><?php echo $row['stud_no']; ?></td>
                                                 <td><?php echo $row['program_name']; ?></td>
                                                 <td><?php echo $row['stud_lname'] . ', ' . $row['stud_fname'] . ' ' . $row['stud_mname']; ?></td>
-                                                <td><?php echo $row['year_level']; ?></td>
                                             </tr>
                                         <?php endwhile; ?>
                                     <?php else : ?>
@@ -145,14 +130,29 @@ $totalPages = ceil($totalCount / $recordsPerPage);
         </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe" crossorigin="anonymous"></script>
+    <script>
+        const searchInput = document.getElementById('searchInput');
+        const studentRows = document.querySelectorAll('tbody tr');
+
+        searchInput.addEventListener('input', function() {
+            const searchText = this.value.trim().toLowerCase();
+            studentRows.forEach(function(row) {
+                const studentData = row.textContent.toLowerCase();
+                if (studentData.includes(searchText)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        });
+    </script>
+    <script>
+        const hamBurger = document.querySelector(".toggle-btn");
+
+        hamBurger.addEventListener("click", function() {
+            document.querySelector("#sidebar").classList.toggle("expand");
+        });
+    </script>
 </body>
-
-<script>
-    const hamBurger = document.querySelector(".toggle-btn");
-
-    hamBurger.addEventListener("click", function() {
-        document.querySelector("#sidebar").classList.toggle("expand");
-    });
-</script>
 
 </html>
