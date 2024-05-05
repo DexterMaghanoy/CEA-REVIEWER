@@ -5,7 +5,7 @@ session_start();
 if (isset($_SESSION['program_id'])) {
     $program_id = $_SESSION['program_id'];
 } else {
-    header("Location: ../index.php");
+    header("Location: ../login.php");
     exit();
 }
 
@@ -15,7 +15,7 @@ $user_id = $_SESSION['user_id'];
 $sql = "SELECT u.*, t.type_name, p.program_name
             FROM tbl_user u
             INNER JOIN tbl_type t ON u.type_id = t.type_id
-            INNER JOIN tbl_program p ON u.program_id = p.program_id
+            INNER JOIN tbl_program p ON u.program_id = p'.'program_id
             WHERE u.user_id = :user_id";
 
 $stmt = $conn->prepare($sql);
@@ -83,10 +83,134 @@ if ($stmt->rowCount() > 0) {
                                                 <div class="col-6 mb-3">
                                                     <h6>Username</h6>
                                                     <p class="text-muted"><?php echo $user['user_name']; ?></p>
-                                                </div>
-                                                <div class="col-6 mb-3">
-                                                    <h6>Password</h6>
-                                                    <p class="text-muted"><?php echo $user['user_password']; ?></p>
+                                                    <button class="btn btn-success mt-3" data-bs-toggle="modal" data-bs-target="#changePasswordModal">Change Password</button>
+                                        </div>
+                                        <div class="modal fade" id="changePasswordModal" tabindex="-1" aria-labelledby="changePasswordModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="changePasswordModalLabel">Change Password</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="changePasswordForm">
+                    <div class="mb-3">
+                        <label for="currentPassword" class="form-label">Current Password</label>
+                        <input type="password" class="form-control" id="currentPassword" name="currentPassword" required>
+                    </div>
+                    <div class="mb-3">
+    <label for="newPassword" class="form-label">New Password</label>
+    <div class="input-group">
+        <input type="password" class="form-control" id="newPassword" name="newPassword" required>
+        <button class="btn btn-outline-secondary" type="button" id="toggleNewPassword">
+            <i class="fa fa-eye" aria-hidden="true"></i>
+        </button>
+    </div>
+    <div id="pass1Error" class="text-danger"></div>
+</div>
+<div class="mb-3">
+    <label for="confirmPassword" class="form-label">Confirm Password</label>
+    <div class="input-group">
+        <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" required>
+        <button class="btn btn-outline-secondary" type="button" id="toggleConfirmPassword">
+            <i class="fa fa-eye" aria-hidden="true"></i>
+        </button>
+    </div>
+    <div id="pass2Error" class="text-danger"></div>
+</div>
+
+                    <button type="submit" class="btn btn-success">Change Password</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.getElementById('changePasswordForm').addEventListener('submit', function(event) {
+        event.preventDefault(); // Prevent default form submission
+        
+        var isValid = validatePassword();
+        if (isValid) {
+            // Serialize form data
+            var formData = new FormData(this);
+            
+            // Make AJAX request
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', 'changepass.php', true);
+            xhr.onload = function () {
+                if (xhr.status === 200) {
+                    // Password updated successfully
+                    alert(xhr.responseText);
+                    // Clear form fields
+                    document.getElementById('changePasswordForm').reset();
+                    // Optionally, you can close the modal here
+                    $('#changePasswordModal').modal('hide');
+                } else {
+                    // Error updating password
+                    alert('Error updating password.');
+                }
+            };
+            xhr.send(formData);
+        }
+    });
+
+    document.getElementById('toggleNewPassword').addEventListener('click', function() {
+    var newPasswordInput = document.getElementById('newPassword');
+    if (newPasswordInput.type === 'password') {
+        newPasswordInput.type = 'text';
+    } else {
+        newPasswordInput.type = 'password';
+    }
+});
+
+document.getElementById('toggleConfirmPassword').addEventListener('click', function() {
+    var confirmPasswordInput = document.getElementById('confirmPassword');
+    if (confirmPasswordInput.type === 'password') {
+        confirmPasswordInput.type = 'text';
+    } else {
+        confirmPasswordInput.type = 'password';
+    }
+});
+
+function validatePassword() {
+        var pass1 = document.getElementById("newPassword").value;
+        var pass2 = document.getElementById("confirmPassword").value;
+        var pass1Error = document.getElementById("pass1Error");
+        var pass2Error = document.getElementById("pass2Error");
+        var isValid = true;
+
+        // Reset error messages
+        pass1Error.innerHTML = "";
+        pass2Error.innerHTML = "";
+
+        // Password length validation
+        if (pass1.length < 8) {
+            pass1Error.innerHTML = "Password must be at least 8 characters long";
+            isValid = false;
+        }
+
+        // Password complexity validation
+        var uppercaseRegex = /[A-Z]/;
+        var lowercaseRegex = /[a-z]/;
+        var specialCharRegex = /[!@#$%^&*(),.?":{}|<>]/;
+        var numberRegex = /[0-9]/;
+
+        if (!uppercaseRegex.test(pass1) || !lowercaseRegex.test(pass1) || !specialCharRegex.test(pass1) || !numberRegex.test(pass1)) {
+            pass1Error.innerHTML = "Password must contain at least one uppercase letter, one lowercase letter, one special character, and one number";
+            isValid = false;
+        }
+
+        // Matching passwords validation
+        if (pass1 !== pass2) {
+            pass2Error.innerHTML = "Passwords do not match";
+            isValid = false;
+        }
+
+        return isValid;
+    }
+
+</script>
                                                 </div>
                                             </div>
                                         </div>
