@@ -8,7 +8,7 @@ if (isset($_SESSION['program_id'])) {
     header("Location: ../index.php");
     exit();
 }
-// Check if form is submitted for toggling user status
+
 if (isset($_POST['toggle_status']) && isset($_POST['stud_id'])) {
     $stud_id = $_POST['stud_id'];
     // Get current status of the user

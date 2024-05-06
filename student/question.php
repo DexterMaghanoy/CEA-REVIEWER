@@ -2,16 +2,16 @@
 require_once "../api/db-connect.php"; // Adjust the path as needed
 session_start();
 
-if (isset($_SESSION['program_id']) && isset($_SESSION['year_id'])) {
+if (isset($_GET['course_id'])) {
+    $course_id = $_GET['course_id'];
+}
 
+if (isset($_SESSION['program_id'])) {
     $program_id = $_SESSION['program_id'];
-    $year_id = $_SESSION['year_id'];
-
-    // Prepare SQL query to fetch courses for the given program and year
-    $sql = "SELECT * FROM tbl_course WHERE program_id = :program_id AND year_id = :year_id AND sem_id = 1";
+    // Prepare SQL query to fetch courses for the given program
+    $sql = "SELECT * FROM tbl_course WHERE program_id = :program_id";
     $result = $conn->prepare($sql);
     $result->bindParam(':program_id', $program_id, PDO::PARAM_INT);
-    $result->bindParam(':year_id', $year_id, PDO::PARAM_INT);
     $result->execute();
 
     // Fetch the result and store it in a variable to use later
@@ -21,6 +21,7 @@ if (isset($_SESSION['program_id']) && isset($_SESSION['year_id'])) {
     header("Location: ../index.php");
     exit();
 }
+
 
 function sanitizeInput($input)
 {
@@ -102,9 +103,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             if ($answer === $correct_answer) {
                 $score++;
             }
+
+
             $quiz_type = 1;
             // Insert the answer into tbl_quiz_answers with the new attempt_id
-            $sqlInsertAnswer = "INSERT INTO tbl_quiz_answers (module_id, student_id, question_id, chosen_answer, attempt_id, quiz_type) VALUES (:module_id, :student_id, :question_id, :chosen_answer, :attempt_id, :quiz_type)";
+            $sqlInsertAnswer = "INSERT INTO tbl_quiz_answers (module_id, student_id, question_id, chosen_answer, attempt_id, quiz_type, course_id) VALUES (:module_id, :student_id, :question_id, :chosen_answer, :attempt_id, :quiz_type, :course_id)";
             $stmtInsertAnswer = $conn->prepare($sqlInsertAnswer);
             $stmtInsertAnswer->bindParam(":module_id", $module_id, PDO::PARAM_INT);
             $stmtInsertAnswer->bindParam(":student_id", $stud_id, PDO::PARAM_INT);
@@ -112,27 +115,27 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $stmtInsertAnswer->bindParam(":chosen_answer", $answer, PDO::PARAM_STR);
             $stmtInsertAnswer->bindParam(":attempt_id", $new_attempt_id, PDO::PARAM_INT);
             $stmtInsertAnswer->bindParam(":quiz_type", $quiz_type, PDO::PARAM_INT);
+            $stmtInsertAnswer->bindParam(":quiz_type", $quiz_type, PDO::PARAM_INT);
+            $stmtInsertAnswer->bindParam(":course_id", $course_id, PDO::PARAM_INT);
+
             if (!$stmtInsertAnswer->execute()) {
                 handleDatabaseError("Failed to insert quiz answer into the database.");
             }
-
-            // Additional processing as needed...
         }
-
-        // Insert the result into tbl_result
         $quiz_type = 1;
-        $sql = "INSERT INTO tbl_result (module_id, stud_id, result_score, total_questions, quiz_type) 
-                VALUES (:module_id, :stud_id, :result_score, :total_questions, :quiz_type)";
+        $sql = "INSERT INTO tbl_result (module_id, stud_id, result_score, total_questions, quiz_type, course_id) 
+         VALUES (:module_id, :stud_id, :result_score, :total_questions, :quiz_type, :course_id)";
         $stmt = $conn->prepare($sql);
         $stmt->bindParam(":module_id", $module_id, PDO::PARAM_INT);
         $stmt->bindParam(":stud_id", $stud_id, PDO::PARAM_INT);
         $stmt->bindParam(":result_score", $score, PDO::PARAM_INT);
         $stmt->bindParam(":total_questions", $total_questions, PDO::PARAM_INT); // Pass the total questions attempted
         $stmt->bindParam(":quiz_type", $quiz_type, PDO::PARAM_INT);
+        $stmt->bindParam(":course_id", $course_id, PDO::PARAM_INT);
+
         if (!$stmt->execute()) {
             handleDatabaseError("Failed to insert result into the database.");
         }
-
         // Redirect to index page after submission
         echo '<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>';
         echo '<script src="https://cdn.jsdelivr.net/npm/sweetalert2@10.16.6/dist/sweetalert2.min.js"></script>';

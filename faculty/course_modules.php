@@ -9,7 +9,7 @@ if (isset($_SESSION['program_id'])) {
     header("Location: ../index.php");
     exit();
 }
-
+    
 $user_id = $_SESSION['user_id'];
 
 // Retrieve course ID from URL parameter

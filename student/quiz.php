@@ -1,29 +1,25 @@
 <?php
 require_once "../api/db-connect.php"; // Adjust the path as needed
 session_start();
+if (isset($_GET['course_id'])) {
+    $course_id = $_GET['course_id'];
+    $sql = "SELECT * FROM tbl_question WHERE course_id = :course_id";
+    $stmt = $conn->prepare($sql);
+    $stmt->bindParam(':course_id', $course_id, PDO::PARAM_INT);
+    $stmt->execute();
+    $questions = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    shuffle($questions); // Shuffle the questions
+    // echo '<script>alert(' . $course_id . ');</script>';
 
-$module_id = $_GET['module_id']; // Assuming you get the course ID from the URL parameter
-
-// Fetch 30 quiz questions from the database for a specific course ID
-$sql = "SELECT * FROM tbl_question WHERE module_id = :module_id LIMIT 30";
-$stmt = $conn->prepare($sql);
-$stmt->bindParam(':module_id', $module_id, PDO::PARAM_INT);
-$stmt->execute();
-$questions = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-// Shuffle the questions
-shuffle($questions);
-
-if (isset($_SESSION['program_id']) && isset($_SESSION['year_id'])) {
+}
+if (isset($_SESSION['program_id'])) {
 
     $program_id = $_SESSION['program_id'];
-    $year_id = $_SESSION['year_id'];
 
-    // Prepare SQL query to fetch courses for the given program and year
-    $sql = "SELECT * FROM tbl_course WHERE program_id = :program_id AND year_id = :year_id AND sem_id = 1";
+    // Prepare SQL query to fetch courses for the given program
+    $sql = "SELECT * FROM tbl_course WHERE program_id = :program_id";
     $result = $conn->prepare($sql);
     $result->bindParam(':program_id', $program_id, PDO::PARAM_INT);
-    $result->bindParam(':year_id', $year_id, PDO::PARAM_INT);
     $result->execute();
 
     // Fetch the result and store it in a variable to use later
@@ -91,8 +87,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $quiz_type = 2;
 
             // Insert the answer into tbl_quiz_answers
-            $sqlInsertAnswer = "INSERT INTO tbl_quiz_answers (module_id, student_id, question_id, chosen_answer, quiz_type, attempt_id) VALUES (:module_id, :student_id, :question_id, :chosen_answer, :quiz_type, :attempt_id)";
+            $sqlInsertAnswer = "INSERT INTO tbl_quiz_answers (course_id, module_id, student_id, question_id, chosen_answer, quiz_type, attempt_id) VALUES (:course_id,:module_id, :student_id, :question_id, :chosen_answer, :quiz_type, :attempt_id)";
             $stmtInsertAnswer = $conn->prepare($sqlInsertAnswer);
+            $stmtInsertAnswer->bindParam(":course_id", $course_id, PDO::PARAM_INT);
             $stmtInsertAnswer->bindParam(":module_id", $module_id, PDO::PARAM_INT);
             $stmtInsertAnswer->bindParam(":student_id", $stud_id, PDO::PARAM_INT);
             $stmtInsertAnswer->bindParam(":question_id", $question_id, PDO::PARAM_INT);
@@ -102,14 +99,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $stmtInsertAnswer->execute();
         }
         // Insert the result into tbl_result
-        $sql = "INSERT INTO tbl_result (module_id, stud_id, result_score, total_questions, quiz_type) 
-                VALUES (:module_id, :stud_id, :result_score, :total_questions, :quiz_type)";
+        $sql = "INSERT INTO tbl_result (course_id, module_id, stud_id, result_score, total_questions, quiz_type) 
+VALUES (:course_id, :module_id, :stud_id, :result_score, :total_questions, :quiz_type)";
         $stmt = $conn->prepare($sql);
+        $stmt->bindParam(":course_id", $course_id, PDO::PARAM_INT);
         $stmt->bindParam(":module_id", $module_id, PDO::PARAM_INT);
         $stmt->bindParam(":stud_id", $stud_id, PDO::PARAM_INT);
         $stmt->bindParam(":result_score", $score, PDO::PARAM_INT);
         $stmt->bindParam(":total_questions", $total_questions, PDO::PARAM_INT); // Pass the total questions attempted
         $stmt->bindParam(":quiz_type", $quiz_type, PDO::PARAM_INT);
+
+        // Execute the statement to insert the result
         $stmt->execute();
     }
 
@@ -125,7 +125,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         text: "Good Job!",
         icon: "success"
         }).then(() => {
-        window.location.href = "index.php";
+        window.location.href = "dashboard.php";
         });
         });
         </script>';
@@ -162,43 +162,41 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <div class="container">
             <div class="row justify-content-center mt-5">
                 <div class="col-lg-8">
-                    <br> <br>
+                    <br><br>
                     <h1 id="quiz-title" class="text-center mb-4">Quiz</h1>
-                    <br> <br>
+                    <br><br>
                     <?php if (!empty($questions)) : ?>
-                        <?php $counter = 0; ?>
-                        <?php foreach ($questions as $key => $question) : ?>
-                            <div class="question-box <?php echo $counter === 0 ? '' : 'd-none'; ?>">
-                                <div class="question-text"><?php echo $counter + 1 . ". " . htmlspecialchars($question['question_text']); ?></div>
-                                <?php foreach (['A', 'B', 'C', 'D'] as $option) : ?>
-                                    <?php $optionKey = 'question_' . $option; ?>
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="radio" name="answer_<?php echo $question['question_id']; ?>" id="option<?php echo $option; ?>_<?php echo $question['question_id']; ?>" value="<?php echo htmlspecialchars($question[$optionKey]); ?>">
-                                        <label class="form-check-label" for="option<?php echo $option; ?>_<?php echo $question['question_id']; ?>"><?php echo htmlspecialchars($question[$optionKey]); ?></label>
-                                    </div>
-                                <?php endforeach; ?>
+                        <form id="quiz-form" method="post">
+                            <?php $counter = 0; ?>
+                            <?php foreach ($questions as $key => $question) : ?>
+                                <div class="question-box <?php echo $counter === 0 ? '' : 'd-none'; ?>">
+                                    <div class="question-text"><?php echo $counter + 1 . ". " . htmlspecialchars($question['question_text']); ?></div>
+                                    <?php foreach (['A', 'B', 'C', 'D'] as $option) : ?>
+                                        <?php $optionKey = 'question_' . $option; ?>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="answer_<?php echo $question['question_id']; ?>" id="option<?php echo $option; ?>_<?php echo $question['question_id']; ?>" value="<?php echo htmlspecialchars($question[$optionKey]); ?>">
+                                            <label class="form-check-label" for="option<?php echo $option; ?>_<?php echo $question['question_id']; ?>"><?php echo htmlspecialchars($question[$optionKey]); ?></label>
+                                        </div>
+                                    <?php endforeach; ?>
+                                </div>
+                                <?php $counter++; ?>
+                            <?php endforeach; ?>
+                            <br><br>
+                            <div class="text-end">
+                                <button id="submit-btn" type="submit" class="btn btn-primary">Submit</button>
+                                <button id="next-btn" class="btn btn-primary" type="button">Next</button>
                             </div>
-                            <?php $counter++; ?>
-                        <?php endforeach; ?>
-                        <br> <br>
-                        <div class="text-end">
-                            <button id="submit-btn" type="submit" class="btn btn-primary d-none">Submit</button>
-                            <button id="next-btn" class="btn btn-primary" type="button">Next</button>
-                        </div>
+                        </form>
                     <?php else : ?>
                         <p>No questions found.</p>
-
-                        <?php
-
-                        include 'connector.php'; ?>
+                        <?php include 'connector.php'; ?>
                     <?php endif; ?>
-
-                    <br>
-                    <br>
+                    <br><br>
                 </div>
             </div>
         </div>
     </div>
+
 
 </body>
 
@@ -253,6 +251,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             updateButtonVisibility();
             updateNextButtonVisibility();
             updateSubmitButtonVisibility();
+        });
+
+        // Add an event listener for the form submission
+        submitButton.addEventListener('click', function() {
+            // Check if any option is selected before submitting
+            if (isAnyOptionSelected()) {
+                // Submit the form
+                document.querySelector('form').submit();
+            } else {
+                // Show an alert or message indicating that an option must be selected
+                alert('Please select an option before submitting.');
+            }
         });
 
         questions.forEach(question => {

@@ -3,10 +3,22 @@ session_start();
 
 require '../api/db-connect.php';
 
+
 if (isset($_SESSION['program_id'])) {
+
     $program_id = $_SESSION['program_id'];
+
+    // Prepare SQL query to fetch courses for the given program and year
+    $sql = "SELECT * FROM tbl_course WHERE program_id = :program_id";
+    $result = $conn->prepare($sql);
+    $result->bindParam(':program_id', $program_id, PDO::PARAM_INT);
+    $result->execute();
+
+    // Fetch the result and store it in a variable to use later
+    $courses = $result->fetchAll(PDO::FETCH_ASSOC);
 } else {
-    header("Location: index.php");
+    // Redirect to login page if session data is not set
+    header("Location: ../index.php");
     exit();
 }
 

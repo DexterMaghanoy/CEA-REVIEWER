@@ -2,18 +2,19 @@
 session_start();
 require("../api/db-connect.php");
 
-if (isset($_SESSION['user_id'])) {
-    $user_id = $_SESSION['user_id'];
-} else {
+if (!isset($_SESSION['user_id'])) {
     header("Location: ../index.php");
     exit();
 }
 
-// Get the program_id of the current user
-$user_program_id_stmt = $conn->prepare("SELECT program_id FROM tbl_student WHERE stud_id = :user_id");
-$user_program_id_stmt->bindParam(':user_id', $user_id, PDO::PARAM_INT);
-$user_program_id_stmt->execute();
-$user_program_id = $user_program_id_stmt->fetch(PDO::FETCH_ASSOC)['program_id'];
+$user_id = $_SESSION['user_id'];
+$program_id = $_SESSION['program_id'];
+
+// Ensure $user_program is defined
+if (!isset($_SESSION['program_id'])) {
+    // Handle the case where the user's program is not found
+    // Redirect or display an error message
+}
 
 $recordsPerPage = 5;
 $page = isset($_GET['page']) ? $_GET['page'] : 1;
@@ -25,32 +26,45 @@ $search = isset($_GET['search']) ? $_GET['search'] : '';
 $sql = "SELECT s.*, p.program_name
         FROM tbl_student AS s
         JOIN tbl_program AS p ON s.program_id = p.program_id
-        WHERE s.program_id = :user_program_id";
+        WHERE s.program_id = :program_id";
 
 if (!empty($search)) {
-    $sql .= " AND (s.stud_lname LIKE '%$search%' OR s.stud_fname LIKE '%$search%' OR s.stud_mname LIKE '%$search%' OR s.stud_no LIKE '%$search%' OR p.program_name LIKE '%$search%')";
+    $sql .= " AND (s.stud_lname LIKE :search OR s.stud_fname LIKE :search OR s.stud_mname LIKE :search OR s.stud_no LIKE :search OR p.program_name LIKE :search)";
 }
 
 $sql .= " ORDER BY s.stud_status DESC LIMIT :offset, :recordsPerPage";
 
 $result = $conn->prepare($sql);
-$result->bindParam(':user_program_id', $user_program_id, PDO::PARAM_INT);
+$result->bindParam(':program_id', $program_id, PDO::PARAM_INT);
 $result->bindParam(':offset', $offset, PDO::PARAM_INT);
 $result->bindParam(':recordsPerPage', $recordsPerPage, PDO::PARAM_INT);
+
+if (!empty($search)) {
+    $searchParam = "%$search%";
+    $result->bindParam(':search', $searchParam, PDO::PARAM_STR);
+}
+
 $result->execute();
 
 // Count total number of records with the same program_id
-$countSql = "SELECT COUNT(*) as total FROM tbl_student WHERE program_id = :user_program_id";
+$countSql = "SELECT COUNT(*) as total FROM tbl_student WHERE program_id = :program_id";
 if (!empty($search)) {
-    $countSql .= " AND (stud_lname LIKE '%$search%' OR stud_fname LIKE '%$search%')";
+    $countSql .= " AND (stud_lname LIKE :search OR stud_fname LIKE :search)";
 }
 
 $countStmt = $conn->prepare($countSql);
-$countStmt->bindParam(':user_program_id', $user_program_id, PDO::PARAM_INT);
+$countStmt->bindParam(':program_id', $program_id, PDO::PARAM_INT);
+
+if (!empty($search)) {
+    $countStmt->bindParam(':search', $searchParam, PDO::PARAM_STR);
+}
+
 $countStmt->execute();
 $totalCount = $countStmt->fetch(PDO::FETCH_ASSOC)['total'];
 $totalPages = ceil($totalCount / $recordsPerPage);
 ?>
+
+
 
 <!DOCTYPE html>
 <html lang="en">

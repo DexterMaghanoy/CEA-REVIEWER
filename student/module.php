@@ -2,10 +2,15 @@
 require("../api/db-connect.php");
 session_start();
 
-$course_id = $_GET['course_id'];
+if (isset($_GET['course_id'])) {
+    $course_id = $_GET['course_id'];
+}
 
 global $quizstatus;
 global $qs;
+global $NA_counter;
+global $percentage;
+global $questionCount;
 
 $sql = "SELECT tbl_course.program_id, tbl_course.course_id 
  FROM tbl_course 
@@ -26,22 +31,22 @@ if (isset($_SESSION['program_id'])) {
     $moduleStmt = $conn->prepare($moduleSql);
     $moduleStmt->bindParam(':course_id', $course_id, PDO::PARAM_INT);
     $moduleStmt->execute();
-    
+
     // Array to store questions
     $all_questions = [];
-    
+
     // Check if there are rows returned
     if ($moduleStmt->rowCount() > 0) {
         // Loop through each module
         while ($moduleRow = $moduleStmt->fetch(PDO::FETCH_ASSOC)) {
             $module_id = $moduleRow['module_id'];
-    
+
             // Fetch questions for this module
             $questionSql = "SELECT * FROM tbl_question WHERE module_id = :module_id";
             $questionStmt = $conn->prepare($questionSql);
             $questionStmt->bindParam(':module_id', $module_id, PDO::PARAM_INT);
             $questionStmt->execute();
-    
+
             // Check if there are questions for this module
             if ($questionStmt->rowCount() > 0) {
                 // Fetch questions and add them to the array
@@ -50,9 +55,6 @@ if (isset($_SESSION['program_id'])) {
             }
         }
     }
-    
-
-    
     // Fetch the result and store it in a variable to use later
     $courses = $result->fetchAll(PDO::FETCH_ASSOC);
 
@@ -195,10 +197,13 @@ if (isset($_SESSION['program_id'])) {
                                                         if ($percentage >= 50) {
                                                             echo '<button class="btn btn-success btn-sm" disabled><i class="lni lni-invention"></i></button>';
                                                             echo '<button class="btn btn-warning btn-sm eye-icon-btn" onclick="window.location.href=\'question-answers.php?module_id=' . $row['module_id'] . '\'"><i class="lni lni-eye eye-icon text-white"></i></button>';
+                                                            $qs = -1;
                                                         } else {
                                                             // Check if questions are available for retake
                                                             if ($questionCount > 0) {
-                                                                echo '<button class="btn btn-success btn-sm" onclick="window.location.href=\'question.php?module_id=' . $row['module_id'] . '\'"><i class="lni lni-invention"></i></button>';
+                                                                echo '<button class="btn btn-success btn-sm" onclick="window.location.href=\'question.php?module_id=' . $row['module_id'] . '&course_id=' . $course_id . '\'"><i class="lni lni-invention"></i></button>';
+
+                                                                $qs = -1;
                                                             } else {
                                                                 echo '<button class="btn btn-success btn-sm" disabled><i class="lni lni-invention"></i></button>';
                                                             }
@@ -212,9 +217,11 @@ if (isset($_SESSION['program_id'])) {
                                                     echo "No result found";
                                                 }
                                             } else {
-                                                // Check if questions are available for first attempt
+                                                // Check if questions are available     for first attempt
                                                 if ($questionCount > 0) {
-                                                    echo '<button class="btn btn-success btn-sm" onclick="window.location.href=\'question.php?module_id=' . $row['module_id'] . '\'"><i class="lni lni-invention"></i></button>';
+                                                    echo '<button class="btn btn-success btn-sm" onclick="window.location.href=\'question.php?module_id=' . $row['module_id'] . '&course_id=' . $course_id . '\'"><i class="lni lni-invention"></i></button>';
+
+                                                    $qs = -1;
                                                 } else {
                                                     echo '<button class="btn btn-success btn-sm" disabled><i class="lni lni-invention"></i></button>';
                                                 }
@@ -223,78 +230,195 @@ if (isset($_SESSION['program_id'])) {
                                             ?>
                                         </td>
 
-                                        <td><?php echo $resultCount; ?></td>
+                                        <td><?php echo $resultCount;
+
+                                            ?>
+                                        </td>
                                         <td>
 
-
-                                            <!-- Display result status -->
                                             <?php
-                                            if ($resultCount > 0) {
-                                                if ($percentage >= 50) {
-                                                    echo "Passed";
+                                            $passRate = 0;
+
+                                            // Calculate and display pass rate
+                                            if ($resultCount > 0 && $percentage >= 50) {
+                                                $qs = 1;
+                                                if ($totalQuestions > 0) {
+                                                    echo 'Pass';
                                                     $qs = 1;
                                                 } else {
-                                                    echo "Failed";
-                                                    $qs = -INF;
+                                                    echo 'N/A ';
                                                 }
-                                            } else if ($questionCount <= 0) {
-                                                echo "N/A";
-                                                $qs = 1;
                                             } else {
-                                                echo "No Attempt";
-                                                $qs = -INF;
-                                                $qs = 1;
+                                                if ($questionCount <= 0) {
+
+                                                    echo 'No Questions';
+                                                } else {
+
+                                                    if ($resultCount > 0) {
+                                                        $qs = -1;
+                                                        echo 'Failed';
+                                                    } else {
+                                                        echo 'N/A';
+                                                    }
+
+                                                    $qs = -1;
+                                                }
                                             }
                                             ?>
-
 
                                         </td>
                                         <td>
                                             <?php
+
                                             // Calculate and display pass rate
-                                            if ($resultCount > 0) {
+                                            if ($resultCount > 0 && $percentage >= 50) {
+                                                $qs = 1;
                                                 if ($totalQuestions > 0) {
-                                                    $passRate = (100 / $resultCount);
+                                                    // Calculate pass rate based on attempt number
+                                                    $passRate = (1 / $resultCount) * 100;
                                                     echo number_format($passRate, 1) . '%';
+                                                    $qs = 1;
                                                 } else {
-                                                    echo '0%';
-                                                    $qs = -INF;
+                                                    echo 'N/A';
+                                                    $qs = -1;
                                                 }
                                             } else {
-                                                echo 'No Attempt';
-                                                $qs = -INF;
+                                                if ($questionCount <= 0) {
+                                                    echo 'No questions';
+                                                } else {
+                                                    echo 'N/A';
+                                                    $qs = -1;
+                                                }
                                             }
+
                                             ?>
                                         </td>
+
+
+
+
+
                                     </tr>
 
 
-                            <?php
+                                <?php
                                     $counter++; // Increment the counter
                                 endforeach;
+                            else :
+                                $qs = -1;
+                                ?>
+
+                                <tr>
+                                    <td colspan="6">No modules Found</td>
+                                </tr>
+                            <?php
                             endif;
                             ?>
 
                             <tr>
                                 <td>#</td>
                                 <td><b>Quiz</b></td>
-                                <td> <?php
-                                        // Display quiz button based on availability of questions
-                        
-                                        if ($qs > 0) {
+                                <td>
+                                    <?php
 
-                                            echo '<button onclick="window.location.href=\'quiz.php?module_id=' . $module_id . '\'" class="btn btn-info mb-2">Quiz</button>';
-                                        } else {
-                                            echo '<button onclick="window.location.href=\'quiz.php?module_id=' . $module_id . '\'" class="btn btn-info mb-2" disabled>Quiz</button>';
-                                        }
-                                        ?>
+                                    // Display quiz button based on availability of questions
+                                    if ($qs > 0) {
+                                        echo '<button onclick="window.location.href=\'quiz.php?course_id=' . $course_id . '\'" class="btn btn-info mb-2"><i class="lni lni-invention"></i></button>';
+                                    } else {
+                                        echo '<button onclick="window.location.href=\'quiz.php?course_id=' . $course_id . '\'" class="btn btn-info mb-2" disabled><i class="lni lni-invention"></i></button>';
+                                    }
+                                    ?>
+
                                 </td>
-                                <td> 0 </td>
-                                <td>  </td>
-                                <td>  </td>
+                                <td>
+                                    <?php
+                                    $course_id = filter_var($_GET['course_id'], FILTER_SANITIZE_NUMBER_INT);
+
+                                    $sql = "SELECT COUNT(*) AS quiz_result_count FROM tbl_result WHERE course_id = :course_id AND stud_id = :stud_id AND quiz_type = 2";
+                                    $qstmt = $conn->prepare($sql);
+                                    $qstmt->bindParam(":course_id", $course_id, PDO::PARAM_INT);
+                                    $qstmt->bindParam(":stud_id", $_SESSION['stud_id'], PDO::PARAM_INT);
+                                    $qstmt->execute();
+                                    $qresult = $qstmt->fetch(PDO::FETCH_ASSOC);
+
+                                    if ($qstmt->errorCode() !== '00000') {
+                                        echo "Error: " . $qstmt->errorInfo()[2];
+                                    } else {
+                                        $quizAttempts = $qresult['quiz_result_count'];
+                                        echo $quizAttempts;
+                                    }
+                                    ?>
+
+                                </td>
+                                <td>
+                                    <?php
+                                    global $QuizResultCount;
+                                    global $QuizResult;
+
+                                    // Temporary values
+                                    $result_score = 0;
+                                    $total_questions = 0;
+
+                                    // Execute SQL query to fetch data
+                                    $sql = "SELECT stud_id, course_id, result_score, total_questions
+            FROM tbl_result
+            WHERE quiz_type = 2
+            ORDER BY result_id DESC
+            LIMIT 1";
+
+                                    $stmt = $conn->prepare($sql);
+                                    $stmt->execute();
+                                    $QuizResult = $stmt->fetch(PDO::FETCH_ASSOC);
+
+                                    if ($QuizResult !== false) {
+                                        // Assign fetched values to variables
+                                        $stud_id = $QuizResult['stud_id'];
+                                        $course_id = $QuizResult['course_id'];
+                                        $result_score = $QuizResult['result_score'];
+                                        $total_questions = $QuizResult['total_questions'];
+
+                                        // Calculate the pass rate and display pass/fail status here
+                                        $passRate = 0;
+
+                                        if ($result_score > 0 && ($result_score / $total_questions) * 100 >= 50) {
+                                            echo 'Pass';
+                                        } else {
+                                            echo 'Failed';
+                                        }
+                                    } else {
+                                        // Handle the case where no result is found
+                                        echo "-";
+                                    }
+                                    ?>
+                                </td>
+
+                                <td>
+                                    <?php
+
+                                    if ($quizAttempts > 0) {
+                                        if ($result_score > 0 && ($result_score / $total_questions) * 100 >= 50) {
+                                            // Calculate and display the quiz percentage
+                                            $QuizPercentage = ($result_score / $total_questions) * 100 / $quizAttempts;
+                                            echo number_format($QuizPercentage) . '%';
+                                            $qs = -1;
+                                        } else {
+                                            echo '-';
+                                        }
+                                    } else {
+                                        echo '-';
+                                    }
+                                    ?>
+                                </td>
+
                             </tr>
+
                         </tbody>
                     </table>
+
+
+
+
+
 
 
 

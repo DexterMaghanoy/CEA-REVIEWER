@@ -12,14 +12,6 @@ if (isset($_SESSION['program_id'])) {
 
 $user_id = $_SESSION['user_id'];
 
-// $sql = "SELECT tbl_course.program_id, tbl_course.course_id 
-// FROM tbl_course 
-// INNER JOIN tbl_program ON tbl_course.program_id = tbl_program.program_id
-// WHERE tbl_course.user_id = :user_id";
-
-
-
-
 if (isset($_POST['save'])) {
 
     $course_id = $_POST['course_id'];

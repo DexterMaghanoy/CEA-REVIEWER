@@ -1,8 +1,52 @@
 <?php
+
 $Student_user = $_SESSION['stud_fname'];
 
 
+
+
+require '../api/db-connect.php';
+
+
+
+
 ?>
+<style>
+    .custom-alert {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background-color: #fff;
+        border: 1px solid #ccc;
+        padding: 20px;
+        border-radius: 5px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        z-index: 9999;
+    }
+
+    .custom-alert h2 {
+        margin-top: 0;
+        font-size: 24px;
+        color: #333;
+    }
+
+    .custom-alert p {
+        font-size: 16px;
+        color: #555;
+    }
+
+    .custom-alert button {
+        background-color: #007bff;
+        color: #fff;
+        border: none;
+        padding: 10px 20px;
+        cursor: pointer;
+        border-radius: 5px;
+    }
+</style>
+
+
 
 <aside id="sidebar">
     <div class="d-flex">
@@ -45,11 +89,12 @@ $Student_user = $_SESSION['stud_fname'];
             <?php endif; ?>
         </li>
         <li class="sidebar-item">
-            <a href="exam.php" class="sidebar-link">
+            <a href="exam.php" class="sidebar-link" onclick="showAlert()">
                 <i class="lni lni-pencil-alt"></i>
                 <span>Exam</span>
             </a>
         </li>
+
         <li class="sidebar-item">
             <a href="report.php" class="sidebar-link">
                 <i class="lni lni-popup"></i>
@@ -57,7 +102,7 @@ $Student_user = $_SESSION['stud_fname'];
             </a>
         </li>
 
-    
+
 
 
 
@@ -69,3 +114,14 @@ $Student_user = $_SESSION['stud_fname'];
         </a>
     </div>
 </aside>
+
+<script>
+    function showAlert() {
+        if (1 == 1) {
+            alert("Exam Unavailable"); // Alert message
+            window.location.href = 'exam.php'; // Redirect to exam.php
+        } else {
+            window.location.href = 'index.php'; // Redirect to index.php
+        }
+    }
+</script>

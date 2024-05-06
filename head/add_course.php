@@ -13,13 +13,13 @@ if (isset($_POST['save'])) {
 
     $program_id = $_SESSION['program_id'];
     $user_id = $_POST['user_id'];
-    $sem_id = $_POST['sem_id'];
-    $year_id = $_POST['year_id'];
+    // $sem_id = $_POST['sem_id'];
+    // $year_id = $_POST['year_id'];
     $course_code = $_POST['course_code'];
     $course_name = $_POST['course_name'];
     $course_status = 1;
 
-    if (empty($program_id) || empty($user_id) || empty($sem_id) || empty($year_id) || empty($course_code) || empty($course_name)) {
+    if (empty($program_id) || empty($user_id) || empty($course_code) || empty($course_name)) {
         echo '<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>';
         echo '<script src="https://cdn.jsdelivr.net/npm/sweetalert2@10.16.6/dist/sweetalert2.min.js"></script>';
         echo '<link href="https://cdn.jsdelivr.net/npm/sweetalert2@10.16.6/dist/sweetalert2.min.css" rel="stylesheet">';
@@ -36,7 +36,7 @@ if (isset($_POST['save'])) {
         // Check if program name already exists
         $checkStmt = $conn->prepare("SELECT course_id FROM tbl_course WHERE course_code = :course_code");
         $checkStmt->bindParam(':course_code', $course_code);
-        $checkStmt->execute();
+        $checkStmt->execute();  
 
         if ($checkStmt->rowCount() > 0) {
             echo '<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>';
