@@ -56,7 +56,9 @@ if (isset($_SESSION['program_id'])) {
 
                     <!-- JavaScript code for the chart -->
                     <script>
+
                         google.charts.load('current', {
+                            
                             'packages': ['corechart']
                         });
                         google.charts.setOnLoadCallback(drawChart);

@@ -15,10 +15,12 @@ if (isset($_SESSION['program_id'])) {
     $result->execute();
 
     // Fetch the result and store it in a variable to use later
+    
     $courses = $result->fetchAll(PDO::FETCH_ASSOC);
 } else {
     // Redirect to login page if session data is not set
     header("Location: ../index.php");
+
     exit();
 }
 

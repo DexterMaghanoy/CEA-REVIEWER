@@ -21,7 +21,7 @@ if (isset($_SESSION['program_id'])) {
                     COUNT(CASE WHEN result_status = 1 THEN 1 END) AS passed_attempts,
                     COUNT(CASE WHEN result_status = 0 THEN 1 END) AS failed_attempts
                 FROM tbl_result 
-                WHERE quiz_type = 1
+                WHERE quiz_type = 3
                 GROUP BY course_id) r 
             ON c.course_id = r.course_id
             WHERE 

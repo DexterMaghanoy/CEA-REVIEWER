@@ -12,6 +12,7 @@ if (isset($_SESSION['program_id'])) {
     $sql = "SELECT * FROM tbl_course WHERE program_id = :program_id";
     $result = $conn->prepare($sql);
     $result->bindParam(':program_id', $program_id, PDO::PARAM_INT);
+    
     $result->execute();
 
     // Fetch the result and store it in a variable to use later

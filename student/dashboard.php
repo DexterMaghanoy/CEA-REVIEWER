@@ -21,6 +21,7 @@ try {
     $user_stmt->bindParam(':stud_id', $user_id, PDO::PARAM_INT);
     $user_stmt->execute();
 
+    
     // Fetch user details
     if ($user_stmt->rowCount() > 0) {
         $user = $user_stmt->fetch(PDO::FETCH_ASSOC);

@@ -103,7 +103,9 @@ require '../api/db-connect.php';
     <div class="sidebar-footer">
         <a href="../logout.php" class="sidebar-link">
             <i class="lni lni-exit"></i>
+            
             <span>Logout</span>
+
         </a>
     </div>
 </aside>

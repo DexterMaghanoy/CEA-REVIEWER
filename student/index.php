@@ -15,6 +15,7 @@ if (isset($_POST['submit'])) {
         $url = 'https://www.google.com/recaptcha/api/siteverify';
         $data = array(
             'secret' => '6Lc4H3ApAAAAAIfb-ov9xqCzXvWYsHX9pOxWOy3t',
+            
             'response' => $captcha_response
         );
 

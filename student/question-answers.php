@@ -14,6 +14,7 @@ session_start();
 // Function to sanitize user input
 function sanitizeInput($input)
 {
+    
     return htmlspecialchars(trim($input), ENT_QUOTES, 'UTF-8');
 }
 

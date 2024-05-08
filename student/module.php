@@ -30,6 +30,7 @@ if (isset($_SESSION['program_id'])) {
     $moduleSql = "SELECT module_id FROM tbl_module WHERE course_id = :course_id";
     $moduleStmt = $conn->prepare($moduleSql);
     $moduleStmt->bindParam(':course_id', $course_id, PDO::PARAM_INT);
+    
     $moduleStmt->execute();
 
     // Array to store questions

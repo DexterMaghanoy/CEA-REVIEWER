@@ -119,6 +119,7 @@ if (isset($_SESSION['stud_id']) && isset($_GET['course_id'])) {
 
                                     </tr>
                                 </thead>
+                                
                                 <tbody>
                                     <?php if ($result->rowCount() > 0) : ?>
                                         <?php foreach ($results as $row) : ?>

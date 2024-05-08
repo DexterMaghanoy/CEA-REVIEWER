@@ -6,6 +6,7 @@ session_start();
 
 // Fetch 30 quiz questions from the database
 $sql = "SELECT * FROM tbl_question LIMIT 30";
+
 $stmt = $conn->prepare($sql);
 $stmt->execute();
 $questions = $stmt->fetchAll(PDO::FETCH_ASSOC);

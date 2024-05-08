@@ -188,7 +188,10 @@ searchInput.addEventListener("keyup", function() {
         toggleClearButton();
         const rows = document.querySelectorAll("#resultTable tbody tr");
         rows.forEach(row => {
+            
             row.style.display = "";
+
+
         });
     });
 </script>

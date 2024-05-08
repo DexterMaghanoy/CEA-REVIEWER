@@ -76,6 +76,7 @@ if (isset($_SESSION['program_id'])) {
 
                 <?php include 'report_dropdown.php'; ?>
                 <div class="col-sm">
+                    
 
                     <div id="myChart" style="width:100%; max-width:100%; height:100%;">
                     </div>

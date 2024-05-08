@@ -15,6 +15,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         exit();
     }
 
+    
     // Perform validation here
 
     // Check if the new password matches the confirm password

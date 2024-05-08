@@ -117,6 +117,7 @@ $stmt->bindParam(":result_status", $passStatus, PDO::PARAM_INT); // Bind result_
 // Execute the statement to insert the result
 $stmt->execute();
 
+
     }
 
 

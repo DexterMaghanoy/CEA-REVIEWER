@@ -99,6 +99,7 @@ if (isset($_SESSION['program_id'])) {
 
                         // Function to draw the chart
                         function drawChart() {
+                            
                             const courseData = <?php echo json_encode($courses); ?>;
 
                             var chartData = [

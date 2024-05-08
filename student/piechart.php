@@ -29,6 +29,7 @@
     .slice:nth-child(1) {
         background-color: #ff6347; /* Adjust colors for different slices */
         transform: rotate(0deg);
+        
     }
 
     .slice:nth-child(2) {
