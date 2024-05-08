@@ -123,8 +123,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             }
         }
         $quiz_type = 1;
-        $sql = "INSERT INTO tbl_result (module_id, stud_id, result_score, total_questions, quiz_type, course_id) 
-         VALUES (:module_id, :stud_id, :result_score, :total_questions, :quiz_type, :course_id)";
+        $passingScore = 0.5;
+        $passStatus = ($score / $total_questions) >= $passingScore ? 1 : 0;
+        $sql = "INSERT INTO tbl_result (module_id, stud_id, result_score, total_questions, quiz_type, course_id, result_status) 
+         VALUES (:module_id, :stud_id, :result_score, :total_questions, :quiz_type, :course_id, :result_status)";
         $stmt = $conn->prepare($sql);
         $stmt->bindParam(":module_id", $module_id, PDO::PARAM_INT);
         $stmt->bindParam(":stud_id", $stud_id, PDO::PARAM_INT);
@@ -132,6 +134,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $stmt->bindParam(":total_questions", $total_questions, PDO::PARAM_INT); // Pass the total questions attempted
         $stmt->bindParam(":quiz_type", $quiz_type, PDO::PARAM_INT);
         $stmt->bindParam(":course_id", $course_id, PDO::PARAM_INT);
+        $stmt->bindParam(":result_status", $passStatus, PDO::PARAM_INT); // Bind result_status
 
         if (!$stmt->execute()) {
             handleDatabaseError("Failed to insert result into the database.");
@@ -181,6 +184,23 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             /* Optionally make the text bold */
             margin-bottom: 10px;
             /* Add some space between questions */
+
+
+
+
+        }
+
+        .form-check-input[type="radio"] {
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #000;
+            border-radius: 50%;
+            outline: none;
+            margin-right: 5px;
+            /* Adjust the margin as needed */
         }
     </style>
 </head>
@@ -191,7 +211,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         include 'sidebar.php';
         ?>
         <div class="container">
-            <div class="row justify-content-center mt-5">
+            <div class="row justify-content-center mt-2">
                 <div class="col-lg-8">
                     <br> <br>
                     <h1 id="quiz-title" class="text-center mb-4">Questions</h1>
@@ -203,13 +223,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                             <?php $counter = 0; ?>
                             <?php foreach ($result as $key => $question) : ?>
                                 <div class="question-box <?php echo $counter === 0 ? '' : 'd-none'; ?>">
-                                    <div class="question-text"><?php echo $counter + 1 . ". " . sanitizeInput($question['question_text']); ?></div>
+                                    <div style="font-size: 35px;" class="question-text"><?php echo $counter + 1 . ". " . sanitizeInput($question['question_text']); ?></div>
                                     <?php foreach (['A', 'B', 'C', 'D'] as $option) : ?>
                                         <?php $optionKey = 'question_' . $option; ?>
-                                        <div class="form-check">
+                                        <div class="form-check" style="font-size: 25px;">
                                             <input class="form-check-input" type="radio" name="answer_<?php echo $question['question_id']; ?>" id="option<?php echo $option; ?>_<?php echo $question['question_id']; ?>" value="<?php echo sanitizeInput($question[$optionKey]); ?>">
                                             <label class="form-check-label" for="option<?php echo $option; ?>_<?php echo $question['question_id']; ?>"><?php echo sanitizeInput($question[$optionKey]); ?></label>
                                         </div>
+
                                     <?php endforeach; ?>
                                 </div>
                                 <?php $counter++; ?>
@@ -217,7 +238,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                             <br> <br>
                             <div class="text-end">
                                 <button id="submit-btn" type="submit" class="btn btn-primary">Submit</button>
-                                <button id="next-btn" class="btn btn-primary d-none" type="button">Next</button>
+                                <button style="font-size: 20px;" id="next-btn" class="btn btn-primary d-none" type="button">Next</button>
                             </div>
                         <?php else : ?>
                             <p>No questions found.</p>

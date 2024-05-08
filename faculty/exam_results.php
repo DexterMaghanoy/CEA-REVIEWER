@@ -82,8 +82,9 @@ $totalPages = ceil($totalCount / $recordsPerPage);
                 <div class="row justify-content-center mt-5">
                     <div class="col-md-8">
                         <div class="text-center mb-4">
-                            <h1>Report</h1>
+                            <h1>Exam Report</h1>
                         </div>
+                        <?php include 'report_dropdown.php'; ?>
                         <!-- Search bar -->
                         <form action="" method="GET" class="mb-3">
                             <div class="input-group">

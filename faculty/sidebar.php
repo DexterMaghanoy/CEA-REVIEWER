@@ -51,7 +51,7 @@
             </a>
         </li>
         <li class="sidebar-item">
-            <a href="report.php" class="sidebar-link">
+            <a href="test_results.php" class="sidebar-link">
                 <i class="lni lni-popup"></i>
                 <span>Report</span>
             </a>

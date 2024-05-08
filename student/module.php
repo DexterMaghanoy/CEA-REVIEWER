@@ -148,6 +148,8 @@ if (isset($_SESSION['program_id'])) {
                                             <a href="#" class="view-module-btn" data-bs-toggle="modal" data-bs-target="#moduleModal" data-module-id="<?php echo $row['module_id']; ?>"><?php echo $row['module_name']; ?></a>
                                         </td>
                                         <td>
+
+
                                             <?php
                                             // Check if the module has questions available
                                             $sql = "SELECT COUNT(*) AS question_count FROM tbl_question WHERE module_id = :module_id";
@@ -155,6 +157,9 @@ if (isset($_SESSION['program_id'])) {
                                             $stmt->bindParam(":module_id", $row['module_id'], PDO::PARAM_INT);
                                             $stmt->execute();
                                             $questionCount = $stmt->fetch(PDO::FETCH_ASSOC)['question_count'];
+
+                                            // Initialize a variable to track if all buttons are disabled
+                                            $allButtonsDisabled = true;
 
                                             // Check if the quiz has been completed by the user
                                             $sql = "SELECT COUNT(*) AS count FROM tbl_result WHERE module_id = :module_id AND stud_id = :stud_id AND quiz_type = 1";
@@ -169,15 +174,15 @@ if (isset($_SESSION['program_id'])) {
                                             if ($resultCount > 0) {
                                                 // Fetch the user's latest result
                                                 $sql = "SELECT tbl_result.result_score, COUNT(tbl_question.question_id) AS total_questions
-            FROM tbl_result 
-            LEFT JOIN tbl_question ON tbl_result.module_id = tbl_question.module_id
-            WHERE tbl_result.result_id = (
-                SELECT MAX(result_id) 
-                FROM tbl_result 
-                WHERE module_id = :module_id 
-                AND stud_id = :stud_id
-                AND quiz_type = 1
-            )";
+    FROM tbl_result 
+    LEFT JOIN tbl_question ON tbl_result.module_id = tbl_question.module_id
+    WHERE tbl_result.result_id = (
+        SELECT MAX(result_id) 
+        FROM tbl_result 
+        WHERE module_id = :module_id 
+        AND stud_id = :stud_id
+        AND quiz_type = 1
+    )";
 
                                                 $stmt = $conn->prepare($sql);
                                                 $stmt->bindParam(":module_id", $row['module_id'], PDO::PARAM_INT);
@@ -197,18 +202,16 @@ if (isset($_SESSION['program_id'])) {
                                                         if ($percentage >= 50) {
                                                             echo '<button class="btn btn-success btn-sm" disabled><i class="lni lni-invention"></i></button>';
                                                             echo '<button class="btn btn-warning btn-sm eye-icon-btn" onclick="window.location.href=\'question-answers.php?module_id=' . $row['module_id'] . '\'"><i class="lni lni-eye eye-icon text-white"></i></button>';
-                                                            $qs = -1;
                                                         } else {
                                                             // Check if questions are available for retake
                                                             if ($questionCount > 0) {
                                                                 echo '<button class="btn btn-success btn-sm" onclick="window.location.href=\'question.php?module_id=' . $row['module_id'] . '&course_id=' . $course_id . '\'"><i class="lni lni-invention"></i></button>';
-
-                                                                $qs = -1;
+                                                                echo '<button class="btn btn-warning btn-sm eye-icon-btn" data-bs-toggle="modal" data-bs-target="question-answers.php" data-module-id="' . $row['module_id'] . '" disabled><i class="lni lni-eye eye-icon text-white"></i></button>';
+                                                                $allButtonsDisabled = false;
                                                             } else {
                                                                 echo '<button class="btn btn-success btn-sm" disabled><i class="lni lni-invention"></i></button>';
+                                                                echo '<button class="btn btn-warning btn-sm eye-icon-btn" data-bs-toggle="modal" data-bs-target="question-answers.php" data-module-id="' . $row['module_id'] . '" disabled><i class="lni lni-eye eye-icon text-white"></i></button>';
                                                             }
-
-                                                            echo '<button class="btn btn-warning btn-sm eye-icon-btn" data-bs-toggle="modal" data-bs-target="question-answers.php" data-module-id="' . $row['module_id'] . '" disabled><i class="lni lni-eye eye-icon text-white"></i></button>';
                                                         }
                                                     } else {
                                                         echo "No questions available";
@@ -217,17 +220,28 @@ if (isset($_SESSION['program_id'])) {
                                                     echo "No result found";
                                                 }
                                             } else {
-                                                // Check if questions are available     for first attempt
+                                                // Check if questions are available for first attempt
                                                 if ($questionCount > 0) {
                                                     echo '<button class="btn btn-success btn-sm" onclick="window.location.href=\'question.php?module_id=' . $row['module_id'] . '&course_id=' . $course_id . '\'"><i class="lni lni-invention"></i></button>';
-
-                                                    $qs = -1;
+                                                    echo '<button class="btn btn-warning btn-sm eye-icon-btn" data-bs-toggle="modal" data-bs-target="question-answers.php" data-module-id="' . $row['module_id'] . '" disabled><i class="lni lni-eye eye-icon text-white"></i></button>';
+                                                    $allButtonsDisabled = false;
                                                 } else {
                                                     echo '<button class="btn btn-success btn-sm" disabled><i class="lni lni-invention"></i></button>';
+                                                    echo '<button class="btn btn-warning btn-sm eye-icon-btn" data-bs-toggle="modal" data-bs-target="question-answers.php" data-module-id="' . $row['module_id'] . '" disabled><i class="lni lni-eye eye-icon text-white"></i></button>';
                                                 }
-                                                echo '<button class="btn btn-warning btn-sm eye-icon-btn" data-bs-toggle="modal" data-bs-target="question-answers.php" data-module-id="' . $row['module_id'] . '" disabled><i class="lni lni-eye eye-icon text-white"></i></button>';
+                                            }
+
+                                            // Check if all buttons are disabled and trigger an alert
+                                            if ($allButtonsDisabled) {
+                                                // echo '<script>alert("Hello World!");</script>';
+
                                             }
                                             ?>
+
+
+
+
+
                                         </td>
 
                                         <td><?php echo $resultCount;
@@ -241,12 +255,11 @@ if (isset($_SESSION['program_id'])) {
 
                                             // Calculate and display pass rate
                                             if ($resultCount > 0 && $percentage >= 50) {
-                                                $qs = 1;
                                                 if ($totalQuestions > 0) {
                                                     echo 'Pass';
-                                                    $qs = 1;
                                                 } else {
                                                     echo 'N/A ';
+                                                    $qs = -1;
                                                 }
                                             } else {
                                                 if ($questionCount <= 0) {
@@ -255,15 +268,17 @@ if (isset($_SESSION['program_id'])) {
                                                 } else {
 
                                                     if ($resultCount > 0) {
-                                                        $qs = -1;
                                                         echo 'Failed';
+                                                        $qs = -1;
                                                     } else {
                                                         echo 'N/A';
+                                                        $qs = -1;
                                                     }
-
-                                                    $qs = -1;
                                                 }
                                             }
+
+
+
                                             ?>
 
                                         </td>
@@ -272,22 +287,18 @@ if (isset($_SESSION['program_id'])) {
 
                                             // Calculate and display pass rate
                                             if ($resultCount > 0 && $percentage >= 50) {
-                                                $qs = 1;
                                                 if ($totalQuestions > 0) {
                                                     // Calculate pass rate based on attempt number
                                                     $passRate = (1 / $resultCount) * 100;
                                                     echo number_format($passRate, 1) . '%';
-                                                    $qs = 1;
                                                 } else {
                                                     echo 'N/A';
-                                                    $qs = -1;
                                                 }
                                             } else {
                                                 if ($questionCount <= 0) {
                                                     echo 'No questions';
                                                 } else {
                                                     echo 'N/A';
-                                                    $qs = -1;
                                                 }
                                             }
 
@@ -306,8 +317,8 @@ if (isset($_SESSION['program_id'])) {
                                 endforeach;
                             else :
                                 $qs = -1;
-                                ?>
 
+                                ?>
                                 <tr>
                                     <td colspan="6">No modules Found</td>
                                 </tr>
@@ -315,19 +326,59 @@ if (isset($_SESSION['program_id'])) {
                             endif;
                             ?>
 
+
+
+                            <?php
+
+                            // Display quiz button based on availability of questions
+                            if ($qs >= 0) {
+                                $quiz_button = "";
+                            } else {
+                                $quiz_button = "disabled";
+                            }
+                            ?>
+
+
                             <tr>
                                 <td>#</td>
                                 <td><b>Quiz</b></td>
                                 <td>
                                     <?php
 
-                                    // Display quiz button based on availability of questions
-                                    if ($qs > 0) {
-                                        echo '<button onclick="window.location.href=\'quiz.php?course_id=' . $course_id . '\'" class="btn btn-info mb-2"><i class="lni lni-invention"></i></button>';
+                                    $course_id = filter_var($_GET['course_id'], FILTER_SANITIZE_NUMBER_INT);
+
+                                    $sql = "SELECT COUNT(*) AS quiz_result_count FROM tbl_result WHERE course_id = :course_id AND stud_id = :stud_id AND quiz_type = 2";
+                                    $qstmt = $conn->prepare($sql);
+                                    $qstmt->bindParam(":course_id", $course_id, PDO::PARAM_INT);
+                                    $qstmt->bindParam(":stud_id", $_SESSION['stud_id'], PDO::PARAM_INT);
+                                    $qstmt->execute();
+                                    $qresult = $qstmt->fetch(PDO::FETCH_ASSOC);
+
+                                    if ($qstmt->errorCode() !== '00000') {
+                                        echo "Error: " . $qstmt->errorInfo()[2];
                                     } else {
-                                        echo '<button onclick="window.location.href=\'quiz.php?course_id=' . $course_id . '\'" class="btn btn-info mb-2" disabled><i class="lni lni-invention"></i></button>';
+                                        $quizAttempts = $qresult['quiz_result_count'];
+
+                                        // Check if the user has already passed the quiz
+                                        $sql_passed = "SELECT COUNT(*) AS passed_count FROM tbl_result WHERE course_id = :course_id AND stud_id = :stud_id AND quiz_type = 2 AND result_score >= total_questions * 0.5";
+                                        $stmt_passed = $conn->prepare($sql_passed);
+                                        $stmt_passed->bindParam(":course_id", $course_id, PDO::PARAM_INT);
+                                        $stmt_passed->bindParam(":stud_id", $_SESSION['stud_id'], PDO::PARAM_INT);
+                                        $stmt_passed->execute();
+                                        $passed_result = $stmt_passed->fetch(PDO::FETCH_ASSOC);
+
+                                        if ($passed_result['passed_count'] > 0) {
+                                            // User has already passed the quiz, disable the button
+                                            echo '<button class="btn btn-info mb-2" disabled><i class="lni lni-invention"></i></button>';
+                                            $quiz_result_final = "Pass";
+                                        } else {
+                                            // User hasn't passed the quiz, enable the button
+                                            echo '<button onclick="window.location.href=\'quiz.php?course_id=' . $course_id . '\'" class="btn btn-info mb-2" ' . $quiz_button . '><i class="lni lni-invention"></i></button>';
+                                            $quiz_result_final = "-";
+                                        }
                                     }
                                     ?>
+
 
                                 </td>
                                 <td>
@@ -381,9 +432,9 @@ if (isset($_SESSION['program_id'])) {
                                         $passRate = 0;
 
                                         if ($result_score > 0 && ($result_score / $total_questions) * 100 >= 50) {
-                                            echo 'Pass';
+                                            echo $quiz_result_final;
                                         } else {
-                                            echo 'Failed';
+                                            echo  $quiz_result_final;;
                                         }
                                     } else {
                                         // Handle the case where no result is found
@@ -398,9 +449,8 @@ if (isset($_SESSION['program_id'])) {
                                     if ($quizAttempts > 0) {
                                         if ($result_score > 0 && ($result_score / $total_questions) * 100 >= 50) {
                                             // Calculate and display the quiz percentage
-                                            $QuizPercentage = ($result_score / $total_questions) * 100 / $quizAttempts;
+                                            $QuizPercentage = 100 / $quizAttempts;
                                             echo number_format($QuizPercentage) . '%';
-                                            $qs = -1;
                                         } else {
                                             echo '-';
                                         }
@@ -414,16 +464,6 @@ if (isset($_SESSION['program_id'])) {
 
                         </tbody>
                     </table>
-
-
-
-
-
-
-
-
-
-
 
 
                     <!-- Pagination -->

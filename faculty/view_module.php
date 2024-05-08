@@ -98,6 +98,8 @@ if (isset($_POST['moduleId']) && isset($_POST['moduleStatus'])) {
                         <div class="text-center mb-4">
                             <h1>Module</h1>
                         </div>
+                        <?php include 'report_dropdown.php'; ?>
+
                         <table class="table table-bordered border-secondary">
                             <caption>List of Modules</caption>
                             <thead class="table-dark">

@@ -1,22 +1,16 @@
 <?php
-require_once "../api/db-connect.php"; // Adjust the path as needed
+require_once "../api/db-connect.php";
 session_start();
-if (isset($_SESSION['program_id']) && isset($_SESSION['year_id'])) {
-    $program_id = $_SESSION['program_id'];
-    $year_id = $_SESSION['year_id'];
-    // Prepare SQL query to fetch courses for the given program and year
-    $sql = "SELECT * FROM tbl_course WHERE program_id = :program_id AND year_id = :year_id AND sem_id = 1";
-    $result = $conn->prepare($sql);
-    $result->bindParam(':program_id', $program_id, PDO::PARAM_INT);
-    $result->bindParam(':year_id', $year_id, PDO::PARAM_INT);
-    $result->execute();
-    // Fetch the result and store it in a variable to use later
-    $courses = $result->fetchAll(PDO::FETCH_ASSOC);
-} else {
-    // Redirect to login page if session data is not set
-    header("Location: ../index.php");
-    exit();
-}
+// if (isset($_SESSION['program_id'])) {
+//     $sql = "SELECT * FROM tbl_course WHERE program_id = :program_id";
+//     $result = $conn->prepare($sql);
+
+//     $result->execute();
+//     $courses = $result->fetchAll(PDO::FETCH_ASSOC);
+// } else {
+//     header("Location: ../index.php");
+//     exit();
+// }
 // Function to sanitize user input
 function sanitizeInput($input)
 {

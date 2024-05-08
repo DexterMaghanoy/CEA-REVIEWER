@@ -1,14 +1,7 @@
 <?php
 
 $Student_user = $_SESSION['stud_fname'];
-
-
-
-
 require '../api/db-connect.php';
-
-
-
 
 ?>
 <style>
@@ -96,7 +89,7 @@ require '../api/db-connect.php';
         </li>
 
         <li class="sidebar-item">
-            <a href="report.php" class="sidebar-link">
+            <a href="report_questions.php" class="sidebar-link">
                 <i class="lni lni-popup"></i>
                 <span>Report</span>
             </a>
@@ -117,11 +110,11 @@ require '../api/db-connect.php';
 
 <script>
     function showAlert() {
-        if (1 == 1) {
-            alert("Exam Unavailable"); // Alert message
-            window.location.href = 'exam.php'; // Redirect to exam.php
-        } else {
-            window.location.href = 'index.php'; // Redirect to index.php
-        }
+        // if (1 == 1) {
+        //     alert("Exam Unavailable"); // Alert message
+        //     window.location.href = 'exam.php'; // Redirect to exam.php
+        // } else {
+        //     window.location.href = 'index.php'; // Redirect to index.php
+        // }
     }
 </script>
