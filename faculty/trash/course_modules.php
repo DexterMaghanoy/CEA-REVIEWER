@@ -32,6 +32,9 @@ if (isset($_GET['course_id'])) {
 }
 ?>
 
+
+
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -51,8 +54,6 @@ if (isset($_GET['course_id'])) {
     </style>
 </head>
 
-
-
 <body>
     <div class="wrapper">
         <?php include 'sidebar.php'; ?>
@@ -66,23 +67,23 @@ if (isset($_GET['course_id'])) {
                         </div>
                         <div class="input-group search-bar">
                             <!-- Search bar -->
+                            <input type="text" class="form-control" id="searchInput" placeholder="Search Module">
                         </div>
-                        <div class="list-group" id="moduleList">
-                            <?php if (!empty($modules)) : ?>
-                                <?php foreach ($modules as $module) : ?>
-                                    <!-- Module card -->
-                                    <div class="list-group-item list-group-item-action d-flex justify-content-between align-items-center mb-3" style="background-color: #eff9f9;">
-                                        <span><?php echo $module['module_name']; ?></span>
-                                        <!-- Space -->
-                                        <span style="padding: 0 10px;"></span>
-                                        <!-- View Students button -->
-                                        <a href="view_progress.php?course_id=<?php echo $course_id; ?>&module_id=<?php echo $module['module_id']; ?>" class="btn btn-outline-primary">View Students</a>
-                                    </div>
-                                <?php endforeach; ?>
-                            <?php else : ?>
-                                <!-- No modules found message -->
-                                <p class="text-center">No modules found for this course.</p>
-                            <?php endif; ?>
+                        <div class="dropdown">
+                            <button class="btn btn-secondary dropdown-toggle" type="button" id="moduleDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                Select Module
+                            </button>
+                            <ul class="dropdown-menu" aria-labelledby="moduleDropdown">
+                                <?php if (!empty($modules)) : ?>
+                                    <?php foreach ($modules as $module) : ?>
+                                        <!-- Module dropdown item -->
+                                        <li><a class="dropdown-item" href="view_progress.php?course_id=<?php echo $course_id; ?>&module_id=<?php echo $module['module_id']; ?>"><?php echo $module['module_name']; ?></a></li>
+                                    <?php endforeach; ?>
+                                <?php else : ?>
+                                    <!-- No modules found message -->
+                                    <li><span class="dropdown-item disabled">No modules found for this course.</span></li>
+                                <?php endif; ?>
+                            </ul>
                         </div>
                     </div>
                 </div>
@@ -97,9 +98,9 @@ if (isset($_GET['course_id'])) {
         });
 
         // Function to perform search
-        document.getElementById("searchInput").addEventListener("input", function() {
+        document.getElementById("searchInput").addEventListener("input", function(  ) {
             const searchInput = this.value.toLowerCase();
-            const modules = document.querySelectorAll("#moduleList a");
+            const modules = document.querySelectorAll("#moduleDropdown .dropdown-item");
             modules.forEach(function(module) {
                 const moduleName = module.textContent.toLowerCase();
                 if (moduleName.includes(searchInput)) {

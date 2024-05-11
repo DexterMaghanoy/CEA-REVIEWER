@@ -2,9 +2,7 @@
 require("../api/db-connect.php");
 session_start(); // Start the session
 
-if (isset($_SESSION['program_id'])) {
-    $program_id = $_SESSION['program_id'];
-} else {
+if (!isset($_SESSION['program_id'])) {
     header("Location: ../index.php");
     exit();
 }
@@ -14,30 +12,22 @@ if (isset($_POST['update'])) {
     $course_id = filter_input(INPUT_POST, 'course_id', FILTER_SANITIZE_NUMBER_INT);
     $program_id = $_SESSION['program_id'];
     $user_id = filter_input(INPUT_POST, 'user_id', FILTER_SANITIZE_NUMBER_INT);
-    $sem_id = filter_input(INPUT_POST, 'sem_id', FILTER_SANITIZE_NUMBER_INT);
-    $year_id = filter_input(INPUT_POST, 'year_id', FILTER_SANITIZE_NUMBER_INT);
     $course_code = filter_input(INPUT_POST, 'course_code', FILTER_SANITIZE_STRING);
     $course_name = filter_input(INPUT_POST, 'course_name', FILTER_SANITIZE_STRING);
 
     // Validate input data
-    if (empty($program_id) || empty($user_id) || empty($sem_id) || empty($year_id) || empty($course_code) || empty($course_name)) {
+    if (empty($user_id) || empty($course_code) || empty($course_name)) {
         echo '<script>alert("Please input all fields.");</script>';
     } else {
         try {
             // Prepare and execute the SQL query using prepared statements
             $sql = "UPDATE `tbl_course` SET 
-                    program_id = :program_id,
                     user_id = :user_id,
-                    sem_id = :sem_id,
-                    year_id = :year_id,
                     course_code = :course_code,
                     course_name = :course_name
                     WHERE course_id = :course_id";
             $stmt = $conn->prepare($sql);
-            $stmt->bindParam(":program_id", $program_id);
             $stmt->bindParam(":user_id", $user_id);
-            $stmt->bindParam(":sem_id", $sem_id);
-            $stmt->bindParam(":year_id", $year_id);
             $stmt->bindParam(":course_code", $course_code);
             $stmt->bindParam(":course_name", $course_name);
             $stmt->bindParam(":course_id", $course_id);
@@ -87,10 +77,7 @@ if (isset($_GET['course_id'])) {
     if ($stmt->rowCount() > 0) {
         $row = $stmt->fetch();
         $course_id = $row['course_id'];
-        $program_id = $row['program_id'];
         $user_id = $row['user_id'];
-        $sem_id = $row['sem_id'];
-        $year_id = $row['year_id'];
         $course_code = $row['course_code'];
         $course_name = $row['course_name'];
     }
@@ -113,9 +100,7 @@ if (isset($_GET['course_id'])) {
 
 <body>
     <div class="wrapper">
-    <?php
-        include 'sidebar.php';
-        ?>
+    <?php include 'sidebar.php'; ?>
         <div class="main py-3">
             <div class="text-center mb-4">
                 <h1>Edit Course</h1>
@@ -124,15 +109,14 @@ if (isset($_GET['course_id'])) {
                 <div class="row justify-content-center">
                     <div class="col-md-5">
                         <form action="edit_course.php" method="post">
-
                             <!-- Faculty Select -->
                             <div class="mb-3">
                                 <label for="user_id" class="form-label">Faculty</label>
                                 <select class="form-select" id="user_id" name="user_id">
                                     <?php
-                                    $program_id = $_SESSION['program_id'];
-                                    $sqlUser = "SELECT user_id, user_fname, user_lname, user_mname FROM tbl_user WHERE program_id = $program_id AND type_id = 3";
+                                    $sqlUser = "SELECT user_id, user_fname, user_lname, user_mname FROM tbl_user WHERE program_id = :program_id AND type_id = 3";
                                     $stmtUser = $conn->prepare($sqlUser);
+                                    $stmtUser->bindParam(":program_id", $_SESSION['program_id']);
                                     $stmtUser->execute();
                                     $users = $stmtUser->fetchAll(PDO::FETCH_ASSOC);
 
@@ -143,55 +127,20 @@ if (isset($_GET['course_id'])) {
                                     ?>
                                 </select>
                             </div>
-                            <!-- Sem Select -->
-                            <div class="mb-3">
-                                <label for="sem_id" class="form-label">Semester</label>
-                                <select class="form-select" id="sem_id" name="sem_id">
-                                    <?php
-                                    $sqlSemester = "SELECT sem_id, sem_name FROM tbl_semester";
-                                    $stmtSemester = $conn->prepare($sqlSemester);
-                                    $stmtSemester->execute();
-                                    $semester = $stmtSemester->fetchAll(PDO::FETCH_ASSOC);
 
-                                    foreach ($semester as $sem) {
-                                        $selected = ($sem_id == $sem['sem_id']) ? "selected" : "";
-                                        echo "<option value='" . $sem['sem_id'] . "' $selected>" . $sem['sem_name'] . "</option>";
-                                    }
-                                    ?>
-                                </select>
-                            </div>
-
-                            <!-- Year Select -->
-                            <div class="mb-3">
-                                <label for="year_id" class="form-label">Year Level</label>
-                                <select class="form-select" id="year_id" name="year_id">
-                                    <?php
-                                    $sqlYear = "SELECT year_id, year_level FROM tbl_year";
-                                    $stmtYear = $conn->prepare($sqlYear);
-                                    $stmtYear->execute();
-                                    $years = $stmtYear->fetchAll(PDO::FETCH_ASSOC);
-
-                                    foreach ($years as $year) {
-                                        $selected = ($year_id == $year['year_id']) ? "selected" : "";
-                                        echo "<option value='" . $year['year_id'] . "' $selected>" . $year['year_level'] . "</option>";
-                                    }
-                                    ?>
-                                </select>
-                            </div>
-
-                            <!-- First Name Input -->
+                            <!-- Course Code Input -->
                             <div class="mb-3">
                                 <label for="course_code" class="form-label">Course Code</label>
                                 <input type="text" class="form-control" id="course_code" name="course_code" value="<?php echo $course_code; ?>" required>
                             </div>
 
-                            <!-- Middle Name Input -->
+                            <!-- Course Name Input -->
                             <div class="mb-3">
                                 <label for="course_name" class="form-label">Course Name</label>
                                 <input type="text" class="form-control" id="course_name" name="course_name" value="<?php echo $course_name; ?>" required>
                             </div>
 
-                            <!-- Hidden Employee ID and Submit Button -->
+                            <!-- Hidden Course ID and Submit Button -->
                             <input type="hidden" name="course_id" value="<?php echo $course_id; ?>">
                             <input type="submit" class="btn btn-success mt-2" value="Update" name="update">
                         </form>

@@ -12,14 +12,14 @@ if (isset($_SESSION['program_id'])) {
 // Check if form is submitted for toggling user status
 if (isset($_POST['toggle_status']) && isset($_POST['course_id'])) {
     $course_id = $_POST['course_id'];
-    // Get current status of the user
+    // Get current status of the course
     $stmt = $conn->prepare("SELECT course_status FROM tbl_course WHERE course_id = :course_id");
     $stmt->bindParam(':course_id', $course_id, PDO::PARAM_INT);
     $stmt->execute();
     $row = $stmt->fetch(PDO::FETCH_ASSOC);
     $new_status = $row['course_status'] == 1 ? 0 : 1; // Toggle status
 
-    // Update user status
+    // Update course status
     $updateStmt = $conn->prepare("UPDATE tbl_course SET course_status = :new_status WHERE course_id = :course_id");
     $updateStmt->bindParam(':new_status', $new_status, PDO::PARAM_INT);
     $updateStmt->bindParam(':course_id', $course_id, PDO::PARAM_INT);
@@ -36,46 +36,53 @@ $offset = ($page - 1) * $recordsPerPage;
 $search = isset($_GET['search']) ? $_GET['search'] : '';
 
 // Build the SQL query with search functionality
-$sql = "SELECT c.*, u.user_lname, u.user_fname, p.program_name, y.year_level
+$sql = "SELECT c.*, u.user_lname, u.user_fname, p.program_name
         FROM tbl_course AS c
         JOIN tbl_user AS u ON c.user_id = u.user_id
-        JOIN tbl_year AS y ON c.year_id = y.year_id
-        JOIN tbl_program AS p ON c.program_id = p.program_id";
+        JOIN tbl_program AS p ON c.program_id = p.program_id
+        WHERE c.program_id = :program_id";
 
 if (!empty($search)) {
-    $sql .= " WHERE c.course_code LIKE :search OR c.course_name LIKE :search OR u.user_lname LIKE :search OR u.user_fname LIKE :search OR p.program_name LIKE :search OR y.year_level LIKE :search AND c.program_id = :program_id";
-} else {
-    $sql .= " WHERE c.program_id = :program_id";
+    $sql .= " AND (c.course_code LIKE :search OR c.course_name LIKE :search OR u.user_lname LIKE :search OR u.user_fname LIKE :search OR p.program_name LIKE :search)";
 }
 
 $sql .= " ORDER BY c.course_status DESC, p.program_name ASC LIMIT :offset, :recordsPerPage";
 
-$result = $conn->prepare($sql);
+try {
+    $result = $conn->prepare($sql);
+    $result->bindParam(':program_id', $program_id, PDO::PARAM_INT);
+    $result->bindParam(':offset', $offset, PDO::PARAM_INT);
+    $result->bindParam(':recordsPerPage', $recordsPerPage, PDO::PARAM_INT);
 
-if (!empty($search)) {
-    $searchParam = '%' . $search . '%';
-    $result->bindParam(':search', $searchParam, PDO::PARAM_STR);
+    if (!empty($search)) {
+        $searchParam = '%' . $search . '%';
+        $result->bindParam(':search', $searchParam, PDO::PARAM_STR);
+    }
+
+    $result->execute();
+
+    // Count total number of records
+    $countSql = "SELECT COUNT(*) as total FROM tbl_course WHERE program_id = :program_id";
+    if (!empty($search)) {
+        $countSql .= " AND (course_code LIKE :search OR course_name LIKE :search)";
+    }
+
+    $countStmt = $conn->prepare($countSql);
+    $countStmt->bindParam(':program_id', $program_id, PDO::PARAM_INT);
+
+    if (!empty($search)) {
+        $countStmt->bindParam(':search', $searchParam, PDO::PARAM_STR);
+    }
+
+    $countStmt->execute();
+    $totalCount = $countStmt->fetch(PDO::FETCH_ASSOC)['total'];
+    $totalPages = ceil($totalCount / $recordsPerPage);
+} catch (PDOException $e) {
+    echo "Error: " . $e->getMessage();
 }
-
-$result->bindParam(':program_id', $program_id, PDO::PARAM_INT);
-$result->bindParam(':offset', $offset, PDO::PARAM_INT);
-$result->bindParam(':recordsPerPage', $recordsPerPage, PDO::PARAM_INT);
-$result->execute();
-
-// Count total number of records
-$countSql = "SELECT COUNT(*) as total FROM tbl_course";
-if (!empty($search)) {
-    $countSql .= " WHERE course_code LIKE :search OR course_name LIKE :search";
-}
-
-$countStmt = $conn->prepare($countSql);
-if (!empty($search)) {
-    $countStmt->bindParam(':search', $searchParam, PDO::PARAM_STR);
-}
-$countStmt->execute();
-$totalCount = $countStmt->fetch(PDO::FETCH_ASSOC)['total'];
-$totalPages = ceil($totalCount / $recordsPerPage);
 ?>
+
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -92,7 +99,7 @@ $totalPages = ceil($totalCount / $recordsPerPage);
 
 <body>
     <div class="wrapper">
-    <?php
+        <?php
         include 'sidebar.php';
         ?>
         <div class="main p-3">
@@ -118,7 +125,6 @@ $totalPages = ceil($totalCount / $recordsPerPage);
                                         <th scope="col">Assigned</th>
                                         <th scope="col">Code</th>
                                         <th scope="col">Subject</th>
-                                        <th scope="col">Year</th>
                                         <th scope="col">Action</th>
                                     </tr>
                                 </thead>
@@ -129,7 +135,6 @@ $totalPages = ceil($totalCount / $recordsPerPage);
                                                 <td><?php echo $row['user_lname'] . ', ' . $row['user_fname'] ?></td>
                                                 <td><?php echo $row['course_code']; ?></td>
                                                 <td><?php echo $row['course_name']; ?></td>
-                                                <td><?php echo $row['year_level']; ?></td>
                                                 <td>
                                                     <a class="btn btn-primary btn-sm" href="edit_course.php?course_id=<?php echo $row['course_id']; ?>"><i class="lni lni-pencil"></i></a>
                                                     <form method="post" style="display: inline;">
@@ -163,6 +168,7 @@ $totalPages = ceil($totalCount / $recordsPerPage);
                                 <?php endfor; ?>
                             </ul>
                         </nav>
+
                     </div>
                 </div>
             </div>

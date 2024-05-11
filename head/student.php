@@ -35,18 +35,17 @@ $offset = ($page - 1) * $recordsPerPage;
 $search = isset($_GET['search']) ? $_GET['search'] : '';
 
 // Build the SQL query with search functionality
-$sql = "SELECT s.*, y.year_level, p.program_name
+$sql = "SELECT s.*, p.program_name
         FROM tbl_student AS s
-        JOIN tbl_year AS y ON s.year_id = y.year_id
         JOIN tbl_program AS p ON s.program_id = p.program_id";
 
 if (!empty($search)) {
-    $sql .= " WHERE (s.stud_lname LIKE '%$search%' OR s.stud_fname LIKE '%$search%' OR y.year_level LIKE '%$search%' OR s.stud_mname LIKE '%$search%' OR s.stud_no LIKE '%$search%') AND s.program_id = :program_id";
+    $sql .= " WHERE (s.stud_lname LIKE '%$search%' OR s.stud_fname LIKE '%$search%' OR s.stud_mname LIKE '%$search%' OR s.stud_no LIKE '%$search%') AND s.program_id = :program_id";
 } else {
     $sql .= " WHERE s.program_id = :program_id";
 }
 
-$sql .= " ORDER BY s.stud_status DESC, y.year_level ASC LIMIT :offset, :recordsPerPage";
+$sql .= " ORDER BY s.stud_status DESC LIMIT :offset, :recordsPerPage";
 
 $result = $conn->prepare($sql);
 
@@ -86,7 +85,7 @@ $totalPages = ceil($totalCount / $recordsPerPage);
 
 <body>
     <div class="wrapper">
-    <?php
+        <?php
         include 'sidebar.php';
         ?>
         <div class="main p-3">
@@ -115,7 +114,6 @@ $totalPages = ceil($totalCount / $recordsPerPage);
                                         <th scope="col">Student No.</th>
                                         <th scope="col">Program</th>
                                         <th scope="col">Fullname</th>
-                                        <th scope="col">Year Level</th>
                                         <th scope="col">Action</th>
                                     </tr>
                                 </thead>
@@ -126,7 +124,6 @@ $totalPages = ceil($totalCount / $recordsPerPage);
                                                 <td><?php echo $row['stud_no']; ?></td>
                                                 <td><?php echo $row['program_name']; ?></td>
                                                 <td><?php echo $row['stud_lname'] . ', ' . $row['stud_fname'] . ' ' . $row['stud_mname']; ?></td>
-                                                <td><?php echo $row['year_level']; ?></td>
                                                 <td>
                                                     <a class="btn btn-primary btn-sm" href="edit_student.php?stud_id=<?php echo $row['stud_id']; ?>"><i class="lni lni-pencil"></i></a>
                                                     <form method="post" style="display: inline;">

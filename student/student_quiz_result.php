@@ -27,7 +27,7 @@ $stud_id = isset($_SESSION['stud_id']) ? $_SESSION['stud_id'] : null; // Retriev
 
 
 // Your original SQL query
-$sql = "SELECT tbl_result.result_score, tbl_result.total_questions, tbl_module.module_number, tbl_module.module_name, tbl_result.created_at as date_created
+$sql = "SELECT tbl_result.result_score, tbl_result.total_questions, tbl_module.module_name, tbl_result.created_at as date_created
         FROM tbl_result
         INNER JOIN tbl_module ON tbl_result.module_id = tbl_module.module_id
         WHERE tbl_result.quiz_type = 2 AND tbl_result.course_id = '$course_id' AND tbl_result.stud_id = '$stud_id'";

@@ -6,11 +6,12 @@ require '../api/db-connect.php';
 if (isset($_SESSION['program_id'])) {
     $program_id = $_SESSION['program_id'];
 
-    // Fetch courses and their quiz counts
+    // Fetch courses and their quiz counts along with the module_id
     $sql = "SELECT 
                 c.course_id,
                 c.course_code,
                 c.course_name,
+                r.module_id,
                 COALESCE(passed_attempts, 0) AS passed_attempts,
                 COALESCE(failed_attempts, 0) AS failed_attempts
             FROM 
@@ -18,11 +19,12 @@ if (isset($_SESSION['program_id'])) {
             LEFT JOIN 
                 (SELECT 
                     course_id,
+                    module_id,
                     COUNT(CASE WHEN result_status = 1 THEN 1 END) AS passed_attempts,
                     COUNT(CASE WHEN result_status = 0 THEN 1 END) AS failed_attempts
                 FROM tbl_result 
-                WHERE quiz_type = 3
-                GROUP BY course_id) r 
+                WHERE quiz_type = 1
+                GROUP BY course_id, module_id) r 
             ON c.course_id = r.course_id
             WHERE 
                 c.program_id = :program_id";
@@ -43,7 +45,43 @@ if (isset($_SESSION['program_id'])) {
     header("Location: ../index.php");
     exit();
 }
+
+// Calculate average pass rate per module
+$modulePassRates = [];
+$moduleAttempts = [];
+
+foreach ($courses as $course) {
+    $moduleId = $course['module_id'];
+    $totalAttempts = $course['passed_attempts'] + $course['failed_attempts'];
+
+    if ($totalAttempts !== 0) {
+        $passRate = ($course['passed_attempts'] / $totalAttempts) * 100;
+
+        // Aggregate pass rate and attempts for each module
+        if (!isset($modulePassRates[$moduleId])) {
+            $modulePassRates[$moduleId] = 0;
+            $moduleAttempts[$moduleId] = 0;
+        }
+
+        $modulePassRates[$moduleId] += $passRate;
+        $moduleAttempts[$moduleId]++;
+    }
+}
+
+// Calculate average pass rate for each module
+$averageModulePassRates = [];
+foreach ($modulePassRates as $moduleId => $passRate) {
+    $averageModulePassRates[$moduleId] = $passRate / $moduleAttempts[$moduleId];
+}
+
+// Calculate overall average pass rate across all modules
+$overallAveragePassRate = array_sum($averageModulePassRates) / count($averageModulePassRates);
+
+// Add result of the first loop
+$overallPassRate = array_sum($modulePassRates) / array_sum($moduleAttempts);
+$averageModulePassRates['overall'] = $overallPassRate;
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -69,7 +107,7 @@ if (isset($_SESSION['program_id'])) {
         <div class="container mt-3 mb-3">
             <div class="row justify-content-center mt-2">
                 <div class="text-center mb-2 mt-3">
-                    <h1>Exam Report</h1>
+                    <h1>Module Test Report</h1>
                 </div>
 
 
@@ -86,62 +124,67 @@ if (isset($_SESSION['program_id'])) {
                         });
                         google.charts.setOnLoadCallback(drawChart);
 
+
+
+
+
+
+
+
+
+
+                        // Function to draw the chart
                         function drawChart() {
-                            const courseData = <?php echo json_encode($courses); ?>; // Assuming $courses is your PHP variable
+                            const courseData = <?php echo json_encode($courses); ?>;
                             var chartData = [
-                                ['Subject', 'Pass Rate', {
+                                ['Test', 'Pass Rate', {
                                     role: 'style'
                                 }]
-                            ]; // Add style role
+                            ]; // Initialize chart data array
 
                             courseData.forEach(function(course) {
-                                var passRate = calculatePassRate(course);
-                                var color = getRandomColor(); // Generate a random color
-                                chartData.push([course.course_code, passRate, color]);
+                                var passRate = 0;
+
+
+                                if (course.passed_attempts + course.failed_attempts > 0) {
+                                    passRate = 100 * course.passed_attempts / (course.passed_attempts + course.failed_attempts);
+                                    var passRateContainer = passRate;
+                                    var color = getRandomColor();
+
+                                }
+                                chartData.push([course.course_code, passRateContainer, color]);
+
+
                             });
+
+                            // Add overall pass rate to chart data
+                            chartData.push(['Overall', <?php echo $overallAveragePassRate; ?>, getRandomColor()]);
 
                             // Set Data
                             const data = google.visualization.arrayToDataTable(chartData);
 
                             // Set Options
                             const options = {
-                                title: 'Pass Rates by Exam',
-                                chartArea: {
-                                    width: '50%'
-                                },
-                                hAxis: {
-                                    title: 'Pass Rate',
-                                    minValue: 0,
-                                    maxValue: 100
-                                },
-                                vAxis: {
-                                    title: 'Course'
-                                },
-                                bars: 'horizontal',
-                                legend: {
-                                    position: 'none'
-                                },
+                                title: 'Test Ratings',
+                                is3D: true,
+                                sliceVisibilityThreshold: 0,
                                 tooltip: {
                                     isHtml: true,
                                     textStyle: {
                                         fontSize: 14
                                     },
                                     trigger: 'focus'
+                                },
+                                vAxis: {
+                                    format: 'percent'
                                 }
                             };
 
-
                             // Draw
-                            const chart = new google.visualization.BarChart(document.getElementById('myChart')); // Use BarChart instead of PieChart
+                            const chart = new google.visualization.BarChart(document.getElementById('myChart'));
                             chart.draw(data, options);
                         }
 
-                        // Function to calculate pass rate
-                        function calculatePassRate(course) {
-                            var totalAttempts = course.passed_attempts + course.failed_attempts;
-                            var passRate = totalAttempts !== 0 ? (100 * course.passed_attempts / totalAttempts) : 0;
-                            return passRate;
-                        }
 
                         // Function to generate random color
                         function getRandomColor() {
@@ -160,10 +203,12 @@ if (isset($_SESSION['program_id'])) {
                     <?php if (!empty($courses)) : ?>
                         <?php foreach ($courses as $index => $course) : ?>
                             <!-- Debug output -->
-                            <a href="student_quiz_result.php?course_id=<?php echo $course['course_id']; ?>&stud_id=<?php echo $_SESSION['stud_id']; ?>">
+                            <a href="student_question_result.php?course_id=<?php echo $course['course_id']; ?>&stud_id=<?php echo $_SESSION['stud_id']; ?>">
                                 <div class="card subject-<?php echo ($index % 3) + 1; ?> mb-1">
                                     <div class="card-body" style="padding: 0.5rem;">
-                                        <h5 class="card-title" style="font-size: 1rem;"><?php echo $course['course_code'] . ' -  ' . $course['course_name']; ?></h5>
+                                        <h5 class="card-title" style="font-size: 1rem;"><?php echo $course['course_code'] . ' -  ' . $course['course_name'] . ' (Module ID: ' . $course['module_id'] . ')'; ?></h5>
+
+                                        <p style="font-size: 0.8rem; margin-bottom: 0;">Module Passed: <?php echo $course['passed_attempts']; ?></p>
                                         <p style="font-size: 0.8rem; margin-bottom: 0;">Attempts: <?php echo $course['failed_attempts'] + $course['passed_attempts']; ?></p>
                                     </div>
                                 </div>

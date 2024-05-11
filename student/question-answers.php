@@ -1,17 +1,7 @@
 <?php
 require_once "../api/db-connect.php";
 session_start();
-// if (isset($_SESSION['program_id'])) {
-//     $sql = "SELECT * FROM tbl_course WHERE program_id = :program_id";
-//     $result = $conn->prepare($sql);
 
-//     $result->execute();
-//     $courses = $result->fetchAll(PDO::FETCH_ASSOC);
-// } else {
-//     header("Location: ../index.php");
-//     exit();
-// }
-// Function to sanitize user input
 function sanitizeInput($input)
 {
     

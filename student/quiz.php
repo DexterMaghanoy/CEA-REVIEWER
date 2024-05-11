@@ -8,8 +8,7 @@ if (isset($_GET['course_id'])) {
     $stmt->bindParam(':course_id', $course_id, PDO::PARAM_INT);
     $stmt->execute();
     $questions = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    shuffle($questions); 
-
+    shuffle($questions);
 }
 if (isset($_SESSION['program_id'])) {
 
@@ -98,26 +97,25 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $stmtInsertAnswer->execute();
         }
         // Insert the result into tbl_result
-    // Check if the student passed the quiz (for example, if score is above 70%)
-$passingScore = 0.5; // 70%
-$passStatus = ($score / $total_questions) >= $passingScore ? 1 : 0;
+        // Check if the student passed the quiz (for example, if score is above 70%)
+        $passingScore = 0.5;
+        $passStatus = ($score / $total_questions) >= $passingScore ? 1 : 0;
 
-// Insert the result into tbl_result including result_status
-$sql = "INSERT INTO tbl_result (course_id, module_id, stud_id, result_score, total_questions, quiz_type, result_status) 
-        VALUES (:course_id, :module_id, :stud_id, :result_score, :total_questions, :quiz_type, :result_status)";
-$stmt = $conn->prepare($sql);
-$stmt->bindParam(":course_id", $course_id, PDO::PARAM_INT);
-$stmt->bindParam(":module_id", $module_id, PDO::PARAM_INT);
-$stmt->bindParam(":stud_id", $stud_id, PDO::PARAM_INT);
-$stmt->bindParam(":result_score", $score, PDO::PARAM_INT);
-$stmt->bindParam(":total_questions", $total_questions, PDO::PARAM_INT); // Pass the total questions attempted
-$stmt->bindParam(":quiz_type", $quiz_type, PDO::PARAM_INT);
-$stmt->bindParam(":result_status", $passStatus, PDO::PARAM_INT); // Bind result_status
+        // Insert the result into tbl_result including result_status
+        $sql = "INSERT INTO tbl_result (course_id, program_id, module_id, stud_id, result_score, total_questions, quiz_type, result_status) 
+        VALUES (:course_id, :program_id, :module_id, :stud_id, :result_score, :total_questions, :quiz_type, :result_status)";
+        $stmt = $conn->prepare($sql);
+        $stmt->bindParam(":course_id", $course_id, PDO::PARAM_INT);
+        $stmt->bindParam(":program_id", $program_id, PDO::PARAM_INT); // Add this line to bind program_id
+        $stmt->bindParam(":module_id", $module_id, PDO::PARAM_INT);
+        $stmt->bindParam(":stud_id", $stud_id, PDO::PARAM_INT);
+        $stmt->bindParam(":result_score", $score, PDO::PARAM_INT);
+        $stmt->bindParam(":total_questions", $total_questions, PDO::PARAM_INT); // Pass the total questions attempted
+        $stmt->bindParam(":quiz_type", $quiz_type, PDO::PARAM_INT);
+        $stmt->bindParam(":result_status", $passStatus, PDO::PARAM_INT); // Bind result_status
 
-// Execute the statement to insert the result
-$stmt->execute();
-
-
+        // Execute the statement to insert the result
+        $stmt->execute();
     }
 
 

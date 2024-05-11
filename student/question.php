@@ -15,7 +15,7 @@ if (isset($_SESSION['program_id'])) {
     $result->execute();
 
     // Fetch the result and store it in a variable to use later
-    
+
     $courses = $result->fetchAll(PDO::FETCH_ASSOC);
 } else {
     // Redirect to login page if session data is not set
@@ -127,8 +127,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $quiz_type = 1;
         $passingScore = 0.5;
         $passStatus = ($score / $total_questions) >= $passingScore ? 1 : 0;
-        $sql = "INSERT INTO tbl_result (module_id, stud_id, result_score, total_questions, quiz_type, course_id, result_status) 
-         VALUES (:module_id, :stud_id, :result_score, :total_questions, :quiz_type, :course_id, :result_status)";
+        $sql = "INSERT INTO tbl_result (module_id, stud_id, result_score, total_questions, quiz_type, course_id, program_id, result_status) 
+                 VALUES (:module_id, :stud_id, :result_score, :total_questions, :quiz_type, :course_id, :program_id, :result_status)";
         $stmt = $conn->prepare($sql);
         $stmt->bindParam(":module_id", $module_id, PDO::PARAM_INT);
         $stmt->bindParam(":stud_id", $stud_id, PDO::PARAM_INT);
@@ -136,11 +136,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $stmt->bindParam(":total_questions", $total_questions, PDO::PARAM_INT); // Pass the total questions attempted
         $stmt->bindParam(":quiz_type", $quiz_type, PDO::PARAM_INT);
         $stmt->bindParam(":course_id", $course_id, PDO::PARAM_INT);
+        $stmt->bindParam(":program_id", $program_id, PDO::PARAM_INT); // Bind program_id
         $stmt->bindParam(":result_status", $passStatus, PDO::PARAM_INT); // Bind result_status
 
         if (!$stmt->execute()) {
             handleDatabaseError("Failed to insert result into the database.");
         }
+
         // Redirect to index page after submission
         echo '<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>';
         echo '<script src="https://cdn.jsdelivr.net/npm/sweetalert2@10.16.6/dist/sweetalert2.min.js"></script>';

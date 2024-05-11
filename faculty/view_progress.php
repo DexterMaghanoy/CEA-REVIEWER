@@ -80,6 +80,42 @@ if (isset($_SESSION['user_id'])) {
 ?>
 
 
+
+<?php
+
+require '../api/db-connect.php';
+
+if (isset($_SESSION['program_id'])) {
+    $program_id = $_SESSION['program_id'];
+} else {
+    header("Location: ../index.php");
+    exit();
+}
+    
+$user_id = $_SESSION['user_id'];
+
+// Retrieve course ID from URL parameter
+if (isset($_GET['course_id'])) {
+    $course_id = $_GET['course_id'];
+
+    // Query modules for the specified course
+    $stmt = $conn->prepare("
+        SELECT *
+        FROM tbl_module
+        WHERE course_id = :course_id
+    ");
+    $stmt->bindParam(':course_id', $course_id, PDO::PARAM_INT);
+    $stmt->execute();
+    $modules = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} else {
+    // Redirect if course ID is not provided
+    header("Location: index.php");
+    exit();
+}
+?>
+
+
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -106,7 +142,8 @@ if (isset($_SESSION['user_id'])) {
                         <div class="text-center mb-4">
                             <h1>Student Report</h1>
                         </div>
-                        <form action="" method="GET" class="mb-3">
+
+            <form action="" method="GET" class="mb-3">
                             <div class="input-group">
                                 <input type="text" class="form-control" name="search" placeholder="Search..." value="">
                                 <button class="btn btn-primary" type="submit">Search</button>

@@ -1,9 +1,9 @@
 <?php
-
 $Student_user = $_SESSION['stud_fname'];
+$stud_id = $_SESSION['stud_id'];
 require '../api/db-connect.php';
-
 ?>
+
 <style>
     .custom-alert {
         position: fixed;
@@ -81,12 +81,54 @@ require '../api/db-connect.php';
                 </ul>
             <?php endif; ?>
         </li>
+
+        <?php
+        require '../api/db-connect.php'; // Include your database connection script
+
+        try {
+            // Prepare SQL query to count distinct subjects
+            $sql = "SELECT COUNT(DISTINCT r.course_id) AS exam_count
+    FROM tbl_result r
+    JOIN tbl_module m ON r.module_id = m.module_id
+    JOIN tbl_course c ON r.course_id = c.course_id
+    WHERE r.stud_id = 5
+    AND c.program_id = 1
+    AND r.quiz_type = 2
+    AND r.result_status = 1";
+
+            // Execute query
+            $stmt = $conn->prepare($sql);
+            $stmt->execute();
+
+            // Fetch the result
+            $examCount = $stmt->fetchColumn();
+        } catch (PDOException $e) {
+            echo "Error: " . $e->getMessage();
+        }
+
+        ?>
+
         <li class="sidebar-item">
-            <a href="exam.php" class="sidebar-link" onclick="showAlert()">
-                <i class="lni lni-pencil-alt"></i>
-                <span>Exam</span>
-            </a>
+            <?php if ($examCount > 3) : ?>
+                <a href="exam.php" class="sidebar-link">
+                    <i class="lni lni-pencil-alt"></i>
+                    <span>Exam</span>
+                </a>
+            <?php else : ?>
+                <a href="#" class="sidebar-link" onclick="showAlert()">
+                    <i class="lni lni-pencil-alt"></i>
+                    <span>Exam</span>
+                </a>
+            <?php endif; ?>
         </li>
+
+        <script>
+            function showAlert() {
+                alert("Exam Unavailable"); // Alert message
+            }
+        </script>
+
+
 
         <li class="sidebar-item">
             <a href="report_questions.php" class="sidebar-link">
@@ -103,20 +145,9 @@ require '../api/db-connect.php';
     <div class="sidebar-footer">
         <a href="../logout.php" class="sidebar-link">
             <i class="lni lni-exit"></i>
-            
+
             <span>Logout</span>
 
         </a>
     </div>
 </aside>
-
-<script>
-    function showAlert() {
-        // if (1 == 1) {
-        //     alert("Exam Unavailable"); // Alert message
-        //     window.location.href = 'exam.php'; // Redirect to exam.php
-        // } else {
-        //     window.location.href = 'index.php'; // Redirect to index.php
-        // }
-    }
-</script>

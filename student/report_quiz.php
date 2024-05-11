@@ -3,8 +3,9 @@ session_start();
 
 require '../api/db-connect.php';
 
-if (isset($_SESSION['program_id'])) {
+if (isset($_SESSION['program_id'], $_SESSION['stud_id'])) {
     $program_id = $_SESSION['program_id'];
+    $stud_id = $_SESSION['stud_id'];
 
     // Fetch courses and their quiz counts
     $sql = "SELECT 
@@ -22,6 +23,7 @@ if (isset($_SESSION['program_id'])) {
                     COUNT(CASE WHEN result_status = 0 THEN 1 END) AS failed_attempts
                 FROM tbl_result 
                 WHERE quiz_type = 2
+                AND stud_id = :stud_id  /* Filter results by stud_id */
                 GROUP BY course_id) r 
             ON c.course_id = r.course_id
             WHERE 
@@ -29,6 +31,7 @@ if (isset($_SESSION['program_id'])) {
 
     $result = $conn->prepare($sql);
     $result->bindParam(':program_id', $program_id, PDO::PARAM_INT);
+    $result->bindParam(':stud_id', $stud_id, PDO::PARAM_INT); // Bind stud_id parameter
     $result->execute();
     $courses = $result->fetchAll(PDO::FETCH_ASSOC);
 
@@ -70,13 +73,13 @@ if (isset($_SESSION['program_id'])) {
         <div class="container mt-3 mb-3">
             <div class="row justify-content-center mt-2">
                 <div class="text-center mb-2 mt-3">
-                <h1>Subject Quizzes Report</h1>
+                    <h1>Subject Quizzes Report</h1>
                 </div>
 
 
                 <?php include 'report_dropdown.php'; ?>
                 <div class="col-sm">
-                    
+
 
                     <div id="myChart" style="width:100%; max-width:100%; height:100%;">
                     </div>
@@ -88,48 +91,96 @@ if (isset($_SESSION['program_id'])) {
                         });
                         google.charts.setOnLoadCallback(drawChart);
 
+                        // Function to draw the chart
                         function drawChart() {
-                            const courseData = <?php echo json_encode($courses); ?>; // Assuming $courses is your PHP variable
+                            const courseData = <?php echo json_encode($courses); ?>;
                             var chartData = [
-                                ['Subject', 'Pass Rate', {
+                                ['Course', 'Pass Rate', {
                                     role: 'style'
                                 }]
-                            ]; // Add style role
+                            ]; // Initialize chart data array
 
+                            // Initialize an object to store pass rates for each course_id
+                            var coursePassRates = {};
+
+                            // Loop through each course data
                             courseData.forEach(function(course) {
-                                var passRate = calculatePassRate(course);
-                                var color = getRandomColor(); // Generate a random color
-                                chartData.push([course.course_code, passRate, color]);
+                                // Initialize pass rate for the current course
+                                var passRate = 0;
+
+                                // Calculate pass rate only if there are attempts
+                                if (course.passed_attempts + course.failed_attempts > 0) {
+                                    passRate = 100 * course.passed_attempts / (course.passed_attempts + course.failed_attempts);
+                                }
+
+                                // Store pass rate for the current course_id
+                                if (!coursePassRates[course.course_id]) {
+                                    coursePassRates[course.course_id] = [];
+                                }
+
+                                coursePassRates[course.course_id].push(passRate);
                             });
+
+                            // Loop through each course_id and add its pass rate to chartData
+                            for (var courseId in coursePassRates) {
+                                // Get the course object based on the courseId
+                                var course = courseData.find(c => c.course_id == courseId);
+                                // Get the course code
+                                var courseCode = course ? course.course_code : ''; // If course is not found, use an empty string
+                                // Calculate average pass rate for the current course_id
+                                var averagePassRate = coursePassRates[courseId].reduce(function(a, b) {
+                                    return a + b;
+                                }, 0) / coursePassRates[courseId].length;
+
+                                // Add course data to chartData
+                                chartData.push([courseCode, averagePassRate, getRandomColor()]);
+                            }
+
+                            // Calculate overall average pass rate
+                            var overallAveragePassRate = chartData.reduce(function(sum, row, index) {
+                                // Skip header row
+                                if (index === 0) return sum;
+                                return sum + row[1]; // row[1] contains pass rate
+                            }, 0) / (chartData.length - 1); // Exclude header row from count
+
+                            // Add overall pass rate to chart data
+                            chartData.push(['Overall', overallAveragePassRate, getRandomColor()]);
 
                             // Set Data
                             const data = google.visualization.arrayToDataTable(chartData);
 
                             // Set Options
                             const options = {
-                                title: 'Subject Ratings',
-                                is3D: true,
-                                sliceVisibilityThreshold: 0, // show all slices, even tiny ones
+                                title: 'Pass Rates by Module',
+                                chartArea: {
+                                    width: '50%'
+                                },
+                                hAxis: {
+                                    title: 'Pass Rate',
+                                    minValue: 0,
+                                    maxValue: 100
+                                },
+                                vAxis: {
+                                    title: 'Course'
+                                },
+                                bars: 'horizontal',
+                                legend: {
+                                    position: 'none'
+                                },
                                 tooltip: {
                                     isHtml: true,
                                     textStyle: {
                                         fontSize: 14
                                     },
-                                    trigger: 'focus' // now it's on hover
+                                    trigger: 'focus'
                                 }
                             };
 
                             // Draw
-                            const chart = new google.visualization.BarChart(document.getElementById('myChart')); // Use BarChart instead of PieChart
+                            const chart = new google.visualization.BarChart(document.getElementById('myChart'));
                             chart.draw(data, options);
                         }
 
-                        // Function to calculate pass rate
-                        function calculatePassRate(course) {
-                            var totalAttempts = course.passed_attempts + course.failed_attempts;
-                            var passRate = totalAttempts !== 0 ? (100 * course.passed_attempts / totalAttempts) : 0;
-                            return passRate;
-                        }
 
                         // Function to generate random color
                         function getRandomColor() {
@@ -162,21 +213,20 @@ if (isset($_SESSION['program_id'])) {
                         <p>No courses found.</p>
                     <?php endif; ?>
                 </div>
-                </div>
             </div>
         </div>
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe" crossorigin="anonymous"></script>
-        <script>
-            const hamBurger = document.querySelector(".toggle-btn");
-            const sidebar = document.querySelector("#sidebar");
-            const mainContent = document.querySelector(".main");
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe" crossorigin="anonymous"></script>
+    <script>
+        const hamBurger = document.querySelector(".toggle-btn");
+        const sidebar = document.querySelector("#sidebar");
+        const mainContent = document.querySelector(".main");
 
-            hamBurger.addEventListener("click", function() {
-                sidebar.classList.toggle("expand");
-                mainContent.classList.toggle("expand");
-            });
-        </script>
+        hamBurger.addEventListener("click", function() {
+            sidebar.classList.toggle("expand");
+            mainContent.classList.toggle("expand");
+        });
+    </script>
 </body>
 
 </html>
-

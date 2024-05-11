@@ -98,7 +98,6 @@ if (isset($_POST['moduleId']) && isset($_POST['moduleStatus'])) {
                         <div class="text-center mb-4">
                             <h1>Module</h1>
                         </div>
-                        <?php include 'report_dropdown.php'; ?>
 
                         <table class="table table-bordered border-secondary">
                             <caption>List of Modules</caption>
@@ -111,6 +110,17 @@ if (isset($_POST['moduleId']) && isset($_POST['moduleStatus'])) {
                                 </tr>
                             </thead>
                             <tbody>
+                                <?php
+
+                                // Build the SQL query with search functionality
+                                $sql = "SELECT * FROM tbl_module WHERE course_id = :course_id";
+                                $result = $conn->prepare($sql);
+                                $result->bindParam(':course_id', $course_id, PDO::PARAM_INT);
+                                $result->execute();
+
+                                ?>
+
+
                                 <?php if ($result->rowCount() > 0) : ?>
                                     <?php $count = 1; ?>
                                     <?php while ($row = $result->fetch(PDO::FETCH_ASSOC)) : ?>
