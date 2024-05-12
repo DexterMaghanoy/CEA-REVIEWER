@@ -115,12 +115,12 @@ global $results;
                                         <?php endforeach; ?>
                                     <?php else : ?>
                                         <tr>
-                                            <td colspan="4" class="text-center">No records found.</td>
+                                            <td colspan="5" class="text-center">No records found.</td>
                                         </tr>
                                     <?php endif; ?>
                                 </tbody>
-
                             </table>
+
                         </div>
 
                     </div>
@@ -159,27 +159,27 @@ global $results;
     toggleClearButton();
 
     // JavaScript for filtering table data
-// JavaScript for filtering table data
-searchInput.addEventListener("keyup", function() {
-    toggleClearButton();
-    const value = this.value.toLowerCase().trim();
-    const rows = document.querySelectorAll("#resultTable tbody tr");
+    // JavaScript for filtering table data
+    searchInput.addEventListener("keyup", function() {
+        toggleClearButton();
+        const value = this.value.toLowerCase().trim();
+        const rows = document.querySelectorAll("#resultTable tbody tr");
 
-    rows.forEach(row => {
-        let found = false;
-        row.querySelectorAll('td').forEach(cell => {
-            const text = cell.textContent.toLowerCase().trim();
-            if (text.includes(value)) {
-                found = true;
+        rows.forEach(row => {
+            let found = false;
+            row.querySelectorAll('td').forEach(cell => {
+                const text = cell.textContent.toLowerCase().trim();
+                if (text.includes(value)) {
+                    found = true;
+                }
+            });
+            if (found) {
+                row.style.display = "";
+            } else {
+                row.style.display = "none";
             }
         });
-        if (found) {
-            row.style.display = "";
-        } else {
-            row.style.display = "none";
-        }
     });
-});
 
 
     // Clear search input
@@ -188,7 +188,7 @@ searchInput.addEventListener("keyup", function() {
         toggleClearButton();
         const rows = document.querySelectorAll("#resultTable tbody tr");
         rows.forEach(row => {
-            
+
             row.style.display = "";
 
 

@@ -13,9 +13,8 @@ if (!isset($_SESSION['program_id'])) {
 $program_id = $_SESSION['program_id'];
 $user_id = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : null;
 $course_id = isset($_GET['course_id']) ? $_GET['course_id'] : null;
-$search = isset($_GET['search']) ? $_GET['search'] : '';
 $page = isset($_GET['page']) ? $_GET['page'] : 1;
-$offset = ($page - 1) * 10;
+$offset = ($page - 1) * 10; 
 
 // Retrieve modules for the specified course
 if ($course_id) {
@@ -24,7 +23,6 @@ if ($course_id) {
 } else {
     $stmt = $conn->prepare("SELECT * FROM tbl_module");
 }
-
 $stmt->execute();
 $modules = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
@@ -36,13 +34,13 @@ if (isset($_GET['module_id'])) {
 // Pagination
 $resultsPerPage = 10;
 if ($user_id) {
+    // Main query for retrieving results with provided filters
     $sql = "SELECT r.stud_id, s.stud_fname, s.stud_mname, s.stud_lname, c.course_name, m.module_name, r.created_at, r.total_questions, r.result_score, SUM(r.result_score) AS total_score
-    FROM tbl_result r
-    INNER JOIN tbl_student s ON r.stud_id = s.stud_id
-    INNER JOIN tbl_module m ON r.module_id = m.module_id
-    INNER JOIN tbl_course c ON m.course_id = c.course_id
-    WHERE c.program_id = :program_id"; // Filter by program ID
-
+FROM tbl_result r
+INNER JOIN tbl_student s ON r.stud_id = s.stud_id
+INNER JOIN tbl_module m ON r.module_id = m.module_id
+INNER JOIN tbl_course c ON m.course_id = c.course_id
+WHERE c.program_id = :program_id";
 
     // Add conditions to filter by course ID and module ID if they are provided
     if ($course_id) {
@@ -52,18 +50,28 @@ if ($user_id) {
         $sql .= " AND r.module_id = :module_id";
     }
 
-    if (!empty($search)) {
-        $sql .= " AND (s.stud_fname LIKE :search OR s.stud_lname LIKE :search OR c.course_name LIKE :search OR m.module_name LIKE :search)";
-    }
-
     $sql .= " GROUP BY r.stud_id, c.course_id ";
 
-    // Count total number of results for pagination
-    $countQuery = "SELECT COUNT(*) AS count FROM ($sql) AS sub";
-    $stmtCount = $conn->prepare($countQuery);
-    if (!empty($search)) {
-        $stmtCount->bindValue(':search', '%' . $search . '%');
+    // Count query to calculate the total number of results with provided filters
+    $countQuery = "SELECT COUNT(*) AS count FROM (
+    SELECT r.stud_id
+    FROM tbl_result r
+    INNER JOIN tbl_student s ON r.stud_id = s.stud_id
+    INNER JOIN tbl_module m ON r.module_id = m.module_id
+    INNER JOIN tbl_course c ON m.course_id = c.course_id
+    WHERE c.program_id = :program_id";
+
+    // Add conditions to count query
+    if ($course_id) {
+        $countQuery .= " AND m.course_id = :course_id";
     }
+    if (isset($module_id)) {
+        $countQuery .= " AND r.module_id = :module_id";
+    }
+
+    $countQuery .= " GROUP BY r.stud_id, c.course_id ) AS sub";
+
+    $stmtCount = $conn->prepare($countQuery);
     $stmtCount->bindValue(':program_id', $program_id);
     if ($course_id) {
         $stmtCount->bindValue(':course_id', $course_id);
@@ -76,13 +84,10 @@ if ($user_id) {
     $totalCount = $countResult['count'];
     $totalPages = ceil($totalCount / $resultsPerPage);
 
-    // Add pagination to the main query
+    // Add pagination and execute main query
     $sql .= " LIMIT $resultsPerPage OFFSET $offset";
 
     $stmt = $conn->prepare($sql);
-    if (!empty($search)) {
-        $stmt->bindValue(':search', '%' . $search . '%');
-    }
     $stmt->bindValue(':program_id', $program_id);
     if ($course_id) {
         $stmt->bindValue(':course_id', $course_id);
@@ -104,6 +109,7 @@ $result->bindParam(':program_id', $program_id, PDO::PARAM_INT);
 $result->execute();
 $courses = $result->fetchAll(PDO::FETCH_ASSOC);
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -180,7 +186,7 @@ $courses = $result->fetchAll(PDO::FETCH_ASSOC);
 
                                     data.addRow([
                                         '<?php echo $row['stud_lname'] . ' ' . $row['stud_fname']; ?>',
-                                        <?php echo $attempts; ?>,
+                                        <?php echo 100 / $attempts; ?>,
                                         '<?php echo $passRate; ?>' // Construct tooltip with pass rate
                                     ]);
                                 <?php endforeach; ?>
@@ -189,9 +195,9 @@ $courses = $result->fetchAll(PDO::FETCH_ASSOC);
                                     title: 'Student Performance by Module',
                                     hAxis: {
                                         title: 'Pass Rate',
-                                        textStyle: {
-                                            fontSize: 12 // Adjust the font size of the axis labels
-                                        }
+                                        minValue: 0,
+                                        maxValue: 100
+
                                     },
                                     vAxis: {
                                         title: 'Student Name'
@@ -214,14 +220,13 @@ $courses = $result->fetchAll(PDO::FETCH_ASSOC);
                         <?php
                         include 'module_dropdown.php';
                         ?>
-
-                        <!-- Search form -->
-                        <form action="" method="GET" class="mb-3">
+                        <!-- <form id="searchForm" class="mb-3">
                             <div class="input-group">
-                                <input type="text" class="form-control" name="search" placeholder="Search..." value="<?php echo $search; ?>">
+                                <input type="text" id="searchInput" class="form-control" name="search" placeholder="Search..." value="<?php echo $search; ?>">
                                 <button class="btn btn-primary" type="submit">Search</button>
                             </div>
-                        </form>
+                        </form> -->
+
                         <table id="resultTable" class="table table-bordered border-secondary">
                             <caption>List of Student Performance</caption>
                             <thead class="table-dark">
@@ -339,6 +344,26 @@ $courses = $result->fetchAll(PDO::FETCH_ASSOC);
         hamBurger.addEventListener("click", function() {
             document.querySelector("#sidebar").classList.toggle("expand");
         });
+
+
+        // Add an event listener to the search input field
+        document.getElementById('searchInput').addEventListener('input', function() {
+            const searchValue = this.value.trim(); // Trim whitespace from the input value
+            fetchSearchResults(searchValue); // Call function to fetch search results
+        });
+
+        // Function to fetch search results via AJAX
+        function fetchSearchResults(searchQuery) {
+            // Make an AJAX request to the server
+            fetch(`search.php?search=${encodeURIComponent(searchQuery)}`)
+                .then(response => response.json()) // Parse response as JSON
+                .then(data => {
+                    // Update HTML content with the filtered results
+                    // You need to implement this based on your specific HTML structure
+                    console.log(data); // Log the fetched data for testing
+                })
+                .catch(error => console.error('Error fetching search results:', error));
+        }
     </script>
 
 

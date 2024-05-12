@@ -211,9 +211,7 @@ $courses = $result->fetchAll(PDO::FETCH_ASSOC);
 
 
                     <div class="col-sm">
-                        <?php
-                        include 'module_dropdown.php';
-                        ?>
+                      
 
                         <!-- Search form -->
                         <form action="" method="GET" class="mb-3">

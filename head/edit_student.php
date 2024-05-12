@@ -13,14 +13,14 @@ if (isset($_SESSION['program_id'])) {
 if (isset($_POST['update'])) {
     $stud_id = $_POST['stud_id'];
     $program_id = $_SESSION['program_id'];
-    $year_id = $_POST['year_id'];
     $stud_no = $_POST['stud_no'];
     $stud_fname = $_POST['stud_fname'];
     $stud_mname = $_POST['stud_mname'];
     $stud_lname = $_POST['stud_lname'];
     $stud_password = $_POST['stud_password'];
 
-    if (empty($year_id) || empty($program_id) || empty($stud_no) || empty($stud_fname) || empty($stud_mname) || empty($stud_lname) ||  empty($stud_password)) {
+    if (empty($program_id) || empty($stud_no) || empty($stud_fname) || empty($stud_mname) || empty($stud_lname) ||  empty($stud_password)) {
+        // Display error message if any field is empty
         echo '<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>';
         echo '<script src="https://cdn.jsdelivr.net/npm/sweetalert2@10.16.6/dist/sweetalert2.min.js"></script>';
         echo '<link href="https://cdn.jsdelivr.net/npm/sweetalert2@10.16.6/dist/sweetalert2.min.css" rel="stylesheet">';
@@ -38,7 +38,6 @@ if (isset($_POST['update'])) {
     } else {
         $sql = "UPDATE `tbl_student` SET 
         program_id = :program_id,
-        year_id = :year_id,
         stud_no = :stud_no,
         stud_fname = :stud_fname,
         stud_mname = :stud_mname,
@@ -48,7 +47,6 @@ if (isset($_POST['update'])) {
 
         $stmt = $conn->prepare($sql);
         $stmt->bindParam(":program_id", $program_id);
-        $stmt->bindParam(":year_id", $year_id);
         $stmt->bindParam(":stud_no", $stud_no);
         $stmt->bindParam(":stud_fname", $stud_fname);
         $stmt->bindParam(":stud_mname", $stud_mname);
@@ -57,6 +55,7 @@ if (isset($_POST['update'])) {
         $stmt->bindParam(":stud_id", $stud_id);
 
         if ($stmt->execute()) {
+            // Display success message if update is successful
             echo '<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>';
             echo '<script src="https://cdn.jsdelivr.net/npm/sweetalert2@10.16.6/dist/sweetalert2.min.js"></script>';
             echo '<link href="https://cdn.jsdelivr.net/npm/sweetalert2@10.16.6/dist/sweetalert2.min.css" rel="stylesheet">';
@@ -72,6 +71,7 @@ if (isset($_POST['update'])) {
                         });
                     </script>';
         } else {
+            // Display error message if update fails
             echo '<script>
                     $(document).ready(function(){
                         Swal.fire({
@@ -97,7 +97,6 @@ if (isset($_GET['stud_id'])) {
     if ($stmt->rowCount() > 0) {
         $row = $stmt->fetch();
         $stud_id = $row['stud_id'];
-        $year_id = $row['year_id'];
         $stud_no = $row['stud_no'];
         $stud_fname = $row['stud_fname'];
         $stud_mname = $row['stud_mname'];
@@ -119,12 +118,12 @@ if (isset($_GET['stud_id'])) {
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <link rel="shortcut icon" href="../img/cea_logo.png" type="image/x-icon">
     <link rel="stylesheet" href="style.css" type="text/css">
-    
+
 </head>
 
 <body>
     <div class="wrapper">
-    <?php
+        <?php
         include 'sidebar.php';
         ?>
         <div class="main py-3">
@@ -135,24 +134,6 @@ if (isset($_GET['stud_id'])) {
                 <div class="row justify-content-center">
                     <div class="col-md-5">
                         <form action="edit_student.php" method="post">
-                            <!-- Year Select -->
-                            <div class="mb-3">
-                                <label for="year_id" class="form-label">Year</label>
-                                <select class="form-select" id="year_id" name="year_id">
-                                    <?php
-                                    $sqlYear = "SELECT year_id, year_level FROM tbl_year";
-                                    $stmtYear = $conn->prepare($sqlYear);
-                                    $stmtYear->execute();
-                                    $years = $stmtYear->fetchAll(PDO::FETCH_ASSOC);
-
-                                    foreach ($years as $year) {
-                                        $selected = ($year_id == $year['year_id']) ? "selected" : "";
-                                        echo "<option value='" . $year['year_id'] . "' $selected>" . $year['year_level'] . "</option>";
-                                    }
-                                    ?>
-                                </select>
-                            </div>
-
                             <!-- Number Input -->
                             <div class="mb-3">
                                 <label for="stud_no" class="form-label">Student No.</label>
@@ -185,7 +166,7 @@ if (isset($_GET['stud_id'])) {
                                     <span class="toggle-password" onclick="togglePasswordVisibility()"><i class="far fa-eye-slash"></i></span>
                                 </div>
                             </div>
-                            <!-- Hidden Employee ID and Submit Button -->
+                            <!-- Hidden Student ID and Submit Button -->
                             <input type="hidden" name="stud_id" value="<?php echo $stud_id; ?>">
                             <input type="submit" class="btn btn-success mt-2" value="Update" name="update">
                         </form>

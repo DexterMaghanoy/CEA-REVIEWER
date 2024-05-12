@@ -81,6 +81,24 @@ $totalPages = ceil($totalCount / $recordsPerPage);
 
 </head>
 
+<style>
+    /* Style for the clear button */
+    .clear-btn {
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        cursor: pointer;
+        opacity: 0.5;
+    }
+
+    /* Style for the clear button icon */
+    .clear-btn:hover {
+        opacity: 1;
+    }
+</style>
+
+
 <body>
     <div class="wrapper">
         <?php
@@ -92,15 +110,16 @@ $totalPages = ceil($totalCount / $recordsPerPage);
                 <div class="row justify-content-center mt-5">
                     <div class="col-md-8">
                         <div class="text-center mb-4">
-                            <h1>Students<?php $user['program_id'] ?></h1>
+                            <h1>Students</h1>
                         </div>
                         <!-- Search bar -->
-                        <form id="searchForm" action="" method="GET" class="mb-3">
+                        <form action="" method="GET" class="mb-4">
                             <div class="input-group">
-                                <input id="searchInput" type="text" class="form-control" name="search" placeholder="Search...">
-                                <button class="btn btn-primary" type="submit">Search</button>
+                                <input type="text" class="form-control" placeholder="Search by module name" name="search" id="searchInput">
+                                <button class="btn btn-outline-secondary" type="button" id="clearSearchButton"><i class="lni lni-close"></i></button>
                             </div>
                         </form>
+
                         <div class="table-responsive">
                             <table class="table table-bordered border-secondary">
                                 <caption>List of Student</caption>
@@ -109,6 +128,7 @@ $totalPages = ceil($totalCount / $recordsPerPage);
                                         <th scope="col">Student No.</th>
                                         <th scope="col">Program</th>
                                         <th scope="col">Fullname</th>
+                                        <th scope="col">Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -118,6 +138,10 @@ $totalPages = ceil($totalCount / $recordsPerPage);
                                                 <td><?php echo $row['stud_no']; ?></td>
                                                 <td><?php echo $row['program_name']; ?></td>
                                                 <td><?php echo $row['stud_lname'] . ', ' . $row['stud_fname'] . ' ' . $row['stud_mname']; ?></td>
+                                                <td>
+                                                    <a href="student_record_test.php?student_id=<?php echo $row['stud_id']; ?>" class="btn btn-success">View Record</a>
+                                                </td>
+
                                             </tr>
                                         <?php endwhile; ?>
                                     <?php else : ?>
@@ -167,6 +191,24 @@ $totalPages = ceil($totalCount / $recordsPerPage);
             document.querySelector("#sidebar").classList.toggle("expand");
         });
     </script>
+
+
+    <script>
+        // JavaScript function to clear the search input field and show all student rows
+        function clearSearch() {
+            document.getElementById('searchInput').value = ''; // Clear the input value
+            // Show all student rows
+            studentRows.forEach(function(row) {
+                row.style.display = '';
+            });
+        }
+
+        // Add event listener to the clear search button
+        document.getElementById('clearSearchButton').addEventListener('click', function() {
+            clearSearch(); // Call the clearSearch function when the button is clicked
+        });
+    </script>
+
 </body>
 
 </html>
