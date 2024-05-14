@@ -1,23 +1,27 @@
-<?php 
+<?php
 
-    $user_id = $_SESSION['user_id'];
+$user_id = $_SESSION['user_id'];
 
-    // Use JOIN to get user_type and course_name from related tables
-    $sql = "SELECT u.*, t.type_name, p.program_name
+// Use JOIN to get user_type and course_name from related tables
+$sql = "SELECT u.*, t.type_name, p.program_name
             FROM tbl_user u
             INNER JOIN tbl_type t ON u.type_id = t.type_id
             INNER JOIN tbl_program p ON u.program_id = p.program_id
             WHERE u.user_id = :user_id";
 
-    $stmt = $conn->prepare($sql);
-    $stmt->bindParam(':user_id', $user_id, PDO::PARAM_INT);
-    $stmt->execute();
+$stmt = $conn->prepare($sql);
+$stmt->bindParam(':user_id', $user_id, PDO::PARAM_INT);
+$stmt->execute();
 
-    // Check if the query was successful and if there is a user with the given emp_id
-    if ($stmt->rowCount() > 0) {
-        $user = $stmt->fetch(PDO::FETCH_ASSOC); // Fetch the user data
-    }
+// Check if the query was successful and if there is a user with the given emp_id
+if ($stmt->rowCount() > 0) {
+    $user = $stmt->fetch(PDO::FETCH_ASSOC); // Fetch the user data
+}
 ?>
+
+
+
+
 
 <aside id="sidebar">
     <div class="d-flex">
@@ -37,7 +41,7 @@
                 <span>Profile</span>
             </a>
         </li>
-      
+
         <li class="sidebar-item">
             <a href="student.php" class="sidebar-link">
                 <i class="lni lni-graduation"></i>
@@ -45,18 +49,24 @@
             </a>
         </li>
         <li class="sidebar-item">
+            <a href="faculty.php" class="sidebar-link">
+                <i class="lni lni-users"></i>
+                <span>Faculty</span>
+            </a>
+        </li>
+        <li class="sidebar-item">
             <a href="course.php" class="sidebar-link">
                 <i class="lni lni-library"></i>
-                <span>Course</span>
+                <span>Courses</span>
             </a>
         </li>
         <li class="sidebar-item">
             <a href="test_results.php" class="sidebar-link">
                 <i class="lni lni-popup"></i>
-                <span>Report</span>
+                <span>Reports</span>
             </a>
         </li>
-     
+
     </ul>
     <div class="sidebar-footer">
         <a href="../logout.php" class="sidebar-link">
@@ -65,3 +75,5 @@
         </a>
     </div>
 </aside>
+
+

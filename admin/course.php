@@ -90,11 +90,14 @@ $totalPages = ceil($totalCount / $recordsPerPage);
     <?php
         include 'sidebar.php';
         ?>
-        <div class="main p-3">
-            <div class="container">
-                <div class="row justify-content-center mt-5">
+
+<?php
+        include 'back.php';
+        ?>
+        <div class="container mt-5">
+                <div class="row justify-content-center">
                     <div class="col-md-8">
-                        <div class="text-center mb-4">
+                        <div class="text-center">
                             <h1>Course</h1>
                         </div>
                         <a class="btn btn-outline-primary btn-sm" href="add_course.php"><i class="lni lni-plus"></i></a><br><br>
@@ -160,7 +163,6 @@ $totalPages = ceil($totalCount / $recordsPerPage);
                         </nav>
                     </div>
                 </div>
-            </div>
         </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"

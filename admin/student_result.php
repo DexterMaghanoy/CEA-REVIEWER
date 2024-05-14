@@ -81,10 +81,12 @@ if (isset($_GET['stud_id']) && isset($_GET['course_id'])) {
         ?>
         <div class="main p-3">
             <div class="container">
+       
                 <div class="row justify-content-center mt-5">
                     <div class="col-md-8">
                         <div class="text-center mb-4">
                             <h1>Student Result</h1>
+  
                         </div>
                         <!-- Display student scores in a table -->
                         <div class="table-responsive">

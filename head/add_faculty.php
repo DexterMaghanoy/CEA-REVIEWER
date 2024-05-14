@@ -102,8 +102,10 @@ if (isset($_POST['save'])) {
     <?php
         include 'sidebar.php';
         ?>
-        <div class="main py-3">
-            <div class="text-center mb-4">
+        <div class="container">
+        <?php include 'back.php'; ?>
+
+            <div class="text-center mb-1">
                 <h1>Add Faculty</h1>
             </div>
             <div class="container">

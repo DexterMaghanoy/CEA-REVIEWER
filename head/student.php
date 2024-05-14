@@ -88,76 +88,85 @@ $totalPages = ceil($totalCount / $recordsPerPage);
         <?php
         include 'sidebar.php';
         ?>
-        <div class="main p-3">
-            <div class="container">
-                <div class="row justify-content-center mt-5">
-                    <div class="col-md-8">
-                        <div class="text-center mb-4">
-                            <h1>Students</h1>
-                        </div>
-                        <div class="d-flex">
-                            <a class="btn btn-outline-success btn-sm me-2" href="add_student.php"><i class="lni lni-plus"></i></a>
-                            <a class="btn btn-outline-primary btn-sm" href="import_student.php"><i class="lni lni-upload"></i></a>
-                        </div><br>
-                        <!-- Search bar -->
-                        <form action="" method="GET" class="mb-3">
-                            <div class="input-group">
-                                <input type="text" class="form-control" name="search" placeholder="Search...">
-                                <button class="btn btn-primary" type="submit">Search</button>
-                            </div>
-                        </form>
-                        <div class="table-responsive">
-                            <table class="table table-bordered border-secondary">
-                                <caption>List of Student</caption>
-                                <thead class="table-dark">
-                                    <tr>
-                                        <th scope="col">Student No.</th>
-                                        <th scope="col">Program</th>
-                                        <th scope="col">Fullname</th>
-                                        <th scope="col">Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <?php if ($result->rowCount() > 0) : ?>
-                                        <?php while ($row = $result->fetch(PDO::FETCH_ASSOC)) : ?>
-                                            <tr>
-                                                <td><?php echo $row['stud_no']; ?></td>
-                                                <td><?php echo $row['program_name']; ?></td>
-                                                <td><?php echo $row['stud_lname'] . ', ' . $row['stud_fname'] . ' ' . $row['stud_mname']; ?></td>
-                                                <td>
-                                                    <a class="btn btn-primary btn-sm" href="edit_student.php?stud_id=<?php echo $row['stud_id']; ?>"><i class="lni lni-pencil"></i></a>
-                                                    <form method="post" style="display: inline;">
-                                                        <input type="hidden" name="stud_id" value="<?php echo $row['stud_id']; ?>">
-                                                        <button type="submit" name="toggle_status" class="btn btn-sm <?php echo $row['stud_status'] == 1 ? 'btn-success' : 'btn-warning'; ?>">
-                                                            <?php if ($row['stud_status'] == 1) : ?>
-                                                                <i class="lni lni-checkmark-circle"></i> <!-- Green circle icon for activated -->
-                                                            <?php else : ?>
-                                                                <i class="lni lni-checkmark-circle"></i> <!-- Yellow circle icon for deactivated -->
-                                                            <?php endif; ?>
-                                                        </button>
-                                                    </form>
-                                                </td>
-                                            </tr>
-                                        <?php endwhile; ?>
-                                    <?php else : ?>
-                                        <tr>
-                                            <td colspan="4" class="text-center">No records found for student.</td>
-                                        </tr>
-                                    <?php endif; ?>
-                                </tbody>
-                            </table>
-                        </div>
-                        <!-- Pagination -->
-                        <nav aria-label="Page navigation">
-                            <ul class="pagination justify-content-center">
-                                <?php for ($i = 1; $i <= $totalPages; $i++) : ?>
-                                    <li class="page-item <?php echo $i == $page ? 'active' : ''; ?>">
-                                        <a class="page-link" href="?page=<?php echo $i; ?>&search=<?php echo $search; ?>"><?php echo $i; ?></a>
-                                    </li>
-                                <?php endfor; ?>
-                            </ul>
-                        </nav>
+        <div class="container">
+            <?php
+            include 'back.php';
+            ?>
+
+            <div class="row justify-content-center">
+                <div class="col-md-8">
+                    <div class="text-center">
+                        <h1>Students</h1>
                     </div>
+                    <div class="d-flex">
+                        <a class="btn btn-outline-success btn-sm me-2" href="add_student.php"><i class="lni lni-plus"></i></a>
+                        <a class="btn btn-outline-primary btn-sm" href="import_student.php"><i class="lni lni-upload"></i></a>
+                    </div><br>
+                    <!-- Search bar -->
+                    <form action="" method="GET" class="mb-3">
+                        <div class="input-group">
+                            <input type="text" class="form-control" name="search" placeholder="Search...">
+                            <button class="btn btn-primary" type="submit">Search</button>
+                        </div>
+                    </form>
+                    <div class="table-responsive">
+                        <table class="table table-bordered border-secondary">
+                            <caption>List of Student</caption>
+                            <thead class="table-dark">
+                                <tr>
+                                    <th scope="col">Student No.</th>
+                                    <th scope="col">Program</th>
+                                    <th scope="col">Fullname</th>
+                                    <th scope="col">Action</th>
+                                    <th scope="col">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php if ($result->rowCount() > 0) : ?>
+                                    <?php while ($row = $result->fetch(PDO::FETCH_ASSOC)) : ?>
+                                        <tr>
+                                            <td><?php echo $row['stud_no']; ?></td>
+                                            <td><?php echo $row['program_name']; ?></td>
+                                            <td><?php echo $row['stud_lname'] . ', ' . $row['stud_fname'] . ' ' . $row['stud_mname']; ?></td>
+                                            <td>
+                                                <a class="btn btn-info btn-sm" href="edit_student.php?stud_id=<?php echo $row['stud_id']; ?>"><i class="lni lni-pencil"></i></a>
+
+                                                <a href="student_record_test.php?student_id=<?php echo $row['stud_id']; ?>" class="btn btn-primary btn-sm eye-icon-btn"><i class="lni lni-eye eye-icon text-white"></i></a>
+
+                                            </td>
+                                            <td>
+                                                <form method="post" style="display: inline;">
+                                                    <input type="hidden" name="stud_id" value="<?php echo $row['stud_id']; ?>">
+                                                    <button type="submit" name="toggle_status" class="btn btn-sm <?php echo $row['stud_status'] == 1 ? 'btn-success' : 'btn-warning'; ?>">
+                                                        <?php if ($row['stud_status'] == 1) : ?>
+                                                            <i class="lni lni-checkmark-circle"></i> <!-- Green circle icon for activated -->
+                                                        <?php else : ?>
+                                                            <i class="lni lni-checkmark-circle"></i> <!-- Yellow circle icon for deactivated -->
+                                                        <?php endif; ?>
+                                                    </button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                    <?php endwhile; ?>
+                                <?php else : ?>
+                                    <tr>
+                                        <td colspan="5" class="text-center">No records found for student.</td>
+                                    </tr>
+                                <?php endif; ?>
+                            </tbody>
+                        </table>
+
+                    </div>
+                    <!-- Pagination -->
+                    <nav aria-label="Page navigation">
+                        <ul class="pagination justify-content-center">
+                            <?php for ($i = 1; $i <= $totalPages; $i++) : ?>
+                                <li class="page-item <?php echo $i == $page ? 'active' : ''; ?>">
+                                    <a class="page-link" href="?page=<?php echo $i; ?>&search=<?php echo $search; ?>"><?php echo $i; ?></a>
+                                </li>
+                            <?php endfor; ?>
+                        </ul>
+                    </nav>
                 </div>
             </div>
         </div>

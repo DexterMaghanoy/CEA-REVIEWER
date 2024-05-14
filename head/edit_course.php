@@ -102,6 +102,7 @@ if (isset($_GET['course_id'])) {
     <div class="wrapper">
     <?php include 'sidebar.php'; ?>
         <div class="main py-3">
+            
             <div class="text-center mb-4">
                 <h1>Edit Course</h1>
             </div>

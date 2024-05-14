@@ -126,11 +126,13 @@ if (isset($_GET['stud_id'])) {
         <?php
         include 'sidebar.php';
         ?>
-        <div class="main py-3">
-            <div class="text-center mb-4">
+            <div class="container">
+            <?php
+        include 'back.php';
+        ?>
+            <div class="text-center mb-1 mt-2">
                 <h1>Edit Student</h1>
             </div>
-            <div class="container">
                 <div class="row justify-content-center">
                     <div class="col-md-5">
                         <form action="edit_student.php" method="post">

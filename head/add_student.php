@@ -122,11 +122,13 @@ if (isset($_POST['save'])) {
         <?php
         include 'sidebar.php';
         ?>
-        <div class="main py-3">
+        <div class="container">
+        <?php
+        include 'back.php';
+        ?>
             <div class="text-center mb-4">
                 <h1>Add Student</h1>
             </div>
-            <div class="container">
                 <div class="row justify-content-center">
                     <div class="col-md-5">
                         <!DOCTYPE html>
@@ -209,7 +211,6 @@ if (isset($_POST['save'])) {
 
                     </div>
                 </div>
-            </div>
         </div>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe" crossorigin="anonymous"></script>
 </body>

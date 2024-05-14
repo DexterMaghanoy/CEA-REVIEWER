@@ -102,74 +102,80 @@ try {
         <?php
         include 'sidebar.php';
         ?>
-        <div class="main p-3">
-            <div class="container">
-                <div class="row justify-content-center mt-5">
-                    <div class="col-md-8">
-                        <div class="text-center mb-4">
-                            <h1>Course</h1>
+        <div class="container">
+            <?php
+            include 'back.php';
+            ?>
+            <div class="row justify-content-center">
+                <div class="col-md-8">
+                    <div class="text-center">
+                        <h1>Course</h1>
+                    </div>
+                    <a class="btn btn-outline-primary btn-sm" href="add_course.php"><i class="lni lni-plus"></i></a><br><br>
+                    <!-- Search bar -->
+                    <form action="" method="GET" class="mb-3">
+                        <div class="input-group">
+                            <input type="text" class="form-control" name="search" placeholder="Search...">
+                            <button class="btn btn-primary" type="submit">Search</button>
                         </div>
-                        <a class="btn btn-outline-primary btn-sm" href="add_course.php"><i class="lni lni-plus"></i></a><br><br>
-                        <!-- Search bar -->
-                        <form action="" method="GET" class="mb-3">
-                            <div class="input-group">
-                                <input type="text" class="form-control" name="search" placeholder="Search...">
-                                <button class="btn btn-primary" type="submit">Search</button>
-                            </div>
-                        </form>
-                        <div class="table-responsive">
-                            <table class="table table-bordered border-secondary">
-                                <caption>List of Course</caption>
-                                <thead class="table-dark">
-                                    <tr>
-                                        <th scope="col">Assigned</th>
-                                        <th scope="col">Code</th>
-                                        <th scope="col">Subject</th>
-                                        <th scope="col">Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <?php if ($result->rowCount() > 0) : ?>
-                                        <?php while ($row = $result->fetch(PDO::FETCH_ASSOC)) : ?>
-                                            <tr>
-                                                <td><?php echo $row['user_lname'] . ', ' . $row['user_fname'] ?></td>
-                                                <td><?php echo $row['course_code']; ?></td>
-                                                <td><?php echo $row['course_name']; ?></td>
-                                                <td>
-                                                    <a class="btn btn-primary btn-sm" href="edit_course.php?course_id=<?php echo $row['course_id']; ?>"><i class="lni lni-pencil"></i></a>
-                                                    <form method="post" style="display: inline;">
-                                                        <input type="hidden" name="course_id" value="<?php echo $row['course_id']; ?>">
-                                                        <button type="submit" name="toggle_status" class="btn btn-sm <?php echo $row['course_status'] == 1 ? 'btn-success' : 'btn-warning'; ?>">
-                                                            <?php if ($row['course_status'] == 1) : ?>
-                                                                <i class="lni lni-checkmark-circle"></i> <!-- Green circle icon for activated -->
-                                                            <?php else : ?>
-                                                                <i class="lni lni-checkmark-circle"></i> <!-- Yellow circle icon for deactivated -->
-                                                            <?php endif; ?>
-                                                        </button>
-                                                    </form>
-                                                </td>
-                                            </tr>
-                                        <?php endwhile; ?>
-                                    <?php else : ?>
+                    </form>
+                    <div class="table-responsive">
+                        <table class="table table-bordered border-secondary">
+                            <caption>List of Course</caption>
+                            <thead class="table-dark">
+                                <tr>
+                                    <th scope="col">Assigned</th>
+                                    <th scope="col">Code</th>
+                                    <th scope="col">Subject</th>
+                                    <th scope="col">Action</th>
+                                    <th scope="col">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php if ($result->rowCount() > 0) : ?>
+                                    <?php while ($row = $result->fetch(PDO::FETCH_ASSOC)) : ?>
                                         <tr>
-                                            <td colspan="4" class="text-center">No records found for course.</td>
+                                            <td><?php echo $row['user_lname'] . ', ' . $row['user_fname'] ?></td>
+                                            <td><?php echo $row['course_code']; ?></td>
+                                            <td><?php echo $row['course_name']; ?></td>
+                                            <td>
+                                                <a class="btn btn-info btn-sm" href="edit_course.php?course_id=<?php echo $row['course_id']; ?>"><i class="lni lni-pencil"></i></a>
+                                                <a class="btn btn-primary btn-sm" href="view_module.php?course_id=<?php echo $row['course_id']; ?>"><i class="lni lni-radio-button"></i></a>
+                                            </td>
+                                            <td>
+                                                <form method="post" style="display: inline;">
+                                                    <input type="hidden" name="course_id" value="<?php echo $row['course_id']; ?>">
+                                                    <button type="submit" name="toggle_status" class="btn btn-sm <?php echo $row['course_status'] == 1 ? 'btn-success' : 'btn-warning'; ?>">
+                                                        <?php if ($row['course_status'] == 1) : ?>
+                                                            <i class="lni lni-checkmark-circle"></i> <!-- Green circle icon for activated -->
+                                                        <?php else : ?>
+                                                            <i class="lni lni-checkmark-circle"></i> <!-- Yellow circle icon for deactivated -->
+                                                        <?php endif; ?>
+                                                    </button>
+                                                </form>
+                                            </td>
                                         </tr>
-                                    <?php endif; ?>
-                                </tbody>
-                            </table>
-                        </div>
-                        <!-- Pagination -->
-                        <nav aria-label="Page navigation">
-                            <ul class="pagination justify-content-center">
-                                <?php for ($i = 1; $i <= $totalPages; $i++) : ?>
-                                    <li class="page-item <?php echo $i == $page ? 'active' : ''; ?>">
-                                        <a class="page-link" href="?page=<?php echo $i; ?>&search=<?php echo $search; ?>"><?php echo $i; ?></a>
-                                    </li>
-                                <?php endfor; ?>
-                            </ul>
-                        </nav>
+                                    <?php endwhile; ?>
+                                <?php else : ?>
+                                    <tr>
+                                        <td colspan="5" class="text-center">No records found for course.</td>
+                                    </tr>
+                                <?php endif; ?>
+                            </tbody>
+                        </table>
 
                     </div>
+                    <!-- Pagination -->
+                    <nav aria-label="Page navigation">
+                        <ul class="pagination justify-content-center">
+                            <?php for ($i = 1; $i <= $totalPages; $i++) : ?>
+                                <li class="page-item <?php echo $i == $page ? 'active' : ''; ?>">
+                                    <a class="page-link" href="?page=<?php echo $i; ?>&search=<?php echo $search; ?>"><?php echo $i; ?></a>
+                                </li>
+                            <?php endfor; ?>
+                        </ul>
+                    </nav>
+
                 </div>
             </div>
         </div>

@@ -96,8 +96,16 @@ if (isset($_POST['moduleId']) && isset($_POST['moduleStatus'])) {
                 <div class="row justify-content-center mt-5">
                     <div class="col-md-8">
                         <div class="text-center mb-4">
-                            <h1>Module</h1>
+                            <?php if ($result->rowCount() > 0) : ?>
+                                <?php $row = $result->fetch(PDO::FETCH_ASSOC); ?>
+                                <h1>Module: <?php echo $row['module_name']; ?> </h1>
+                            <?php else : ?>
+
+                                <h1>Module</h1>
+
+                            <?php endif; ?>
                         </div>
+
 
                         <table class="table table-bordered border-secondary">
                             <caption>List of Modules</caption>

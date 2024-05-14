@@ -84,7 +84,6 @@ if ($stmt->rowCount() > 0) {
         ?>
         <div class="container">
             <br>
-            <div class="main p-3">
                 <div class="text-center">
                     <h1>Profile</h1>
                 </div>
@@ -252,7 +251,6 @@ function validatePassword() {
                         </div>
                     </div>
                 </div>
-            </div>
 
         </div>
 

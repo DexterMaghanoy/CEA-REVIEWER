@@ -30,7 +30,7 @@ if(isset($_SESSION['program_id'])){
     <?php
 include 'sidebar.php';
 ?>
-        <div class="main p-3">
+        <div class="container">
             <div class="text-center">
                 <h1>
                     Dashboard

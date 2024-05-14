@@ -37,14 +37,26 @@ if ($stmt->rowCount() > 0) {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous">
     <link rel="shortcut icon" href="../img/cea_logo.png" type="image/x-icon">
     <link rel="stylesheet" href="style.css" type="text/css">
+
+
+
 </head>
 
+
+
 <body>
+
     <div class="wrapper">
         <?php include 'sidebar.php'; ?>
-        <div class="main p-3">
+
+        <div class="container">
+            <?php include 'back.php'; ?>
+
+
+
             <div class="text-center">
                 <h1>Profile</h1>
+
             </div>
             <section class="vh-90">
                 <div class="container py-5 h-100">
@@ -53,11 +65,12 @@ if ($stmt->rowCount() > 0) {
                             <div class="card mb-3" style="border-radius: .5rem;">
                                 <div class="row g-0">
                                     <div class="col-md-4 gradient-custom text-center text-white" style="border-top-left-radius: .5rem; border-bottom-left-radius: .5rem;">
-                                        <img src="data:image/jpg;base64,<?php echo base64_encode($user['user_image']); ?>" alt="Avatar" class="rounded-circle img-fluid my-5" style="width: 100px;">
+                                        <img src="/cea-reviewer/img/faculty.png" alt="Avatar" class="rounded-circle img-fluid my-5" style="width: 100px;">
                                         <h5><?php echo $user['user_fname'] . ' ' . $user['user_lname'] ?></h5>
                                         <p><?php echo $user['type_name']; ?></p>
                                         <i class="far fa-edit mb-5"></i>
                                     </div>
+
                                     <div class="col-md-8">
                                         <div class="card-body p-4">
                                             <h6>Information</h6>
