@@ -88,11 +88,12 @@ $totalPages = ceil($totalCount / $recordsPerPage);
         <?php
         include 'sidebar.php';
         ?>
-        <div class="container">
             <?php
             include 'back.php';
             ?>
 
+        <div class="container">
+        
             <div class="row justify-content-center">
                 <div class="col-md-8">
                     <div class="text-center">

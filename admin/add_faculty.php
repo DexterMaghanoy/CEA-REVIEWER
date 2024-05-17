@@ -101,6 +101,9 @@ if (isset($_POST['save'])) {
     <?php
         include 'sidebar.php';
         ?>
+          <?php
+        include 'back.php';
+        ?>
         <div class="main py-3">
     <div class="text-center mb-4">
         <h1>Add User</h1>
@@ -196,13 +199,6 @@ if (isset($_POST['save'])) {
 </body>
 <style>
 </style>
-
-
-
-
-
-
-
 
 
 <script>

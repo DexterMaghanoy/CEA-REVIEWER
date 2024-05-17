@@ -194,7 +194,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         </form>
                     <?php else : ?>
                         <p>No questions found.</p>
-                        <?php include 'connector.php'; ?>
                     <?php endif; ?>
                     <br><br>
                 </div>

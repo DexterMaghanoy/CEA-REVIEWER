@@ -122,95 +122,96 @@ if (isset($_POST['save'])) {
         <?php
         include 'sidebar.php';
         ?>
-        <div class="container">
         <?php
         include 'back.php';
         ?>
+
+        <div class="container">
             <div class="text-center mb-4">
                 <h1>Add Student</h1>
             </div>
-                <div class="row justify-content-center">
-                    <div class="col-md-5">
-                        <!DOCTYPE html>
-                        <html lang="en">
+            <div class="row justify-content-center">
+                <div class="col-md-5">
+                    <!DOCTYPE html>
+                    <html lang="en">
 
-                        <head>
-                            <meta charset="UTF-8">
-                            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                            <title>Add Student</title>
-                        </head>
+                    <head>
+                        <meta charset="UTF-8">
+                        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                        <title>Add Student</title>
+                    </head>
 
-                        <body>
-                            <form action="add_student.php" method="post" autocomplete="off" id="studentForm">
+                    <body>
+                        <form action="add_student.php" method="post" autocomplete="off" id="studentForm">
 
-                                <!-- Number Input -->
-                                <div class="mb-3">
-                                    <label for="stud_no" class="form-label">Student No.</label>
-                                    <input type="text" class="form-control" id="stud_no" name="stud_no" required autocomplete="off">
+                            <!-- Number Input -->
+                            <div class="mb-3">
+                                <label for="stud_no" class="form-label">Student No.</label>
+                                <input type="text" class="form-control" id="stud_no" name="stud_no" required autocomplete="off">
+                            </div>
+
+                            <!-- First Name Input -->
+                            <div class="mb-3">
+                                <label for="stud_fname" class="form-label">First Name</label>
+                                <input type="text" class="form-control" id="stud_fname" name="stud_fname" pattern="[A-Za-z]+" title="Please enter only alphabetic characters" required autocomplete="off">
+                            </div>
+
+                            <!-- Middle Name Input -->
+                            <div class="mb-3">
+                                <label for="stud_mname" class="form-label">Middle Name</label>
+                                <input type="text" class="form-control" id="stud_mname" name="stud_mname" pattern="[A-Za-z]+" title="Please enter only alphabetic characters" required autocomplete="off">
+                            </div>
+
+                            <!-- Last Name Input -->
+                            <div class="mb-3">
+                                <label for="stud_lname" class="form-label">Last Name</label>
+                                <input type="text" class="form-control" id="stud_lname" name="stud_lname" pattern="[A-Za-z]+" title="Please enter only alphabetic characters" required autocomplete="off">
+                            </div>
+
+                            <!-- Password Input -->
+                            <div class="mb-3">
+                                <label for="stud_password" class="form-label">Password</label>
+                                <div class="password-input-container">
+                                    <input type="password" class="form-control" id="stud_password" name="stud_password" pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{12,}" title="Must contain at least one number and one uppercase and lowercase letter, and at least 12 or more characters" required autocomplete="off">
+                                    <span class="toggle-password" onclick="togglePasswordVisibility()"><i class="far fa-eye-slash"></i></span>
                                 </div>
+                            </div>
+                            <!-- Hidden Employee ID and Submit Button -->
+                            <input type="submit" class="btn btn-success mt-2" value="Save" name="save">
+                        </form>
 
-                                <!-- First Name Input -->
-                                <div class="mb-3">
-                                    <label for="stud_fname" class="form-label">First Name</label>
-                                    <input type="text" class="form-control" id="stud_fname" name="stud_fname" pattern="[A-Za-z]+" title="Please enter only alphabetic characters" required autocomplete="off">
-                                </div>
+                        <script>
+                            // Function to toggle password visibility
+                            function togglePasswordVisibility() {
+                                var passwordInput = document.getElementById('stud_password');
+                                var icon = document.querySelector('.toggle-password i');
 
-                                <!-- Middle Name Input -->
-                                <div class="mb-3">
-                                    <label for="stud_mname" class="form-label">Middle Name</label>
-                                    <input type="text" class="form-control" id="stud_mname" name="stud_mname" pattern="[A-Za-z]+" title="Please enter only alphabetic characters" required autocomplete="off">
-                                </div>
-
-                                <!-- Last Name Input -->
-                                <div class="mb-3">
-                                    <label for="stud_lname" class="form-label">Last Name</label>
-                                    <input type="text" class="form-control" id="stud_lname" name="stud_lname" pattern="[A-Za-z]+" title="Please enter only alphabetic characters" required autocomplete="off">
-                                </div>
-
-                                <!-- Password Input -->
-                                <div class="mb-3">
-                                    <label for="stud_password" class="form-label">Password</label>
-                                    <div class="password-input-container">
-                                        <input type="password" class="form-control" id="stud_password" name="stud_password" pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{12,}" title="Must contain at least one number and one uppercase and lowercase letter, and at least 12 or more characters" required autocomplete="off">
-                                        <span class="toggle-password" onclick="togglePasswordVisibility()"><i class="far fa-eye-slash"></i></span>
-                                    </div>
-                                </div>
-                                <!-- Hidden Employee ID and Submit Button -->
-                                <input type="submit" class="btn btn-success mt-2" value="Save" name="save">
-                            </form>
-
-                            <script>
-                                // Function to toggle password visibility
-                                function togglePasswordVisibility() {
-                                    var passwordInput = document.getElementById('stud_password');
-                                    var icon = document.querySelector('.toggle-password i');
-
-                                    if (passwordInput.type === "password") {
-                                        passwordInput.type = "text";
-                                        icon.classList.remove('fa-eye-slash');
-                                        icon.classList.add('fa-eye');
-                                    } else {
-                                        passwordInput.type = "password";
-                                        icon.classList.remove('fa-eye');
-                                        icon.classList.add('fa-eye-slash');
-                                    }
+                                if (passwordInput.type === "password") {
+                                    passwordInput.type = "text";
+                                    icon.classList.remove('fa-eye-slash');
+                                    icon.classList.add('fa-eye');
+                                } else {
+                                    passwordInput.type = "password";
+                                    icon.classList.remove('fa-eye');
+                                    icon.classList.add('fa-eye-slash');
                                 }
+                            }
 
-                                // Clear input fields on page load
-                                window.onload = function() {
-                                    document.getElementById('stud_no').value = '';
-                                    document.getElementById('stud_fname').value = '';
-                                    document.getElementById('stud_mname').value = '';
-                                    document.getElementById('stud_lname').value = '';
-                                    document.getElementById('stud_password').value = '';
-                                };
-                            </script>
-                        </body>
+                            // Clear input fields on page load
+                            window.onload = function() {
+                                document.getElementById('stud_no').value = '';
+                                document.getElementById('stud_fname').value = '';
+                                document.getElementById('stud_mname').value = '';
+                                document.getElementById('stud_lname').value = '';
+                                document.getElementById('stud_password').value = '';
+                            };
+                        </script>
+                    </body>
 
-                        </html>
+                    </html>
 
-                    </div>
                 </div>
+            </div>
         </div>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe" crossorigin="anonymous"></script>
 </body>

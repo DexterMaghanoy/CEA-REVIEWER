@@ -39,14 +39,21 @@ if ($stmt->rowCount() > 0) {
   <link rel="stylesheet" href="style.css" type="text/css">
 </head>
 
+<style>
+  .card {
+  border: none;
+  box-shadow: 10px 20px 30px rgba(0, 0, 0, 0.1);
+}
+
+</style>
 
 <body>
   <div class="wrapper">
     <?php include 'sidebar.php'; ?>
     <?php include 'back.php'; ?>
 
-      <div class="container mt-5">
-      <div class="text-center">
+      <div class="container">
+      <div class="text-center  mt-5">
         <h1>Profile</h1>
 
       </div>

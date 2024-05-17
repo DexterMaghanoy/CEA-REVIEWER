@@ -64,7 +64,7 @@ if (isset($_POST['toggle_status']) && isset($_POST['program_id'])) {
                 <div class="row justify-content-center">
                     <div class="col-md-8">
                         <div class="text-center">
-                            <h1>Program</h1>
+                            <h1>Courses</h1>
                         </div>
                         <a class="btn btn-outline-primary btn-sm" href="add_program.php?"><i class="lni lni-plus"></i></a><br><br>
                         <div class="table-responsive">

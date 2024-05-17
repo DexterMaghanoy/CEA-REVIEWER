@@ -79,10 +79,11 @@ if (isset($_SESSION['program_id'])) {
     <div class="wrapper">
 
         <?php include 'sidebar.php'; ?>
+        <?php include 'back.php'; ?>
+
 
         <div class="container">
             
-        <?php include 'back.php'; ?>
             <div class="row justify-content-center">
                 <div class="text-center">
                     <h1>Exam Report</h1>

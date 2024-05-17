@@ -121,9 +121,10 @@ $facultyMembers = $stmtFaculty->fetchAll(PDO::FETCH_ASSOC);
         <?php
         include 'sidebar.php';
         ?>
-        <div class="container">
             <?php include 'back.php'; ?>
-            <div class="text-center mb-4">
+
+        <div class="container">
+            <div class="text-center mb-4 mt-5">
                 <h1>Add Course</h1>
             </div>
             <div class="container">

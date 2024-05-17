@@ -48,9 +48,9 @@ if ($stmt->rowCount() > 0) {
 
     <div class="wrapper">
         <?php include 'sidebar.php'; ?>
+        <?php include 'back.php'; ?>
 
         <div class="container">
-            <?php include 'back.php'; ?>
 
 
 

@@ -45,6 +45,29 @@ if (!isset($_SESSION['program_id'])) {
     header("Location: ../index.php");
     exit();
 }
+
+try {
+    // Create connection
+    $conn = new PDO("mysql:host=$servername;dbname=$dbname", $username, $password);
+
+    // Set PDO to throw exceptions
+    $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+    // Define the SQL query to update stud_status
+    $sql = "UPDATE tbl_student SET stud_status = 0 WHERE created_at < DATE_SUB(NOW(), INTERVAL 1 YEAR)";
+
+    // Prepare the SQL statement
+    $stmt = $conn->prepare($sql);
+
+    // Execute the SQL statement
+    $stmt->execute();
+
+    // Output success message
+    // echo "Student statuses updated successfully.";
+} catch (PDOException $e) {
+    // Output error message
+    echo "Error: " . $e->getMessage();
+}
 ?>
 
 <!DOCTYPE html>
@@ -60,6 +83,47 @@ if (!isset($_SESSION['program_id'])) {
     <link rel="shortcut icon" href="../img/cea_logo.png" type="image/x-icon">
     <link rel="stylesheet" href="style.css" type="text/css">
 </head>
+<style>
+        .card {
+            border: none;
+            border-radius: 10px;
+            transition: transform 0.3s, box-shadow 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card:hover,
+        .card:focus {
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+            transform: scale(1.05);
+        }
+
+        .card-body {
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .card-text {
+            font-size: 1.2rem;
+        }
+
+        .card:active::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+    </style>
 
 <body>
     <div class="wrapper">
@@ -84,11 +148,12 @@ if (!isset($_SESSION['program_id'])) {
                             ?>
                                     <div class="col-md-4">
                                         <a href="module.php?course_id=<?php echo $course['course_id']; ?>" class="card-link text-decoration-none">
-                                            <div class="card text-dark rounded-3 shadow <?php echo $background_class; ?>">
+                                            <div style="background-color: rgb(232, 328, 237);"  class="card text-dark rounded-3 shadow <?php echo $background_class; ?>">
                                                 <div class="card-body">
                                                     <h5>
                                                         <p class="card-text" style="color: white;"><?php echo $course['course_code'] . ': ' . $course['course_name']; ?></p>
                                                     </h5>
+                                                    <br>
                                                 </div>
                                             </div>
                                         </a>

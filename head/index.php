@@ -27,6 +27,30 @@ $stmt->execute();
 if ($stmt->rowCount() > 0) {
     $user = $stmt->fetch(PDO::FETCH_ASSOC); // Fetch the user data
 }
+
+
+try {
+    // Create connection
+    $conn = new PDO("mysql:host=$servername;dbname=$dbname", $username, $password);
+
+    // Set PDO to throw exceptions
+    $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+    // Define the SQL query to update stud_status
+    $sql = "UPDATE tbl_student SET stud_status = 0 WHERE created_at < DATE_SUB(NOW(), INTERVAL 1 YEAR)";
+
+    // Prepare the SQL statement
+    $stmt = $conn->prepare($sql);
+
+    // Execute the SQL statement
+    $stmt->execute();
+
+    // Output success message
+    // echo "Student statuses updated successfully.";
+} catch (PDOException $e) {
+    // Output error message
+    echo "Error: " . $e->getMessage();
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -40,7 +64,7 @@ if ($stmt->rowCount() > 0) {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous">
     <link rel="shortcut icon" href="../img/cea_logo.png" type="image/x-icon">
     <link rel="stylesheet" href="style.css" type="text/css">
-    
+
 </head>
 
 <body>
@@ -156,5 +180,3 @@ if ($stmt->rowCount() > 0) {
 </script>
 
 </html>
-
-

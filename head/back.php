@@ -19,7 +19,7 @@
 
 <div style="white-space: nowrap;">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.0/font/bootstrap-icons.css" rel="stylesheet">
-    <button style="font-size: 40px; background: none; border: none; display: inline-block; padding: 0; margin: 0;" onclick="goBack()" class="back-button"><i class="bi bi-arrow-left-circle"></i></button>
+    <button style="font-size: 40px; background: none; border: none; padding-left: 15px; margin-left: 15px;" onclick="goBack()" class="back-button"><i class="bi bi-arrow-left-circle"></i></button>
 </div>
 
 <script>

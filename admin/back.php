@@ -29,23 +29,17 @@
     <button style="font-size: 40px; background: none; border: none; padding-left: 15px; margin-left: 15px;" onclick="goBack()" class="back-button"><i class="bi bi-arrow-left-circle"></i></button>
 </div>
 
+
 <script>
     function goBack() {
-        // Check if the current page is "home.php"
-        if (window.location.href.includes("profile.php") ||
-            window.location.href.includes("user.php") ||
-            window.location.href.includes("student.php") ||
-            window.location.href.includes("faculty.php") ||
-            window.location.href.includes("program.php") ||
-            window.location.href.includes("course.php") ||
-            window.location.href.includes("test_results.php") ||
-            window.location.href.includes("quiz_results.php") ||
-            window.location.href.includes("exam_results.php")) {
-            // Define the goBack function to bring back the user to the previous page
-            window.location = "index.php";
+        // Check if the current page is one of the specified pages
+        const pages = ["profile.php", "user.php", "student.php", "program.php", "course.php", "report.php"];
+        const currentPage = window.location.href;
 
+        if (pages.some(page => currentPage.includes(page))) {
+            window.location = "index.php";
         } else {
-            // If not on "home.php", just go back to the previous page
+            // If not on one of the specified pages, just go back to the previous page
             window.history.back();
         }
     }

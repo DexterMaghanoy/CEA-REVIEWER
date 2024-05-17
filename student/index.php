@@ -39,7 +39,7 @@ if (isset($_POST['submit'])) {
             $username = validate($_POST['txtUsername']);
             $password = validate($_POST['txtPassword']);
 
-            $stmt = $conn->prepare("SELECT * FROM tbl_student WHERE stud_no = :username");
+            $stmt = $conn->prepare("SELECT * FROM tbl_student WHERE stud_no = :username AND stud_status = 1");
 
             $stmt->bindParam(':username', $username);
 

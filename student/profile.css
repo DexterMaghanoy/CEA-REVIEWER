@@ -169,6 +169,8 @@ a.sidebar-link:hover {
     height: 100vh;
     overflow-y: auto;
     width: 100%; 
+    background-color: rgb(252, 249, 249); /* Light pastel green */
+
 }
 .container {
     margin-top: 1%;

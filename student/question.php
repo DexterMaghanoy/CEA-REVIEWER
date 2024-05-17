@@ -214,6 +214,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <?php
         include 'sidebar.php';
         ?>
+
+
         <div class="container">
             <div class="row justify-content-center mt-2">
                 <div class="col-lg-8">
@@ -234,16 +236,36 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                             <input class="form-check-input" type="radio" name="answer_<?php echo $question['question_id']; ?>" id="option<?php echo $option; ?>_<?php echo $question['question_id']; ?>" value="<?php echo sanitizeInput($question[$optionKey]); ?>">
                                             <label class="form-check-label" for="option<?php echo $option; ?>_<?php echo $question['question_id']; ?>"><?php echo sanitizeInput($question[$optionKey]); ?></label>
                                         </div>
-
                                     <?php endforeach; ?>
                                 </div>
                                 <?php $counter++; ?>
                             <?php endforeach; ?>
                             <br> <br>
-                            <div class="text-end">
-                                <button id="submit-btn" type="submit" class="btn btn-primary">Submit</button>
-                                <button style="font-size: 20px;" id="next-btn" class="btn btn-primary d-none" type="button">Next</button>
+                            <!-- <div class="text-end">
+
+                                <button style="font-size: 20px;" id="back-btn" class="text-start btn btn-primary <?php echo $counter === 0 ? 'd-none' : ''; ?>" type="button">Back</button>
+
+                                <button style="font-size: 20px;" id="submit-btn" type="submit" class="text-end btn btn btn-primary">Submit</button>
+                                <button style="font-size: 20px;" id="next-btn" class="text-end btn btn-primary <?php echo $counter === count($result) - 1 ? 'd-none' : ''; ?>" type="button">Next</button>
+                            </div> -->
+
+
+                            <div class="container">
+                                <div class="row">
+                                    <div class="col text-start">
+                                        <button style="font-size: 20px;" id="back-btn" class="text-start btn btn-primary <?php echo $counter === 0 ? 'd-none' : ''; ?>" type="button">◁ Back</button>
+
+                                    </div>
+                                    <div class="col text-end">
+                                        <button style="font-size: 20px;" id="submit-btn" type="submit" class="text-end btn btn btn-primary">Submit</button>
+
+                                        <button style="font-size: 20px;" id="next-btn" class="text-end btn btn-primary <?php echo $counter === count($result) - 1 ? 'd-none' : ''; ?>" type="button">Next ▷</button>
+                                    </div>
+                                </div>
                             </div>
+
+
+
                         <?php else : ?>
                             <p>No questions found.</p>
                         <?php endif; ?>
@@ -253,6 +275,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 </div>
             </div>
         </div>
+
 
 
     </div>
@@ -269,10 +292,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     });
 </script>
 
-
 <script>
     document.addEventListener("DOMContentLoaded", function() {
         const questions = document.querySelectorAll('.question-box');
+        const backButton = document.getElementById('back-btn');
         const nextButton = document.getElementById('next-btn');
         const submitButton = document.getElementById('submit-btn');
         let currentQuestionIndex = 0;
@@ -284,6 +307,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
 
         function updateButtonVisibility() {
+            backButton.classList.toggle('d-none', currentQuestionIndex === 0);
             nextButton.classList.toggle('d-none', currentQuestionIndex === questions.length - 1);
             submitButton.classList.toggle('d-none', currentQuestionIndex !== questions.length - 1);
         }
@@ -300,6 +324,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         function updateSubmitButtonVisibility() {
             submitButton.disabled = !isAnyOptionSelected();
         }
+
+        backButton.addEventListener('click', function() {
+            currentQuestionIndex--;
+            showQuestion(currentQuestionIndex);
+            updateButtonVisibility();
+            updateNextButtonVisibility();
+            updateSubmitButtonVisibility();
+        });
 
         nextButton.addEventListener('click', function() {
             currentQuestionIndex++;

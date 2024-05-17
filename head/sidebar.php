@@ -29,8 +29,13 @@ if ($stmt->rowCount() > 0) {
             <i class="lni lni-grid-alt"></i>
         </button>
         <div class="sidebar-logo mt-3">
-            <h6> <a href="index.php">Hello, <?php echo $user['user_fname'] ?>!<p style="text-align: center;font-size:13px;"><?php echo $user['type_name']; ?></p>
+            <h6>
+                <a href="index.php">Hello, <?php echo htmlspecialchars($user['user_fname']); ?>!</a>
+                <p style="text-align: center; font-size: 13px; color: white;">
+                    <?php  echo htmlspecialchars($user['program_name']) . '<br>' . htmlspecialchars($user['type_name']); ?>
+                </p>
             </h6>
+
             </a>
         </div>
     </div>
@@ -75,5 +80,3 @@ if ($stmt->rowCount() > 0) {
         </a>
     </div>
 </aside>
-
-

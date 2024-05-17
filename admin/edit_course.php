@@ -111,7 +111,9 @@ if (isset($_GET['course_id'])) {
     <div class="wrapper">
         <?php
         include 'sidebar.php';
-        ?>
+        ?> <?php
+            include 'back.php';
+            ?>
         <div class="main py-3">
             <div class="text-center mb-4">
                 <h1>Edit Course</h1>

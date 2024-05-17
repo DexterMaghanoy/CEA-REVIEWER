@@ -57,7 +57,7 @@ if ($stmt->rowCount() > 0) {
     header("Location: ../login.php");
     exit();
 }
-
+    
 ?>
 
 <!DOCTYPE html>
@@ -77,7 +77,7 @@ if ($stmt->rowCount() > 0) {
 </head>
 
 <body>
-    <div class="wrapper">
+    <div style="background-color: rgb(252, 249, 249);" class="wrapper">
 
         <?php
         include 'sidebar.php';
