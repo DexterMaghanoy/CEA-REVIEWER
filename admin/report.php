@@ -123,9 +123,9 @@ unset($course);
                         <div class="col-sm">
                             <div class="card h-100" style="background: linear-gradient(to left, rgba(220, 210, 211, 0.3), rgba(200, 240, 241, 0.3));">
                                 <div class="card-body">
-                                    <h5 class="card-title" style="font-size: 1rem;">No Results</h5>
+                                    <h5 class="card-title" style="font-size: 1rem;">Results</h5>
                                     <p class="card-text" style="font-size: 0.8rem;">
-                                    <h1>No matches found.</h1>
+                                    <h1>No results found.</h1>
                                     </p>
                                 </div>
                             </div>

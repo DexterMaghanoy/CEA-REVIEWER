@@ -23,23 +23,30 @@ if ($stmt->rowCount() > 0) {
 
 
 
-<aside id="sidebar">
-    <div class="d-flex">
-        <button class="toggle-btn" type="button">
-            <i class="lni lni-grid-alt"></i>
-        </button>
-        <div class="sidebar-logo mt-3">
-            <h6>
-                <a href="index.php">Hello, <?php echo htmlspecialchars($user['user_fname']); ?>!</a>
-                <p style="text-align: center; font-size: 13px; color: white;">
-                    <?php  echo htmlspecialchars($user['program_name']) . '<br>' . htmlspecialchars($user['type_name']); ?>
-                </p>
-            </h6>
 
-            </a>
+<aside id="sidebar">
+    <div class="d-flex align-items-center">
+        <button class="toggle-btn" type="button">
+            <i class="lni lni-grid-alt mt-4"></i>
+        </button>
+        <div class="ml-3 sidebar-logo">
+            <h6 class="mt-4 mb-0">
+                <a href="index.php">Hello, <?php echo htmlspecialchars($user['user_fname']); ?>!</a>
+            </h6>
+            <p class="mb-0 mt-1" style="text-align: left; font-size: 13px; color: white;">
+                <?php echo htmlspecialchars($user['program_name']) . '<br>' . htmlspecialchars($user['type_name']); ?>
+            </p>
         </div>
     </div>
+
     <ul class="sidebar-nav">
+
+        <li class="sidebar-item">
+            <a href="index.php" class="sidebar-link">
+                <i class="lni lni-dashboard"></i>
+                <span>Dashboard</span>
+            </a>
+        </li>
         <li class="sidebar-item">
             <a href="profile.php" class="sidebar-link">
                 <i class="lni lni-user"></i>
@@ -80,3 +87,5 @@ if ($stmt->rowCount() > 0) {
         </a>
     </div>
 </aside>
+
+

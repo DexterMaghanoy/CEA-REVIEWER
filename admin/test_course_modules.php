@@ -146,16 +146,14 @@ $courses = $result->fetchAll(PDO::FETCH_ASSOC);
             <div class="row justify-content-center mt-5">
                 <div class="col-md-8">
                     <div class="text-center mb-4">
-                        <?php if (!empty($results)) : ?>
-                            <?php foreach ($results as $row) : ?>
-                                <h1><?php echo htmlspecialchars($row['module_name'], ENT_QUOTES, 'UTF-8'); ?></h1>
-                            <?php endforeach; ?>
-                        <?php else : ?>
-                            <h1><?php echo htmlspecialchars($module_name, ENT_QUOTES, 'UTF-8'); ?></h1>
-                        <?php endif; ?>
+                        <?php
+                        $moduleName = !empty($results) ? $results[0]['module_name'] : $module_name;
+                        ?>
+                        <h1>Module: <?php echo htmlspecialchars($moduleName, ENT_QUOTES, 'UTF-8'); ?></h1>
                     </div>
                 </div>
             </div>
+
             <div class="row">
 
                 <div class="col-sm">

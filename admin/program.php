@@ -63,7 +63,7 @@ if (isset($_POST['toggle_status']) && isset($_POST['program_id'])) {
 
         <div class="container mt-3">
             <div class="row justify-content-center">
-                <div class="col-md-8">
+                <div class="col-md-12">
                     <div class="text-center">
                         <h1>Courses</h1>
                     </div>

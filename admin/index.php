@@ -13,8 +13,7 @@ try {
         FROM tbl_program p
         LEFT JOIN tbl_student s ON p.program_id = s.program_id 
         WHERE p.program_status = 1 
-        GROUP BY p.program_id
-    ");
+        GROUP BY p.program_id");
     $stmt->execute();
     $programs = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
@@ -39,7 +38,6 @@ try {
     $stmt = $conn->prepare($sql);
 
     $stmt->execute();
-
 } catch (PDOException $e) {
     echo "Error: " . $e->getMessage();
 }
@@ -113,17 +111,37 @@ try {
             width: 100%;
             height: 100%;
         }
-     
     </style>
 </head>
 
 <body>
     <div class="wrapper">
         <?php include 'sidebar.php'; ?>
-        <div class="main p-3">
-            <div class="text-center">
-                <h1 class="mt-3 mb-3">Dashboard</h1>
+        <div style="overflow-y: auto" class=" main p-3" ;>
+
+            <style>
+                .custom-card {
+                    background: linear-gradient(to top, rgba(255, 255, 255, 0.95), rgba(0, 0, 0, 0.2));
+                    border-radius: 10px;
+                    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+                    height: 60px;
+                    /* Reduced vertical padding */
+                }
+
+                .custom-card h1 {
+                    margin-top: 0;
+                    margin-bottom: 0px;
+                    font-size: 24px;
+                    color: #333;
+                }
+            </style>
+
+            <div class="col-md-12 card custom-card mb-2">
+                <div class="card-body">
+                    <h1>Dashboard</h1>
+                </div>
             </div>
+
             <div class="row">
 
                 <div class="col-md-4">
@@ -191,20 +209,9 @@ try {
                         </div>
                     </a>
 
-
-
-
                 </div>
-
-
-
-
                 <div class="col-md-4">
-
-
-
-
-                    <a href="modules.php" class="text-white text-decoration-none">
+                    <a href="program.php" class="text-white text-decoration-none">
                         <div class="card text-bg-light text-black shadow-lg mb-3">
                             <div class="card-header">Courses & Students</div>
                             <div class="card-body">
@@ -225,17 +232,274 @@ try {
                             </div>
                         </div>
                     </a>
+
+                    <div class="card text-bg-light text-black shadow-lg mb-3">
+                        <div class="card-header">
+                            <form method="post" action="">
+                                <select style="width: 250px;" name="programSelect" id="programSelect" class="form-control">
+                                    <option value="all" <?php if (!isset($_POST['programSelect']) || $_POST['programSelect'] == 'all') echo 'selected'; ?>>All Subjects <span style="float: right;">🔻</span></option>
+
+
+                                    <?php
+                                    try {
+                                        // Assuming you're using PDO and have a database connection
+                                        $stmt = $conn->prepare("SELECT program_id, program_name FROM tbl_program");
+                                        $stmt->execute();
+                                        $programs = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+                                        // Display the program options
+                                        foreach ($programs as $program) {
+                                            echo '<option value="' . $program['program_id'] . '"';
+                                            if (isset($_POST['programSelect']) && $_POST['programSelect'] == $program['program_id']) {
+                                                echo ' selected';
+                                            }
+                                            echo '>' . $program['program_name'] . '</option>';
+                                        }
+                                    } catch (PDOException $e) {
+                                        echo '<option value="" disabled>Error fetching programs</option>';
+                                    }
+                                    ?>
+                                </select>
+                            </form>
+
+                        </div>
+                        <a href="subjects.php" class="text-white text-decoration-none">
+
+                            <div class="card-body" id="courseList" style="max-height: 300px; overflow-y: auto;">
+                                <?php
+                                try {
+                                    // Assuming you're using PDO and have a database connection
+                                    if (isset($_POST['programSelect']) && $_POST['programSelect'] != 'all') {
+                                        $progChoosen = $_POST['programSelect'];
+                                        $stmt = $conn->prepare("SELECT course_name FROM tbl_course WHERE program_id = :program_id");
+                                        $stmt->bindParam(':program_id', $progChoosen);
+                                    } else {
+                                        // If 'All Programs' is selected, retrieve all courses
+                                        $stmt = $conn->prepare("SELECT course_name FROM tbl_course");
+                                    }
+
+                                    $stmt->execute();
+                                    $courses = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+                                    // Display the courses
+                                    if ($courses) {
+                                        echo '<ul class="list-group">';
+                                        foreach ($courses as $course) {
+                                            echo '<li class="list-group-item">' . "📚 " . $course['course_name'] . '</li>';
+                                        }
+                                        echo '</ul>';
+                                    } else {
+                                        // If no courses found for the selected program
+                                        echo '<p style = "color:black;";>No courses found.</p>';
+                                    }
+                                } catch (PDOException $e) {
+                                    echo "Error: " . $e->getMessage();
+                                }
+                                ?>
+                            </div>
+
+                    </div>
+
+                    </a>
+
+                    <script>
+                        // JavaScript to handle displaying courses based on selected program
+                        document.getElementById("programSelect").addEventListener("change", function() {
+                            this.form.submit(); // Submit the form when program selection changes
+                        });
+                    </script>
+
+
+
+
                 </div>
 
+
                 <div class="col-md-4">
-                    <a href="report.php" class="text-light text-decoration-none">
-                        <div class="card text-bg-light text-black shadow-lg mb-3">
-                            <div class="card-header">Student Count</div>
-                            <div class="card-body">
-                                <canvas id="myPieChart" class="canvas-margin"></canvas>
-                            </div>
+                    <!-- <a href="program.php" class="text-white text-decoration-none"> -->
+                    <div class="card text-bg-light text-black shadow-lg mb-3">
+                        <div class="card-header">Pass Rate
+
+                            <?php
+                            // Set default values for parameters
+                            $program_id = $_GET['program_id'] ?? $_SESSION['program_id'];
+                            $quiz_type = $_GET['quiz_type'] ?? 1;
+                            $created_at = $_GET['created_at'] ?? date('Y');
+                            ?>
+
                         </div>
-                    </a>
+                        <div class="card-body">
+                            <select style="width: 250px; margin-right: 180px;" id="quizTypeDropdown" name="quizType" class="form-select">
+
+                                <option value="1" <?php if ($quiz_type == 1) echo " selected"; ?>>TEST</option>
+                                <option value="2" <?php if ($quiz_type == 2) echo " selected"; ?>>QUIZ</option>
+                                <option value="3" <?php if ($quiz_type == 3) echo " selected"; ?>>EXAM</option>
+                            </select>
+
+
+                            <script>
+                                document.addEventListener('DOMContentLoaded', function() {
+                                    const quizTypeDropdown = document.getElementById('quizTypeDropdown');
+
+                                    quizTypeDropdown.addEventListener('change', function() {
+                                        const selectedQuizType = this.value; // Get the selected value from the dropdown
+
+                                        // Update the URL with the selected value
+                                        const currentUrl = new URL(window.location.href);
+                                        currentUrl.searchParams.set('quiz_type', selectedQuizType);
+                                        window.location.href = currentUrl.toString();
+                                    });
+                                });
+                            </script>
+
+
+                            <?php
+
+                            // Query to fetch course data
+                            $sql = "SELECT
+            c.course_id,
+            c.course_code,
+            c.course_name,
+            r.module_id,
+            COALESCE(passed_attempts, 0) AS passed_attempts,
+            COALESCE(failed_attempts, 0) AS failed_attempts
+        FROM
+            tbl_course c
+        LEFT JOIN
+            (SELECT
+                course_id,
+                module_id,
+                COUNT(CASE WHEN result_status = 1 THEN 1 END) AS passed_attempts,
+                COUNT(CASE WHEN result_status = 0 THEN 1 END) AS failed_attempts
+             FROM tbl_result
+             WHERE quiz_type = :quiz_type
+             AND YEAR(created_at) = :created_year
+             GROUP BY course_id, module_id) r
+        ON c.course_id = r.course_id
+        WHERE c.program_id = :program_id";
+
+                            // Prepare and execute the query
+                            $result = $conn->prepare($sql);
+                            $result->bindParam(':program_id', $program_id, PDO::PARAM_INT);
+                            $result->bindParam(':quiz_type', $quiz_type, PDO::PARAM_INT);
+                            $result->bindParam(':created_year', $created_at, PDO::PARAM_STR);
+                            $result->execute();
+                            $courses = $result->fetchAll(PDO::FETCH_ASSOC);
+
+                            // Process the fetched data
+                            foreach ($courses as &$course) {
+                                $course['passed_attempts'] = $course['passed_attempts'] ?? 0;
+                                $course['failed_attempts'] = $course['failed_attempts'] ?? 0;
+                            }
+                            unset($course);
+
+                            // Prepare data for the pie chart
+                            $labels = [];
+                            $data = [];
+
+                            foreach ($courses as $course) {
+                                $courseName =  $course['course_name'];
+                                $passedAttempts = $course['passed_attempts'];
+                                $failedAttempts = $course['failed_attempts'];
+
+                                // Calculate total attempts and pass rate percentage
+                                $totalAttempts = $passedAttempts + $failedAttempts;
+                                $passRate = ($totalAttempts > 0) ? ($passedAttempts / $totalAttempts) * 100 : 0;
+
+                                // Add course name and pass rate to labels and data arrays
+                                $labels[] = $courseName;
+                                $data[] = $passRate;
+                            }
+
+                            // Check if labels array is empty or if all pass rates are 0
+                            $noData = empty($labels) || array_sum($data) == 0;
+                            ?>
+
+                            <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+                            <!-- Place this in your HTML file where you want the chart to appear -->
+                            <canvas id="myPieChart" width="400" height="400"></canvas>
+                            <div id="noDataMessage" style="display: none;">No data to display.</div>
+
+                            <script>
+                                <?php
+                                // Assuming $noData, $labels, and $data are defined in your PHP code
+                                // Ensure $labels and $data are properly sanitized and contain valid data
+                                ?>
+                                // Check if there's no data to display
+                                if (<?php echo $noData ? 'true' : 'false'; ?>) {
+                                    // Display the message if there's no data
+                                    document.getElementById('noDataMessage').style.display = 'block';
+                                } else {
+                                    // If there's data, render the pie chart
+                                    const pieData = {
+                                        labels: <?php echo json_encode($labels); ?>,
+                                        datasets: [{
+                                            data: <?php echo json_encode($data); ?>,
+                                            backgroundColor: ['#007bff', '#6c757d', '#17a2b8', '#28a745', '#ffc107', '#dc3545', '#6610f2']
+                                        }]
+                                    };
+
+                                    const canvas = document.getElementById('myPieChart');
+                                    const ctx = canvas.getContext('2d');
+
+                                    // Draw black border circle
+                                    const centerX = canvas.width / 2;
+                                    const centerY = canvas.height / 2;
+                                    const radius = Math.min(centerX, centerY);
+                                    ctx.beginPath();
+                                    ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+                                    ctx.strokeStyle = '#000000'; // Black color
+                                    ctx.lineWidth = 2; // Adjust thickness as needed
+                                    ctx.stroke();
+
+                                    const myPieChart = new Chart(ctx, {
+                                        type: 'pie',
+                                        data: pieData,
+                                        options: {
+                                            responsive: true,
+                                            plugins: {
+                                                legend: {
+                                                    position: 'left',
+                                                },
+                                                tooltip: {
+                                                    callbacks: {
+                                                        label: function(context) {
+                                                            var label = context.label || '';
+                                                            if (label) {
+                                                                label = ': ';
+                                                            }
+                                                            label = context.formattedValue;
+                                                            return label;
+                                                        }
+                                                    }
+                                                },
+                                                datalabels: {
+                                                    color: '#ffffff',
+                                                    font: {
+                                                        weight: 'bold',
+                                                        size: '14'
+                                                    },
+                                                    formatter: function(value, context) {
+                                                        return context.chart.data.labels[context.dataIndex] + ': ' + value + ' %'; // Add "%" to the value
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    });
+                                }
+                            </script>
+
+
+
+
+                        </div>
+
+                    </div>
+                    <!-- </a> -->
+
+
+
                 </div>
 
             </div>
@@ -274,10 +538,10 @@ try {
                         label: function(context) {
                             var label = context.label || '';
                             if (label) {
-                                label += ': ';
+                                label = ': ';
                             }
-                            label += context.formattedValue;
-                            return label;
+                            label = context.formattedValue;
+                            return " " + label + "%";
                         }
                     }
                 },
@@ -422,4 +686,34 @@ try {
 
     // Initial call to display the date immediately
     updateClock();
+</script>
+
+
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // Get radio buttons
+        const testRadio = document.getElementById('testRadio');
+        const quizRadio = document.getElementById('quizRadio');
+        const examRadio = document.getElementById('examRadio');
+
+        // Function to update quiz_type based on radio button selection
+        function updateQuizType() {
+            if (testRadio.checked) {
+                // If TEST radio button is selected
+                <?php $quiz_type = 1; ?>;
+            } else if (quizRadio.checked) {
+                // If QUIZ radio button is selected
+                <?php $quiz_type = 2; ?>;
+            } else if (examRadio.checked) {
+                // If EXAM radio button is selected
+                <?php $quiz_type = 3; ?>;
+            }
+        }
+
+        // Listen for changes in radio button selection
+        testRadio.addEventListener('change', updateQuizType);
+        quizRadio.addEventListener('change', updateQuizType);
+        examRadio.addEventListener('change', updateQuizType);
+    });
 </script>

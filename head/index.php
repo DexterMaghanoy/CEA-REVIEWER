@@ -1,57 +1,49 @@
 <?php
 session_start();
-
 require '../api/db-connect.php';
 
-if (isset($_SESSION['program_id'])) {
-    $program_id = $_SESSION['program_id'];
-} else {
+if (!isset($_SESSION['user_id'])) {
     header("Location: ../index.php");
     exit();
 }
-
 $user_id = $_SESSION['user_id'];
+try {
+    // Query to get program names and count of students in each program
+    $stmt = $conn->prepare("SELECT p.program_name, COUNT(s.stud_id) AS num_students 
+            FROM tbl_program p
+            LEFT JOIN tbl_student s ON p.program_id = s.program_id 
+            WHERE p.program_status = 1 
+            GROUP BY p.program_id
+        ");
+    $stmt->execute();
+    $programs = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// Use JOIN to get user_type and course_name from related tables
-$sql = "SELECT u.*, t.type_name, p.program_name
-            FROM tbl_user u
-            INNER JOIN tbl_type t ON u.type_id = t.type_id
-            INNER JOIN tbl_program p ON u.program_id = p.program_id
-            WHERE u.user_id = :user_id";
-
-$stmt = $conn->prepare($sql);
-$stmt->bindParam(':user_id', $user_id, PDO::PARAM_INT);
-$stmt->execute();
-
-// Check if the query was successful and if there is a user with the given emp_id
-if ($stmt->rowCount() > 0) {
-    $user = $stmt->fetch(PDO::FETCH_ASSOC); // Fetch the user data
+    $labels = [];
+    $data = [];
+    foreach ($programs as $program) {
+        $labels[] = $program['program_name'];
+        $data[] = $program['num_students'];
+    }
+} catch (PDOException $e) {
+    $errorMessage = 'Database Error: ' . $e->getMessage();
 }
-
 
 try {
     // Create connection
     $conn = new PDO("mysql:host=$servername;dbname=$dbname", $username, $password);
 
-    // Set PDO to throw exceptions
     $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-    // Define the SQL query to update stud_status
     $sql = "UPDATE tbl_student SET stud_status = 0 WHERE created_at < DATE_SUB(NOW(), INTERVAL 1 YEAR)";
 
-    // Prepare the SQL statement
     $stmt = $conn->prepare($sql);
 
-    // Execute the SQL statement
     $stmt->execute();
-
-    // Output success message
-    // echo "Student statuses updated successfully.";
 } catch (PDOException $e) {
-    // Output error message
     echo "Error: " . $e->getMessage();
 }
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -64,113 +56,383 @@ try {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous">
     <link rel="shortcut icon" href="../img/cea_logo.png" type="image/x-icon">
     <link rel="stylesheet" href="style.css" type="text/css">
+    <style>
+        .card {
+            border: none;
+            border-radius: 10px;
+            transition: transform 0.3s, box-shadow 0.3s;
+            position: relative;
+            overflow: hidden;
 
+        }
+
+        .card:hover,
+        .card:focus {
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+            transform: scale(1.05);
+        }
+
+        .card-body {
+            padding: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            background: linear-gradient(to left, rgba(220, 210, 211, 0.3), rgba(200, 240, 241, 0.3));
+
+
+
+        }
+
+        .card-header {
+
+            background: linear-gradient(to left, rgba(95, 170, 252, 0.5), rgba(175, 210, 255, 0.5));
+
+
+
+
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+
+        }
+
+        .card-text {
+            font-size: 1.2rem;
+
+        }
+
+        .card:active::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+    </style>
 </head>
 
 <body>
     <div class="wrapper">
-
-
-        <?php
-        include 'sidebar.php';
-        ?>
+        <?php include 'sidebar.php'; ?>
         <div class="main p-3">
-            <div class="text-center">
-                <h1>
-                    Dashboard
 
-                </h1>
-            </div>
-            <div class="container mt-5">
-                <div class="row">
-                    <!-- Card 1: Total Faculty -->
-                    <div class="col-md-4">
-                        <div class="card bg-primary text-white rounded-3 shadow">
-                            <div class="card-body">
-                                <h5 class="card-title mb-4">Total Faculty</h5>
-                                <?php
-                                try {
-                                    require("../api/db-connect.php"); // Include your database connection file here
+            <style>
+                .custom-card {
+                    background: linear-gradient(to top, rgba(255, 255, 255, 0.95), rgba(0, 0, 0, 0.2));
+                    border-radius: 10px;
+                    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+                    height: 60px;
+                    /* Reduced vertical padding */
+                }
 
-                                    if (isset($_SESSION['program_id'])) {
-                                        $program_id = $_SESSION['program_id'];
+                .custom-card h1 {
+                    margin-top: 0;
+                    margin-bottom: 0px;
+                    font-size: 24px;
+                    color: #333;
+                }
+            </style>
 
-                                        // Prepare and execute the SQL query using prepared statements
-                                        $stmt = $conn->prepare("SELECT COUNT(*) FROM tbl_user WHERE user_status = 1 AND type_id = 3 AND program_id = :program_id");
-                                        $stmt->bindParam(':program_id', $program_id);
-                                        $stmt->execute();
-
-                                        // Fetch the count
-                                        $faculty = $stmt->fetchColumn();
-
-                                        if ($faculty !== false) {
-                                            echo '<p class="card-text">Number of faculty members: <strong>' . $faculty . '</strong></p>';
-                                        } else {
-                                            echo '<p class="card-text">An error occurred while fetching the count.</p>';
-                                        }
-                                    } else {
-                                        echo '<p class="card-text">Program ID is not set.</p>';
-                                    }
-                                } catch (PDOException $e) {
-                                    echo '<p class="card-text">Database Error: ' . $e->getMessage() . '</p>';
-                                }
-                                ?>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- Card 2: Total Students -->
-                    <div class="col-md-4">
-                        <div class="card bg-secondary text-white rounded-3 shadow">
-                            <div class="card-body">
-                                <h5 class="card-title mb-4">Total Students</h5>
-                                <?php
-                                try {
-                                    require("../api/db-connect.php"); // Include your database connection file here
-
-                                    // Prepare and execute the SQL query
-                                    $stmt = $conn->prepare("SELECT COUNT(*) FROM tbl_student WHERE stud_status = 1 AND program_id = $program_id");
-                                    $stmt->execute();
-
-                                    // Fetch the count
-                                    $enrolled = $stmt->fetchColumn();
-
-                                    if ($enrolled !== false) {
-                                        echo '<p class="card-text">Number of students: <strong>' . $enrolled . '</strong></p>';
-                                    } else {
-                                        echo '<p class="card-text">An error occurred while fetching the count.</p>';
-                                    }
-                                } catch (PDOException $e) {
-                                    echo '<p class="card-text">Database Error: ' . $e->getMessage() . '</p>';
-                                }
-                                ?>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- Card 3: Calendar -->
-                    <div class="col-md-4">
-                        <div class="card bg-info text-white rounded-3 shadow"">
-            <div class=" card-header">Date</div>
-                        <div class="card-body">
-                            <!-- You can place your calendar content here -->
-                            <div id="calendar">
-                                <?php
-                                // Get the current day, month, and year using PHP's date() function
-                                $currentDay = date('d');       // Day (01 - 31)
-                                $currentMonth = date('F');     // Month (January - December)
-                                $currentYear = date('Y');      // Year (e.g., 2023)
-
-                                // Display the day, month, and year
-                                echo "<h5>$currentMonth $currentDay , $currentYear</h5>";
-                                ?>
-                            </div>
-                        </div>
-                    </div>
+            <div class="col-md-12 card custom-card mb-2">
+                <div class="card-body">
+                    <h1>Dashboard</h1>
                 </div>
+            </div>
+
+
+
+            <div class="row">
+
+
+                <div class="col-md-4">
+
+                    <div class="card text-bg-light text-black shadow-lg mb-2">
+                        <div class="card-header">Time</div>
+                        <div class="card-body">
+                            <canvas id="clockCanvas" width="120" height="120"></canvas>
+
+                            <div id="clock"></div>
+                        </div>
+                    </div>
+
+
+
+                    <a href="user.php" class="text-black text-decoration-none">
+                        <div class="card text-bg-light text-black shadow-lg mb-2">
+                            <div class="card-header">
+                                <h6> Faculty</h6>
+                            </div>
+                            <div class="card-body">
+                                <?php
+                                try {
+                                    // Assuming you're using PDO and have a database connection
+                                    $stmt = $conn->prepare("SELECT COUNT(*) AS TEACHER_COUNT FROM tbl_user WHERE type_id = 3 AND user_status = 1 AND program_id = :program_id");
+                                    $stmt->bindParam(':program_id', $user['program_id']);
+                                    $stmt->execute();
+                                    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+                                    $teacherCount = $row['TEACHER_COUNT'];
+                                } catch (PDOException $e) {
+                                    echo "Error: " . $e->getMessage();
+                                }
+                                ?>
+
+
+                                <p>
+                                <p>🤵</p> User Accounts: <?php echo $teacherCount; ?></p>
+
+                            </div>
+                        </div>
+
+                    </a>
+
+                    <a href="student.php" class="text-black text-decoration-none">
+                        <div class="card text-bg-light text-black shadow-lg mb-3">
+                            <div class="card-header">
+                                <h6><?php $program['program_name']; ?> Students</h6>
+                            </div>
+                            <div class="card-body">
+                                <?php
+                                try {
+                                    // Assuming you're using PDO and have a database connection
+                                    $stmt = $conn->prepare("SELECT COUNT(*) AS STUDENT_COUNT FROM tbl_student WHERE stud_status = 1 AND program_id = :program_id");
+                                    $stmt->bindParam(':program_id',  $user['program_id']); // Assuming $program_id holds the ID of the program
+                                    $stmt->execute();
+                                    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+                                    $studentCount = $row['STUDENT_COUNT'];
+                                } catch (PDOException $e) {
+                                    echo "Error: " . $e->getMessage();
+                                }
+                                ?>
+                                <p>
+                                <p>🎓</p> Number of students: <?php echo $studentCount; ?>
+                                </p>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+
+
+                <div class="col-md-4">
+
+                    <div class="card text-bg-light text-black shadow-lg mb-3">
+                        <div class="card-header">Course</div>
+                        <div class="card-body">
+                            <?php
+                            try {
+                                // Assuming you're using PDO and have a database connection
+                                $stmt = $conn->prepare("SELECT p.program_name, COUNT(*) AS student_count 
+                                FROM tbl_program p
+                                INNER JOIN tbl_student s ON p.program_id = s.program_id
+                                WHERE s.stud_status = 1 AND p.program_id = :program_id
+                                GROUP BY p.program_name");
+                                $stmt->bindParam(':program_id', $user['program_id']);
+                                $stmt->execute();
+                                $program = $stmt->fetch(PDO::FETCH_ASSOC);
+
+                                // Display the program name and its corresponding student count
+                                if ($program) {
+                                    echo '<ul class="list-group">';
+                                    echo '<li class="list-group-item">' . "📖 " . $program['program_name'] . ' <span style="font-size: 1.2em; font-weight: bold; color:black;" class="badge badge-primary badge-pill">' . $program['student_count'] . '</span></li>';
+                                    echo '</ul>';
+                                } else {
+                                    // If no program found for the user's program ID
+                                    echo '<p>No program found.</p>';
+                                }
+                            } catch (PDOException $e) {
+                                echo "Error: " . $e->getMessage();
+                            }
+                            ?>
+                        </div>
+                    </div>
+
+
+                    <div class="card text-bg-light text-black shadow-lg mb-3">
+                        <div class="card-header">Subjects</div>
+                        <div class="card-body">
+                            <?php
+                            try {
+                                // Assuming you're using PDO and have a database connection
+                                $stmt = $conn->prepare("SELECT course_code, course_name FROM tbl_course WHERE program_id = :program_id");
+                                $stmt->bindParam(':program_id', $user['program_id']);
+                                $stmt->execute();
+                                $courses = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+                                // Display the list of courses
+                                if ($courses) {
+                                    echo '<ul class="list-group">';
+                                    foreach ($courses as $course) {
+                                        echo '<li class="list-group-item">' . "📚 " . $course['course_code'] . ' - ' . $course['course_name'] . '</li>';
+                                    }
+                                    echo '</ul>';
+                                } else {
+                                    // If no courses found for the user's program ID
+                                    echo '<p>No courses found.</p>';
+                                }
+                            } catch (PDOException $e) {
+                                echo "Error: " . $e->getMessage();
+                            }
+                            ?>
+                        </div>
+                    </div>
+
+
+
+
+                </div>
+
+
+
+                <div class="col-md-4">
+                    <a href="report.php" class="text-light text-decoration-none">
+                        <div class="card text-bg-light text-black shadow-lg mb-3">
+                            <div class="card-header">Student Count</div>
+                            <div class="card-body">
+
+
+                                <?php
+
+                                // Set default values for parameters
+                                $program_id = $_GET['program_id'] ?? $_SESSION['program_id'];
+                                $quiz_type = $_GET['quiz_type'] ?? 1;
+                                $created_at = $_GET['created_at'] ?? date('Y');
+
+                                // Query to fetch course data
+                                $sql = "SELECT
+c.course_id,
+c.course_code,
+c.course_name,
+r.module_id,
+COALESCE(passed_attempts, 0) AS passed_attempts,
+COALESCE(failed_attempts, 0) AS failed_attempts
+FROM
+tbl_course c
+LEFT JOIN
+(SELECT
+course_id,
+module_id,
+COUNT(CASE WHEN result_status = 1 THEN 1 END) AS passed_attempts,
+COUNT(CASE WHEN result_status = 0 THEN 1 END) AS failed_attempts
+FROM tbl_result
+WHERE quiz_type = :quiz_type
+AND YEAR(created_at) = :created_year
+GROUP BY course_id, module_id) r
+ON c.course_id = r.course_id
+WHERE c.program_id = :program_id";
+
+                                // Prepare and execute the query
+                                $result = $conn->prepare($sql);
+                                $result->bindParam(':program_id', $program_id, PDO::PARAM_INT);
+                                $result->bindParam(':quiz_type', $quiz_type, PDO::PARAM_INT);
+                                $result->bindParam(':created_year', $created_at, PDO::PARAM_STR);
+                                $result->execute();
+                                $courses = $result->fetchAll(PDO::FETCH_ASSOC);
+
+                                // Process the fetched data
+                                foreach ($courses as &$course) {
+                                    $course['passed_attempts'] = $course['passed_attempts'] ?? 0;
+                                    $course['failed_attempts'] = $course['failed_attempts'] ?? 0;
+                                }
+                                unset($course);
+                                // Prepare data for the pie chart
+
+                                // Prepare data for the pie chart
+                                $labels = [];
+                                $data = [];
+
+                                foreach ($courses as $course) {
+                                    $courseName =  $course['course_name'];
+                                    $passedAttempts = $course['passed_attempts'] ?? 0; // Default to 0 if null
+                                    $failedAttempts = $course['failed_attempts'] ?? 0; // Default to 0 if null
+
+                                    // Calculate total attempts
+                                    $totalAttempts = $passedAttempts + $failedAttempts;
+
+                                    // Calculate pass rate percentage
+                                    $passRate = ($totalAttempts > 0) ? ($passedAttempts / $totalAttempts) * 100 : 0;
+
+                                    // Add course name and pass rate to labels and data arrays
+                                    $labels[] = $courseName;
+                                    $data[] = $passRate;
+                                }
+
+
+                                ?>
+
+                            </div>
+                        </div>
+                    </a>
+                </div>
+
             </div>
         </div>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe" crossorigin="anonymous"></script>
+
 </body>
+
+</html>
+
+<!-- Include Chart.js library -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Pie Chart Data
+    const pieData = {
+        labels: <?php echo json_encode($labels); ?>,
+        datasets: [{
+            data: <?php echo json_encode($data); ?>,
+            backgroundColor: ['#007bff', '#6c757d', '#17a2b8', '#28a745', '#ffc107', '#dc3545', '#6610f2'] // Add more colors as needed
+        }]
+    };
+
+    // Pie Chart Configuration
+    const ctx1 = document.getElementById('myPieChart').getContext('2d');
+    const myPieChart = new Chart(ctx1, {
+        type: 'pie',
+        data: pieData,
+        options: {
+            height: 20,
+            width: 20,
+            responsive: false,
+            plugins: {
+                legend: {
+                    position: 'left', // Move legend to the left side
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            var label = context.label || '';
+                            if (label) {
+                                label += ': ';
+                            }
+                            label += context.formattedValue;
+                            return label;
+                        }
+                    }
+                },
+                datalabels: {
+                    color: '#ffffff', // Text color
+                    font: {
+                        weight: 'bold',
+                        size: '14'
+                    },
+                    formatter: function(value, context) {
+                        return context.chart.data.labels[context.dataIndex] + ': ' + value;
+                    }
+                }
+            }
+        }
+    });
+
+    // Adjust canvas size
+    document.getElementById('myPieChart').style.width = '400px';
+    document.getElementById('myPieChart').style.height = '400px';
+</script>
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe" crossorigin="anonymous"></script>
 <script>
     const hamBurger = document.querySelector(".toggle-btn");
 
@@ -179,4 +441,116 @@ try {
     });
 </script>
 
-</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<script>
+    const canvas = document.getElementById("clockCanvas");
+    const ctx = canvas.getContext("2d");
+    let radius = canvas.height / 2;
+    ctx.translate(radius, radius);
+    radius = radius * 0.90
+    setInterval(drawClock, 1000);
+
+    function drawClock() {
+        drawFace(ctx, radius);
+        drawNumbers(ctx, radius);
+        drawTime(ctx, radius);
+    }
+
+    function drawFace(ctx, radius) {
+        const grad = ctx.createRadialGradient(0, 0, radius * 0.95, 0, 0, radius * 1.05);
+        grad.addColorStop(0, '#333');
+        grad.addColorStop(0.5, 'white');
+        grad.addColorStop(1, '#333');
+        ctx.beginPath();
+        ctx.arc(0, 0, radius, 0, 2 * Math.PI);
+        ctx.fillStyle = 'white';
+        ctx.fill();
+        ctx.strokeStyle = grad;
+        ctx.lineWidth = radius * 0.1;
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(0, 0, radius * 0.1, 0, 2 * Math.PI);
+        ctx.fillStyle = '#333';
+        ctx.fill();
+    }
+
+    function drawNumbers(ctx, radius) {
+        ctx.font = radius * 0.15 + "px Arial";
+        ctx.textBaseline = "middle";
+        ctx.textAlign = "center";
+        for (let num = 1; num < 13; num++) {
+            let ang = num * Math.PI / 6;
+            ctx.rotate(ang);
+            ctx.translate(0, -radius * 0.85);
+            ctx.rotate(-ang);
+            ctx.fillText(num.toString(), 0, 0);
+            ctx.rotate(ang);
+            ctx.translate(0, radius * 0.85);
+            ctx.rotate(-ang);
+        }
+    }
+
+    function drawTime(ctx, radius) {
+        const now = new Date();
+        let hour = now.getHours();
+        let minute = now.getMinutes();
+        let second = now.getSeconds();
+        //hour
+        hour = hour % 12;
+        hour = (hour * Math.PI / 6) +
+            (minute * Math.PI / (6 * 60)) +
+            (second * Math.PI / (360 * 60));
+        drawHand(ctx, hour, radius * 0.5, radius * 0.07);
+        //minute
+        minute = (minute * Math.PI / 30) + (second * Math.PI / (30 * 60));
+        drawHand(ctx, minute, radius * 0.8, radius * 0.07);
+        // second
+        second = (second * Math.PI / 30);
+        drawHand(ctx, second, radius * 0.9, radius * 0.02);
+    }
+
+    function drawHand(ctx, pos, length, width) {
+        ctx.beginPath();
+        ctx.lineWidth = width;
+        ctx.lineCap = "round";
+        ctx.moveTo(0, 0);
+        ctx.rotate(pos);
+        ctx.lineTo(0, -length);
+        ctx.stroke();
+        ctx.rotate(-pos);
+    }
+</script>
+
+
+<script>
+    function updateClock() {
+        const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+
+        const now = new Date();
+        const monthName = months[now.getMonth()];
+        const day = now.getDate();
+        const year = now.getFullYear();
+
+        const formattedDate = `${monthName} ${day} ${year}`;
+
+        document.getElementById('clock').innerText = formattedDate;
+    }
+
+    // Update the clock every day
+    setInterval(updateClock, 1000 * 60 * 60 * 24); // Update every 24 hours
+
+    // Initial call to display the date immediately
+    updateClock();
+</script>

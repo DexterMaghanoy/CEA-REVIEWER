@@ -87,7 +87,7 @@ $totalPages = ceil($totalCount / $recordsPerPage);
 
 
             <div class="row justify-content-center">
-                <div class="col-md-8">
+                <div class="col-md-12">
                     <div class="text-center  mt-3">
                         <h1>Students</h1>
                     </div>

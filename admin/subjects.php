@@ -25,7 +25,7 @@ if (isset($_POST['toggle_status']) && isset($_POST['course_id'])) {
     $updateStmt->bindParam(':course_id', $course_id, PDO::PARAM_INT);
     $updateStmt->execute();
 
-    header("Location: " . $_SERVER['PHP_SELF']);
+    // header("Location: " . $_SERVER['PHP_SELF']);
     exit;
 }
 
@@ -97,7 +97,7 @@ $totalPages = ceil($totalCount / $recordsPerPage);
         ?>
         <div class="container mt-2">
             <div class="row justify-content-center">
-                <div class="col-md-8">
+                <div class="col-md-12">
                     <div class="text-center mt-3">
                         <h1>Subjects</h1>
                     </div>

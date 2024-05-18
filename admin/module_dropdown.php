@@ -1,13 +1,20 @@
 <div class="dropdown mb-1">
-    <button class="btn btn-secondary dropdown-toggle" type="button" id="moduleDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-        <span id="moduleDropdownText">Module</span> <!-- Dynamic button text -->
+    <?php
+    $moduleName = !empty($results) ? $results[0]['module_name'] : (!empty($module_name) ? $module_name : "No Modules Found");
+    ?>
+
+    <button class="btn btn-secondary dropdown-toggle align-items-start" type="button" id="moduleDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+        <span style="text-align: left;" id="moduleDropdownText">
+            <?php echo htmlspecialchars($moduleName, ENT_QUOTES, 'UTF-8'); ?>
+        </span>
     </button>
-    <ul class="dropdown-menu" aria-labelledby="moduleDropdown">
+
+    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="moduleDropdown">
         <?php
         // Check if $modules is set and not empty
         if (isset($modules) && !empty($modules)) {
             // Sort $modules array by module_id in descending order
-            usort($modules, function($a, $b) {
+            usort($modules, function ($a, $b) {
                 return $b['module_id'] - $a['module_id'];
             });
 

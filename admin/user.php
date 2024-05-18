@@ -91,9 +91,9 @@ $totalPages = ceil($totalCount / $recordsPerPage);
         <?php include 'back.php'; ?>
         <div class="container mt-2">
             <div class="row justify-content-center">
-                <div class="col-md-8">
+                <div class="col-md-12">
                     <div class="text-center mt-3">
-                        <h1>User</h1>
+                        <h1>User Accounts</h1>
                     </div>
                     <a class="btn btn-outline-primary btn-sm" href="add_faculty.php?"><i class="lni lni-plus"></i></a><br><br>
                     <!-- Search bar -->
