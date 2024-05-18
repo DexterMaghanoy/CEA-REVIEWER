@@ -43,6 +43,7 @@ unset($course);
 ?>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -54,17 +55,26 @@ unset($course);
     <link rel="stylesheet" href="style.css" type="text/css">
     <script src="https://www.gstatic.com/charts/loader.js"></script>
 </head>
+
 <body>
     <div class="wrapper">
         <?php include 'sidebar.php'; ?>
         <?php include 'back.php'; ?>
-        <div class="container">
+        <div class="container mt-2">
             <div class="row justify-content-center">
-                <div class="text-center mt-4 mb-2">
+                <div class="text-center mt-3 mb-2">
                     <h1>Report</h1>
                 </div>
                 <?php include 'topbar.php'; ?>
-                <div id="myChart" class="col-sm"></div>
+
+
+
+                <div style="border: 1px solid lightblue; /* Adds a light blue border for emphasis */
+                padding: 10px; /* Optional: Adds some padding inside the div */
+                box-sizing: border-box; /* Ensures padding and border are included in the element's total width and height */
+                border-radius: 15px; /* Makes the border rounded */
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Adds a subtle box shadow */
+                " id="myChart" class="col-sm"></div>
                 <div class="col-sm">
                     <?php if (!empty($courses)) : ?>
                         <?php
@@ -81,7 +91,7 @@ unset($course);
                         ?>
                         <?php foreach ($uniqueCourses as $index => $course) : ?>
                             <a href="test_course_modules.php?course_id=<?php echo $course['course_id']; ?>&user_id=<?php echo $_SESSION['user_id']; ?>&module_id=<?php echo $course['module_id']; ?>">
-                                <div class="card subject-<?php echo ($index % 3) + 1; ?> mb-1">
+                                <div class="card subject-<?php echo ($index % 3) + 1; ?> mb-1" style="  background: linear-gradient(to left, rgba(220, 210, 211, 0.3), rgba(200, 240, 241, 0.3));">
                                     <div class="card-body" style="padding: 0.5rem;">
                                         <h5 class="card-title" style="font-size: 1rem;"><?php echo $course['course_code'] . ' -  ' . $course['course_name']; ?></h5>
                                         <p style="font-size: 0.8rem; margin-bottom: 0;">Student who answered:
@@ -110,19 +120,34 @@ unset($course);
                             </a>
                         <?php endforeach; ?>
                     <?php else : ?>
-                        <p>No courses found.</p>
+                        <div class="col-sm">
+                            <div class="card h-100" style="background: linear-gradient(to left, rgba(220, 210, 211, 0.3), rgba(200, 240, 241, 0.3));">
+                                <div class="card-body">
+                                    <h5 class="card-title" style="font-size: 1rem;">No Results</h5>
+                                    <p class="card-text" style="font-size: 0.8rem;">
+                                    <h1>No matches found.</h1>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
                     <?php endif; ?>
                 </div>
             </div>
         </div>
     </div>
     <script>
-        google.charts.load('current', {'packages': ['corechart']});
+        google.charts.load('current', {
+            'packages': ['corechart']
+        });
         google.charts.setOnLoadCallback(drawChart);
 
         function drawChart() {
             const courseData = <?php echo json_encode($courses); ?>;
-            const chartData = [['Course', 'Pass Rate', {role: 'style'}]];
+            const chartData = [
+                ['Course', 'Pass Rate', {
+                    role: 'style'
+                }]
+            ];
             const coursePassRates = {};
 
             courseData.forEach(course => {
@@ -150,12 +175,28 @@ unset($course);
             const data = google.visualization.arrayToDataTable(chartData);
             const options = {
                 title: 'Test Pass Rate by Module',
-                chartArea: {width: '50%'},
-                hAxis: {title: 'Pass Rate', minValue: 0, maxValue: 100},
-                vAxis: {title: 'Course'},
+                chartArea: {
+                    width: '50%'
+                },
+                hAxis: {
+                    title: 'Pass Rate',
+                    minValue: 0,
+                    maxValue: 100
+                },
+                vAxis: {
+                    title: 'Course'
+                },
                 bars: 'horizontal',
-                legend: {position: 'none'},
-                tooltip: {isHtml: true, textStyle: {fontSize: 14}, trigger: 'focus'}
+                legend: {
+                    position: 'none'
+                },
+                tooltip: {
+                    isHtml: true,
+                    textStyle: {
+                        fontSize: 14
+                    },
+                    trigger: 'focus'
+                }
             };
 
             const chart = new google.visualization.BarChart(document.getElementById('myChart'));
@@ -167,6 +208,7 @@ unset($course);
         }
     </script>
 </body>
+
 </html>
 
 

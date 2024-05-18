@@ -1,4 +1,4 @@
-<div class="dropdown mb-3">
+<div class="dropdown mb-1">
     <button class="btn btn-secondary dropdown-toggle" type="button" id="moduleDropdown" data-bs-toggle="dropdown" aria-expanded="false">
         <span id="moduleDropdownText">Module</span> <!-- Dynamic button text -->
     </button>

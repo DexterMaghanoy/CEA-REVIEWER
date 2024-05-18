@@ -1,13 +1,11 @@
 <?php
 session_start();
-
 require '../api/db-connect.php';
 
 if (!isset($_SESSION['user_id'])) {
     header("Location: ../index.php");
     exit();
 }
-
 $user_id = $_SESSION['user_id'];
 try {
     // Query to get program names and count of students in each program
@@ -20,7 +18,6 @@ try {
     $stmt->execute();
     $programs = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // Prepare data for pie chart
     $labels = [];
     $data = [];
     foreach ($programs as $program) {
@@ -35,22 +32,15 @@ try {
     // Create connection
     $conn = new PDO("mysql:host=$servername;dbname=$dbname", $username, $password);
 
-    // Set PDO to throw exceptions
     $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-    // Define the SQL query to update stud_status
     $sql = "UPDATE tbl_student SET stud_status = 0 WHERE created_at < DATE_SUB(NOW(), INTERVAL 1 YEAR)";
 
-    // Prepare the SQL statement
     $stmt = $conn->prepare($sql);
 
-    // Execute the SQL statement
     $stmt->execute();
 
-    // Output success message
-    // echo "Student statuses updated successfully.";
 } catch (PDOException $e) {
-    // Output error message
     echo "Error: " . $e->getMessage();
 }
 ?>
@@ -89,12 +79,15 @@ try {
             justify-content: center;
             align-items: center;
             flex-direction: column;
-            background: linear-gradient(to right, rgba(120, 210, 211, 0.5), rgba(200, 240, 241, 0.5));
+            background: linear-gradient(to left, rgba(220, 210, 211, 0.3), rgba(200, 240, 241, 0.3));
+
+
+
         }
 
         .card-header {
 
-            background: linear-gradient(to right, rgba(95, 170, 252, 0.5), rgba(175, 210, 255, 0.5));
+            background: linear-gradient(to left, rgba(95, 170, 252, 0.5), rgba(175, 210, 255, 0.5));
 
 
 
@@ -120,6 +113,7 @@ try {
             width: 100%;
             height: 100%;
         }
+     
     </style>
 </head>
 
@@ -248,72 +242,74 @@ try {
         </div>
     </div>
 
-    <!-- Include Chart.js library -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script>
-        // Pie Chart Data
-        const pieData = {
-            labels: <?php echo json_encode($labels); ?>,
-            datasets: [{
-                data: <?php echo json_encode($data); ?>,
-                backgroundColor: ['#007bff', '#6c757d', '#17a2b8', '#28a745', '#ffc107', '#dc3545', '#6610f2'] // Add more colors as needed
-            }]
-        };
-
-        // Pie Chart Configuration
-        const ctx1 = document.getElementById('myPieChart').getContext('2d');
-        const myPieChart = new Chart(ctx1, {
-            type: 'pie',
-            data: pieData,
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: {
-                        position: 'left', // Move legend to the left side
-                    },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                var label = context.label || '';
-                                if (label) {
-                                    label += ': ';
-                                }
-                                label += context.formattedValue;
-                                return label;
-                            }
-                        }
-                    },
-                    datalabels: {
-                        color: '#ffffff', // Text color
-                        font: {
-                            weight: 'bold',
-                            size: '14'
-                        },
-                        formatter: function(value, context) {
-                            return context.chart.data.labels[context.dataIndex] + ': ' + value;
-                        }
-                    }
-                }
-            }
-        });
-
-        // Adjust canvas size
-        document.getElementById('myPieChart').style.width = '400px';
-        document.getElementById('myPieChart').style.height = '400px';
-    </script>
-
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe" crossorigin="anonymous"></script>
-    <script>
-        const hamBurger = document.querySelector(".toggle-btn");
-
-        hamBurger.addEventListener("click", function() {
-            document.querySelector("#sidebar").classList.toggle("expand");
-        });
-    </script>
 </body>
 
 </html>
+
+<!-- Include Chart.js library -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Pie Chart Data
+    const pieData = {
+        labels: <?php echo json_encode($labels); ?>,
+        datasets: [{
+            data: <?php echo json_encode($data); ?>,
+            backgroundColor: ['#007bff', '#6c757d', '#17a2b8', '#28a745', '#ffc107', '#dc3545', '#6610f2'] // Add more colors as needed
+        }]
+    };
+
+    // Pie Chart Configuration
+    const ctx1 = document.getElementById('myPieChart').getContext('2d');
+    const myPieChart = new Chart(ctx1, {
+        type: 'pie',
+        data: pieData,
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'left', // Move legend to the left side
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            var label = context.label || '';
+                            if (label) {
+                                label += ': ';
+                            }
+                            label += context.formattedValue;
+                            return label;
+                        }
+                    }
+                },
+                datalabels: {
+                    color: '#ffffff', // Text color
+                    font: {
+                        weight: 'bold',
+                        size: '14'
+                    },
+                    formatter: function(value, context) {
+                        return context.chart.data.labels[context.dataIndex] + ': ' + value;
+                    }
+                }
+            }
+        }
+    });
+
+    // Adjust canvas size
+    document.getElementById('myPieChart').style.width = '400px';
+    document.getElementById('myPieChart').style.height = '400px';
+</script>
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe" crossorigin="anonymous"></script>
+<script>
+    const hamBurger = document.querySelector(".toggle-btn");
+
+    hamBurger.addEventListener("click", function() {
+        document.querySelector("#sidebar").classList.toggle("expand");
+    });
+</script>
+
 
 
 

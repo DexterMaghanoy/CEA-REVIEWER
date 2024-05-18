@@ -273,3 +273,32 @@ a.sidebar-link:hover {
     
     
     
+
+    .table-custom {
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    .table-custom th, .table-custom td {
+        vertical-align: middle;
+    }
+    .table-custom .btn {
+        margin: 0 2px;
+    }
+    .table-custom .btn-sm {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.875rem;
+        line-height: 1.5;
+        border-radius: 0.2rem;
+    }
+    .table-custom .btn-success {
+        background-color: #28a745;
+        border-color: #28a745;
+    }
+    .table-custom .btn-warning {
+        background-color: #ffc107;
+        border-color: #ffc107;
+    }
+    .table-custom i {
+        vertical-align: middle;
+    }

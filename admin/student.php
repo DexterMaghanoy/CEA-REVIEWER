@@ -80,15 +80,15 @@ $totalPages = ceil($totalCount / $recordsPerPage);
         <?php
         include 'sidebar.php';
         ?>
-              <?php
-            include 'back.php';
-            ?>
+        <?php
+        include 'back.php';
+        ?>
         <div class="container">
-      
+
 
             <div class="row justify-content-center">
                 <div class="col-md-8">
-                    <div class="text-center  mt-5">
+                    <div class="text-center  mt-3">
                         <h1>Students</h1>
                     </div>
                     <div class="d-flex">
@@ -103,7 +103,7 @@ $totalPages = ceil($totalCount / $recordsPerPage);
                         </div>
                     </form>
                     <div class="table-responsive">
-                        <table class="table table-bordered border-secondary">
+                        <table style="background: linear-gradient(to left, rgba(220, 210, 211, 0.3), rgba(200, 240, 241, 0.3));" class="table table-bordered table-custom">
                             <caption>List of Student</caption>
                             <thead class="table-dark">
                                 <tr>

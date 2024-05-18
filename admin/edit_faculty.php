@@ -1,5 +1,6 @@
 <?php
 session_start();
+
 require("../api/db-connect.php");
 
 if (!isset($_SESSION['original_user_id'])) {
@@ -10,17 +11,26 @@ if (!isset($_SESSION['original_user_id'])) {
         exit();
     }
 }
+function getUserId()
+{
+    if (isset($_GET['user_id']) && is_numeric($_GET['user_id'])) {
+        // Only set session user_id if it's not already set
+        if (!isset($_SESSION['user_id'])) {
+            $_SESSION['user_id'] = $_GET['user_id'];
+        }
+        return $_GET['user_id'];
+    } elseif (isset($_SESSION['user_id'])) {
+        return $_SESSION['user_id'];
+    } else {
+        return null;
+    }
+}
 
+$user_id = getUserId();
 
-if (isset($_GET['user_id']) && is_numeric($_GET['user_id'])) {
-
-    $user_id = $_GET['user_id'];
+if ($user_id !== null) {
     $_SESSION['user_id'] = $user_id;
-} elseif (isset($_SESSION['user_id'])) {
-
-    $user_id = $_SESSION['user_id'];
 } else {
-
     echo "User ID parameter is missing or invalid.";
     header("Location: ../index.php");
     exit();
@@ -28,27 +38,22 @@ if (isset($_GET['user_id']) && is_numeric($_GET['user_id'])) {
 
 
 // Fetch user data
-if (isset($_GET['user_id'])) {
-    $user_id = $_GET['user_id'];
-    $sql = "SELECT * FROM tbl_user WHERE user_id = :user_id";
-    $stmt = $conn->prepare($sql);
-    $stmt->bindParam(":user_id", $user_id);
-    $stmt->execute();
+$sql = "SELECT * FROM tbl_user WHERE user_id = :user_id";
+$stmt = $conn->prepare($sql);
+$stmt->bindParam(":user_id", $_GET['user_id'], PDO::PARAM_INT);
+$stmt->execute();
 
-    if ($stmt->rowCount() > 0) {
-        $row = $stmt->fetch();
-        $type_id = $row['type_id'];
-        $program_id = $row['program_id'];
-        $user_fname = $row['user_fname'];
-        $user_mname = $row['user_mname'];
-        $user_lname = $row['user_lname'];
-        $user_image = $row['user_image'];
-        $user_name = $row['user_name'];
-        $user_password = $row['user_password'];
-    }
+if ($stmt->rowCount() > 0) {
+    $row = $stmt->fetch();
+    $type_id = $row['type_id'];
+    $program_id = $row['program_id'];
+    $user_fname = $row['user_fname'];
+    $user_mname = $row['user_mname'];
+    $user_lname = $row['user_lname'];
+    $user_image = $row['user_image'];
+    $user_name = $row['user_name'];
+    $user_password = $row['user_password'];
 }
-
-
 // Update user data
 if (isset($_POST['update'])) {
     $type_id = $_POST['type_id'];
@@ -76,16 +81,16 @@ if (isset($_POST['update'])) {
             });
         </script>';
     } else {
-        $sql = "UPDATE `tbl_user` SET 
-        type_id = :type_id,
-        program_id = :program_id,
-        user_fname = :user_fname,
-        user_mname = :user_mname,
-        user_lname = :user_lname,
-        user_image = :user_image,
-        user_name = :user_name,
-        user_password = :user_password
-        WHERE user_id = :user_id";
+        $sql = "UPDATE tbl_user SET 
+            type_id = :type_id,
+            program_id = :program_id,
+            user_fname = :user_fname,
+            user_mname = :user_mname,
+            user_lname = :user_lname,
+            user_image = :user_image,
+            user_name = :user_name,
+            user_password = :user_password
+            WHERE user_id = :user_id";
 
         $stmt = $conn->prepare($sql);
         $stmt->bindParam(":type_id", $type_id);
@@ -96,11 +101,7 @@ if (isset($_POST['update'])) {
         $stmt->bindParam(":user_image", $user_image);
         $stmt->bindParam(":user_name", $user_name);
         $stmt->bindParam(":user_password", $user_password);
-        $stmt->bindParam(":user_id", $user_id);
-
-
-
-
+        $stmt->bindParam(":user_id", $user_id, PDO::PARAM_INT);
         if ($stmt->execute()) {
             echo '<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>';
             echo '<script src="https://cdn.jsdelivr.net/npm/sweetalert2@10.16.6/dist/sweetalert2.min.js"></script>';
@@ -132,10 +133,7 @@ if (isset($_POST['update'])) {
         }
     }
 }
-
 ?>
-
-
 
 
 <!DOCTYPE html>
@@ -275,5 +273,8 @@ if (isset($_POST['update'])) {
         }
     }
 </script>
+
+
+
 
 </html>

@@ -10,21 +10,23 @@ if (isset($_SESSION['program_id'])) {
 
     if ($stud_id) {
         // Prepare SQL query to fetch results for the given student, program, and include module_name and created_at
-        $sql = "SELECT tbl_result.*, tbl_module.module_name, tbl_result.created_at
-                FROM `tbl_result` 
-                INNER JOIN `tbl_module` ON tbl_result.module_id = tbl_module.module_id
-                WHERE tbl_result.stud_id = :stud_id AND tbl_result.program_id = :program_id AND tbl_result.quiz_type = 1";
+        $sql = "SELECT tbl_result.*, tbl_module.module_name, tbl_result.created_at, tbl_student.stud_lname, tbl_student.stud_fname
+        FROM `tbl_result`
+        INNER JOIN `tbl_module` ON tbl_result.module_id = tbl_module.module_id
+        INNER JOIN `tbl_student` ON tbl_result.stud_id = tbl_student.stud_id
+        WHERE tbl_result.stud_id = :stud_id AND tbl_result.program_id = :program_id AND tbl_result.quiz_type = 1";
 
         // Prepare and execute the SQL query
         $stmt = $conn->prepare($sql);
         $stmt->bindParam(':stud_id', $stud_id, PDO::PARAM_INT);
         $stmt->bindParam(':program_id', $program_id, PDO::PARAM_INT);
         $stmt->execute();
-
-        // Fetch results
         $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        if (!$results) {
+        if ($results) {
+            $stud_fname = $results['stud_fname'];
+            $stud_lname = $results['stud_lname'];
+        } else {
             $error_message = "No results found for the selected student.";
         }
     } else {
@@ -54,108 +56,153 @@ if (isset($_SESSION['program_id'])) {
 
 <style>
     .table {
-    border-radius: 10px; /* Adjust the value as needed */
-    overflow: hidden; /* Ensures the border-radius is applied to the table */
-}
+        border-radius: 10px;
+        /* Adjust the value as needed */
+        overflow: hidden;
+        /* Ensures the border-radius is applied to the table */
+    }
 
 
-.table th {
-    cursor: pointer;
-    transition: background-color 0.1s ease;
-    padding: 10px 15px;
-    border-radius: 2px;
-}
+    .table th {
+        cursor: pointer;
+        transition: background-color 0.1s ease;
+        padding: 10px 15px;
+        border-radius: 2px;
+    }
 
-.table th:hover {
-    background-color: #f0f0f0;
-}
+    .table th:hover {
+        background-color: #f0f0f0;
+    }
 
-.table th:active {
-    background-color: #d0d0d0;
-}
+    .table th:active {
+        background-color: #d0d0d0;
+    }
 
 
-.table th:active {
-    animation: jelly 0.3s ease;
-}
+    .table th:active {
+        animation: jelly 0.3s ease;
+    }
 
-@keyframes jelly {
-    0% { transform: scale(1,1); }
-    25% { transform: scale(1.1,.9); }
-    50% { transform: scale(1.1,.9); }
-    75% { transform: scale(1,.9); }
-    100% { transform: scale(1,1); }
-}
+    @keyframes jelly {
+        0% {
+            transform: scale(1, 1);
+        }
+
+        25% {
+            transform: scale(1.1, .9);
+        }
+
+        50% {
+            transform: scale(1.1, .9);
+        }
+
+        75% {
+            transform: scale(1, .9);
+        }
+
+        100% {
+            transform: scale(1, 1);
+        }
+    }
 </style>
 
 <body>
     <!-- Body content goes here -->
     <div class="wrapper">
-        <?php include 'sidebar.php'; ?> 
-            <div class="container">
-            <?php include 'back.php'; ?> 
-                <div class="row justify-content-center mt-1">
-                    <div class="col-md-8">
+        <?php include 'sidebar.php'; ?>
+        <div class="container">
+            <?php include 'back.php'; ?>
+            <div class="row justify-content-center mt-1">
+                <div class="col-md-8">
+                    <div class="text-center mb-1">
                         <div class="text-center mb-1">
-                            <h1>All Results</h1>
-                        </div>
-                        <!-- Search Bar -->
+                            <h1>Record data of:
+                                <?php
+                                // Check if student_id is provided in the URL
+                                if (isset($_GET['student_id'])) {
+                                    // Get the student_id from the URL
+                                    $student_id = $_GET['student_id'];
 
-                        
+                                    // Fetch student name from the database based on the provided student_id
+                                    $stmt = $conn->prepare("SELECT stud_fname, stud_lname FROM tbl_student WHERE stud_id = :student_id");
+                                    $stmt->bindParam(':student_id', $student_id, PDO::PARAM_INT);
+                                    $stmt->execute();
+                                    $student = $stmt->fetch(PDO::FETCH_ASSOC);
 
-                        <?php include 'student_record_dropdown.php'; ?>
-                        <form action="" method="GET" class="mb-4">
-                            <div class="input-group">
-                                <input type="text" class="form-control" placeholder="Search by module name" name="search" id="searchInput">
-                                <button class="btn btn-outline-secondary" type="button" id="clearSearchButton"><i class="lni lni-close"></i></button>
-                            </div>
-                        </form>
-
-                        <!-- Display all results in a table -->
-                        <div class="table-responsive">
-                            <table id="resultTable" class="table table-bordered border-secondary">
-                                <caption>List of Scores</caption>
-                                <thead class="table-dark">
-                                    <tr style="text-align: center;">
-                                        <!-- Wrap each th inside an <a> tag for clickability -->
-                                        <th scope="col"><a href="#" class="sortable" data-column="0">Title</a></th>
-                                        <th scope="col"><a href="#" class="sortable" data-column="1">Score</a></th>
-                                        <th scope="col"><a href="#" class="sortable" data-column="2">Result</a></th>
-                                        <th scope="col"><a href="#" class="sortable" data-column="3">Date</a></th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <?php if (!empty($results)) : ?>
-                                        <?php foreach ($results as $row) : ?>
-                                            <tr style="text-align: center;">
-                                                <td><?php echo isset($row['module_name']) ? $row['module_name'] : 'N/A'; ?></td>
-                                                <td><?php echo $row['result_score'] ?? 'N/A'; ?> / <?php echo $row['total_questions'] ?? 'N/A'; ?></td>
-                                                <td scope="col">
-                                                    <?php
-                                                    if (isset($row['result_score'], $row['total_questions'])) {
-                                                        $res = ($row['result_score'] / $row['total_questions']) * 100;
-                                                        echo $res >= 50 ? "Pass" : "Failed";
-                                                    } else {
-                                                        echo 'N/A';
-                                                    }
-                                                    ?>
-                                                </td>
-                                                <td><?php echo isset($row['created_at']) ? date("M d, Y", strtotime($row['created_at'])) : 'N/A'; ?></td>
-                                            </tr>
-                                        <?php endforeach; ?>
-                                    <?php else : ?>
-                                        <tr>
-                                            <td colspan="4" class="text-center">No records found.</td>
-                                        </tr>
-                                    <?php endif; ?>
-                                </tbody>
-                            </table>
+                                    // Display the student's name
+                                    if ($student) {
+                                        echo htmlspecialchars($student['stud_fname']) . ' ' . htmlspecialchars($student['stud_lname']);
+                                    } else {
+                                        echo "Student not found";
+                                    }
+                                } else {
+                                    echo "Student ID is missing";
+                                }
+                                ?>
+                            </h1>
 
                         </div>
+
+
 
                     </div>
+                    <!-- Search Bar -->
+
+
+
+                    <?php include 'student_record_dropdown.php'; ?>
+                    <form action="" method="GET" class="mb-4">
+                        <div class="input-group">
+                            <input type="text" class="form-control" placeholder="Search by module name" name="search" id="searchInput">
+                            <button class="btn btn-outline-secondary" type="button" id="clearSearchButton"><i class="lni lni-close"></i></button>
+                        </div>
+                    </form>
+
+                    <!-- Display all results in a table -->
+                    <div class="table-responsive">
+                        <table id="resultTable" class="table table-bordered border-secondary">
+                            <caption>List of Scores</caption>
+                            <thead class="table-dark">
+                                <tr style="text-align: center;">
+                                    <!-- Wrap each th inside an <a> tag for clickability -->
+                                    <th scope="col"><a href="#" class="sortable" data-column="0">Title</a></th>
+                                    <th scope="col"><a href="#" class="sortable" data-column="1">Score</a></th>
+                                    <th scope="col"><a href="#" class="sortable" data-column="2">Result</a></th>
+                                    <th scope="col"><a href="#" class="sortable" data-column="3">Date</a></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php if (!empty($results)) : ?>
+                                    <?php foreach ($results as $row) : ?>
+                                        <tr style="text-align: center;">
+                                            <td><?php echo isset($row['module_name']) ? $row['module_name'] : 'N/A'; ?></td>
+                                            <td><?php echo $row['result_score'] ?? 'N/A'; ?> / <?php echo $row['total_questions'] ?? 'N/A'; ?></td>
+                                            <td scope="col">
+                                                <?php
+                                                if (isset($row['result_score'], $row['total_questions'])) {
+                                                    $res = ($row['result_score'] / $row['total_questions']) * 100;
+                                                    echo $res >= 50 ? "Pass" : "Failed";
+                                                } else {
+                                                    echo 'N/A';
+                                                }
+                                                ?>
+                                            </td>
+                                            <td><?php echo isset($row['created_at']) ? date("M d, Y", strtotime($row['created_at'])) : 'N/A'; ?></td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                <?php else : ?>
+                                    <tr>
+                                        <td colspan="4" class="text-center">No records found.</td>
+                                    </tr>
+                                <?php endif; ?>
+                            </tbody>
+                        </table>
+
+                    </div>
+
                 </div>
             </div>
+        </div>
     </div>
 </body>
 

@@ -10,11 +10,23 @@ if (!isset($_SESSION['program_id'])) {
 }
 
 // Initialize variables
-$program_id = $_SESSION['program_id'];
 $user_id = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : null;
 $course_id = isset($_GET['course_id']) ? $_GET['course_id'] : null;
+$module_id = isset($_GET['module_id']) ? $_GET['module_id'] : null;
 $page = isset($_GET['page']) ? $_GET['page'] : 1;
 $offset = ($page - 1) * 10;
+
+// Retrieve the module name if module_id is set
+$module_name = '';
+if ($module_id) {
+    $stmt = $conn->prepare("SELECT module_name FROM tbl_module WHERE module_id = :module_id");
+    $stmt->bindParam(':module_id', $module_id, PDO::PARAM_INT);
+    $stmt->execute();
+    $module = $stmt->fetch(PDO::FETCH_ASSOC);
+    if ($module) {
+        $module_name = $module['module_name'];
+    }
+}
 
 // Retrieve modules for the specified course
 if ($course_id) {
@@ -26,57 +38,51 @@ if ($course_id) {
 $stmt->execute();
 $modules = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// Check if a specific module ID is selected
-if (isset($_GET['module_id'])) {
-    $module_id = $_GET['module_id'];
-}
-
 // Pagination
 $resultsPerPage = 10;
 if ($user_id) {
     // Main query for retrieving results with provided filters
     $sql = "SELECT r.stud_id, s.stud_fname, s.stud_mname, s.stud_lname, c.course_name, m.module_name, r.created_at, r.total_questions, r.result_score, SUM(r.result_score) AS total_score
-FROM tbl_result r
-INNER JOIN tbl_student s ON r.stud_id = s.stud_id
-INNER JOIN tbl_module m ON r.module_id = m.module_id
-INNER JOIN tbl_course c ON m.course_id = c.course_id
-WHERE c.program_id = :program_id AND result_status = 1";
+            FROM tbl_result r
+            INNER JOIN tbl_student s ON r.stud_id = s.stud_id
+            INNER JOIN tbl_module m ON r.module_id = m.module_id
+            INNER JOIN tbl_course c ON m.course_id = c.course_id
+            WHERE result_status = 1";
 
     // Add conditions to filter by course ID and module ID if they are provided
     if ($course_id) {
         $sql .= " AND m.course_id = :course_id";
     }
-    if (isset($module_id)) {
+    if ($module_id) {
         $sql .= " AND r.module_id = :module_id";
     }
 
-    $sql .= " GROUP BY r.stud_id, c.course_id ";
+    $sql .= " GROUP BY r.stud_id, c.course_id";
 
     // Count query to calculate the total number of results with provided filters
     $countQuery = "SELECT COUNT(*) AS count FROM (
-    SELECT r.stud_id
-    FROM tbl_result r
-    INNER JOIN tbl_student s ON r.stud_id = s.stud_id
-    INNER JOIN tbl_module m ON r.module_id = m.module_id
-    INNER JOIN tbl_course c ON m.course_id = c.course_id
-    WHERE c.program_id = :program_id";
+                   SELECT r.stud_id
+                   FROM tbl_result r
+                   INNER JOIN tbl_student s ON r.stud_id = s.stud_id
+                   INNER JOIN tbl_module m ON r.module_id = m.module_id
+                   INNER JOIN tbl_course c ON m.course_id = c.course_id
+                   WHERE result_status = 1";
 
     // Add conditions to count query
     if ($course_id) {
         $countQuery .= " AND m.course_id = :course_id";
     }
-    if (isset($module_id)) {
+    if ($module_id) {
         $countQuery .= " AND r.module_id = :module_id";
     }
 
     $countQuery .= " GROUP BY r.stud_id, c.course_id ) AS sub";
 
     $stmtCount = $conn->prepare($countQuery);
-    $stmtCount->bindValue(':program_id', $program_id);
     if ($course_id) {
         $stmtCount->bindValue(':course_id', $course_id);
     }
-    if (isset($module_id)) {
+    if ($module_id) {
         $stmtCount->bindValue(':module_id', $module_id);
     }
     $stmtCount->execute();
@@ -88,24 +94,23 @@ WHERE c.program_id = :program_id AND result_status = 1";
     $sql .= " LIMIT $resultsPerPage OFFSET $offset";
 
     $stmt = $conn->prepare($sql);
-    $stmt->bindValue(':program_id', $program_id);
     if ($course_id) {
         $stmt->bindValue(':course_id', $course_id);
     }
-    if (isset($module_id)) {
+    if ($module_id) {
         $stmt->bindValue(':module_id', $module_id);
     }
     $stmt->execute();
     $results = $stmt->fetchAll(PDO::FETCH_ASSOC); // Fetch the results
-
 } else {
     // Redirect if user ID is not set in the session
+    header("Location: ../index.php");
+    exit();
 }
 
-// Fetch courses for the given program
-$sql = "SELECT * FROM tbl_course WHERE program_id = :program_id";
+// Fetch all courses regardless of the program
+$sql = "SELECT * FROM tbl_course";
 $result = $conn->prepare($sql);
-$result->bindParam(':program_id', $program_id, PDO::PARAM_INT);
 $result->execute();
 $courses = $result->fetchAll(PDO::FETCH_ASSOC);
 ?>
@@ -131,24 +136,35 @@ $courses = $result->fetchAll(PDO::FETCH_ASSOC);
         <?php
         include 'sidebar.php';
         ?>
-    <?php
-            include 'back.php';
-            ?>
+        <?php
+        include 'back.php';
+        ?>
 
         <div class="container">
-        
+
 
             <div class="row justify-content-center mt-5">
                 <div class="col-md-8">
                     <div class="text-center mb-4">
-                        <h1>Module Test Report</h1>
+                        <?php if (!empty($results)) : ?>
+                            <?php foreach ($results as $row) : ?>
+                                <h1><?php echo htmlspecialchars($row['module_name'], ENT_QUOTES, 'UTF-8'); ?></h1>
+                            <?php endforeach; ?>
+                        <?php else : ?>
+                            <h1><?php echo htmlspecialchars($module_name, ENT_QUOTES, 'UTF-8'); ?></h1>
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>
             <div class="row">
 
                 <div class="col-sm">
-                    <div id="myChart" style="width:100%; max-width:600px; height:500px;"></div>
+                    <div id="myChart" style="border: 1px solid lightblue; /* Adds a light blue border for emphasis */
+                padding: 10px; /* Optional: Adds some padding inside the div */
+                box-sizing: border-box; /* Ensures padding and border are included in the element's total width and height */
+                border-radius: 15px; /* Makes the border rounded */
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Adds a subtle box shadow */
+                width:100%; max-width:600px; height:500px;"></div>
 
                     <script>
                         google.charts.load('current', {
@@ -230,7 +246,7 @@ $courses = $result->fetchAll(PDO::FETCH_ASSOC);
                             </div>
                         </form> -->
 
-                    <table id="resultTable" class="table table-bordered border-secondary">
+                    <table style="background: linear-gradient(to left, rgba(220, 210, 211, 0.3), rgba(200, 240, 241, 0.3));" class="table table-bordered table-custom">
                         <caption>List of Student Performance</caption>
                         <thead class="table-dark">
                             <tr style="text-align: center;">
@@ -242,58 +258,59 @@ $courses = $result->fetchAll(PDO::FETCH_ASSOC);
                             </tr>
                         </thead>
                         <tbody>
-                            <?php foreach ($results as $row) : ?>
+                            <?php if (empty($results)) : ?>
                                 <tr style="text-align: center;">
-                                    <td><?php echo $row['stud_fname'] . ' ' . $row['stud_mname'] . ' ' . $row['stud_lname']; ?></td>
-                                    <td><?php echo $row['module_name']; ?></td>
-                                    <td><?php echo date("M d, Y", strtotime($row['created_at'])); ?></td>
-                                    <td>
-                                        <?php
-                                        // Retrieve module_id from URL parameter if available
-                                        $module_id = isset($_GET['module_id']) ? $_GET['module_id'] : null;
-
-                                        // Fetch attempts from tbl_result
-                                        $stmtAttempts = $conn->prepare("SELECT COUNT(*) AS attempts FROM tbl_result WHERE stud_id = :stud_id AND module_id = :module_id AND quiz_type = 1");
-                                        $stmtAttempts->bindValue(':stud_id', $row['stud_id']);
-                                        $stmtAttempts->bindValue(':module_id', $module_id);
-                                        if (!$stmtAttempts->execute()) {
-                                            echo "Error executing query: " . implode(" ", $stmtAttempts->errorInfo());
-                                        } else {
-                                            $attemptsData = $stmtAttempts->fetch(PDO::FETCH_ASSOC);
-                                            $attempts = $attemptsData['attempts'];
-                                            echo $attempts;
-                                        }
-                                        ?>
-
-
-                                    </td>
-                                    <td>
-
-                                        <?php
-                                        // Retrieve module_id from URL parameter if available
-                                        $module_id = isset($_GET['module_id']) ? $_GET['module_id'] : null;
-
-                                        // Fetch attempts from tbl_result
-                                        $stmtAttempts = $conn->prepare("SELECT COUNT(*) AS attempts FROM tbl_result WHERE stud_id = :stud_id AND module_id = :module_id AND quiz_type = 1");
-                                        $stmtAttempts->bindValue(':stud_id', $row['stud_id']);
-                                        $stmtAttempts->bindValue(':module_id', $module_id);
-                                        if (!$stmtAttempts->execute()) {
-                                            echo "Error executing query: " . implode(" ", $stmtAttempts->errorInfo());
-                                        } else {
-                                            $attemptsData = $stmtAttempts->fetch(PDO::FETCH_ASSOC);
-                                            $attempts = $attemptsData['attempts'];
-                                            $passRate = ($attempts != 0) ? number_format(100 / $attempts, 2) : 0; // Calculate pass rate with 2 decimal places
-                                            echo $passRate . "%";
-                                        }
-                                        ?>
-
-
-
-                                    </td>
+                                    <td colspan="5">No records found</td>
                                 </tr>
-                            <?php endforeach; ?>
+                            <?php else : ?>
+                                <?php foreach ($results as $row) : ?>
+                                    <tr style="text-align: center;">
+                                        <td><?php echo htmlspecialchars($row['stud_fname'] . ' ' . $row['stud_mname'] . ' ' . $row['stud_lname']); ?></td>
+                                        <td><?php echo htmlspecialchars($row['module_name']); ?></td>
+                                        <td><?php echo date("M d, Y", strtotime($row['created_at'])); ?></td>
+                                        <td>
+                                            <?php
+                                            // Retrieve module_id from URL parameter if available
+                                            $module_id = isset($_GET['module_id']) ? $_GET['module_id'] : null;
+
+                                            // Fetch attempts from tbl_result
+                                            $stmtAttempts = $conn->prepare("SELECT COUNT(*) AS attempts FROM tbl_result WHERE stud_id = :stud_id AND module_id = :module_id AND quiz_type = 1");
+                                            $stmtAttempts->bindValue(':stud_id', $row['stud_id']);
+                                            $stmtAttempts->bindValue(':module_id', $module_id);
+                                            if (!$stmtAttempts->execute()) {
+                                                echo "Error executing query: " . implode(" ", $stmtAttempts->errorInfo());
+                                            } else {
+                                                $attemptsData = $stmtAttempts->fetch(PDO::FETCH_ASSOC);
+                                                $attempts = $attemptsData['attempts'];
+                                                echo htmlspecialchars($attempts);
+                                            }
+                                            ?>
+                                        </td>
+                                        <td>
+                                            <?php
+                                            // Retrieve module_id from URL parameter if available
+                                            $module_id = isset($_GET['module_id']) ? $_GET['module_id'] : null;
+
+                                            // Fetch attempts from tbl_result
+                                            $stmtAttempts = $conn->prepare("SELECT COUNT(*) AS attempts FROM tbl_result WHERE stud_id = :stud_id AND module_id = :module_id AND quiz_type = 1");
+                                            $stmtAttempts->bindValue(':stud_id', $row['stud_id']);
+                                            $stmtAttempts->bindValue(':module_id', $module_id);
+                                            if (!$stmtAttempts->execute()) {
+                                                echo "Error executing query: " . implode(" ", $stmtAttempts->errorInfo());
+                                            } else {
+                                                $attemptsData = $stmtAttempts->fetch(PDO::FETCH_ASSOC);
+                                                $attempts = $attemptsData['attempts'];
+                                                $passRate = ($attempts != 0) ? number_format(100 / $attempts, 2) : 0; // Calculate pass rate with 2 decimal places
+                                                echo htmlspecialchars($passRate) . "%";
+                                            }
+                                            ?>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
                         </tbody>
                     </table>
+
 
 
                     <!-- Pagination -->

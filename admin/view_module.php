@@ -16,15 +16,24 @@ $recordsPerPage = 10;
 $page = isset($_GET['page']) ? $_GET['page'] : 1;
 $offset = ($page - 1) * $recordsPerPage;
 
+// Fetch course name
+$courseSql = "SELECT course_name FROM tbl_course WHERE course_id = :course_id";
+$courseStmt = $conn->prepare($courseSql);
+$courseStmt->bindParam(':course_id', $course_id, PDO::PARAM_INT);
+$courseStmt->execute();
+$course = $courseStmt->fetch(PDO::FETCH_ASSOC);
+$course_name = $course ? $course['course_name'] : '';
+
 // Build the SQL query with search functionality
-$sql = "SELECT * FROM tbl_module WHERE course_id = :course_id";
+$sql = "SELECT * FROM tbl_module WHERE course_id = :course_id LIMIT :offset, :recordsPerPage";
 $result = $conn->prepare($sql);
 $result->bindParam(':course_id', $course_id, PDO::PARAM_INT);
+$result->bindParam(':offset', $offset, PDO::PARAM_INT);
+$result->bindParam(':recordsPerPage', $recordsPerPage, PDO::PARAM_INT);
 $result->execute();
 
 // Count total number of records
 $countSql = "SELECT COUNT(*) as total FROM tbl_module WHERE course_id = :course_id";
-
 $countStmt = $conn->prepare($countSql);
 $countStmt->bindParam(':course_id', $course_id, PDO::PARAM_INT);
 $countStmt->execute();
@@ -99,11 +108,14 @@ if (isset($_POST['moduleId']) && isset($_POST['moduleStatus'])) {
         <div class="container">
             <div class="row justify-content-center">
                 <div class="col-md-8">
-                    <div class="text-center mt-1">
-                        <h1>Module</h1>
+                    <div class="text-center mt-5 mb-5">
+                        <h1>Subject:
+                            <?php echo htmlspecialchars($course_name); ?>
+
+                        </h1>
                     </div>
 
-                    <table class="table table-bordered border-secondary">
+                    <table class="table table-bordered table-custom">
                         <caption>List of Modules</caption>
                         <thead class="table-dark">
                             <tr>
@@ -114,23 +126,12 @@ if (isset($_POST['moduleId']) && isset($_POST['moduleStatus'])) {
                             </tr>
                         </thead>
                         <tbody>
-                            <?php
-
-                            // Build the SQL query with search functionality
-                            $sql = "SELECT * FROM tbl_module WHERE course_id = :course_id";
-                            $result = $conn->prepare($sql);
-                            $result->bindParam(':course_id', $course_id, PDO::PARAM_INT);
-                            $result->execute();
-
-                            ?>
-
-
                             <?php if ($result->rowCount() > 0) : ?>
                                 <?php $count = 1; ?>
                                 <?php while ($row = $result->fetch(PDO::FETCH_ASSOC)) : ?>
                                     <tr>
                                         <td><?php echo $count++; ?></td>
-                                        <td><?php echo $row['module_name']; ?></td>
+                                        <td><?php echo htmlspecialchars($row['module_name']); ?></td>
                                         <td>
                                             <a class="btn btn-success btn-sm view-module-btn" data-bs-toggle="modal" data-bs-target="#moduleModal" data-module-id="<?php echo $row['module_id']; ?>">
                                                 <i class="lni lni-eye" style="font-size: 1.2rem;"></i>
@@ -163,7 +164,7 @@ if (isset($_POST['moduleId']) && isset($_POST['moduleStatus'])) {
                         <ul class="pagination justify-content-center">
                             <?php for ($i = 1; $i <= $totalPages; $i++) : ?>
                                 <li class="page-item <?php echo $i == $page ? 'active' : ''; ?>">
-                                    <a class="page-link" href="?page=<?php echo $i; ?>"><?php echo $i; ?></a>
+                                    <a class="page-link" href="?page=<?php echo $i; ?>&course_id=<?php echo $course_id; ?>"><?php echo $i; ?></a>
                                 </li>
                             <?php endfor; ?>
                         </ul>

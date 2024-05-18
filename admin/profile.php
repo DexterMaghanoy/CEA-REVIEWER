@@ -53,7 +53,7 @@ if ($stmt->rowCount() > 0) {
     <?php include 'back.php'; ?>
 
       <div class="container">
-      <div class="text-center  mt-5">
+      <div class="text-center mt-4">
         <h1>Profile</h1>
 
       </div>
