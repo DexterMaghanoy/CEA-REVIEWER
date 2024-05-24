@@ -54,8 +54,8 @@ if (isset($_SESSION['program_id'])) {
 
 <style>
     .table {
-    border-radius: 10px; /* Adjust the value as needed */
-    overflow: hidden; /* Ensures the border-radius is applied to the table */
+    border-radius: 10px; 
+    overflow: hidden; 
 }
 
 
@@ -87,22 +87,16 @@ if (isset($_SESSION['program_id'])) {
     100% { transform: scale(1,1); }
 }
 </style>
-
 <body>
-    <!-- Body content goes here -->
     <div class="wrapper">
-        <?php include 'sidebar.php'; ?> <!-- Assuming sidebar.php contains your sidebar code -->
+        <?php include 'sidebar.php'; ?> 
         <div class="main p-3">
             <div class="container">
                 <div class="row justify-content-center mt-2">
-                    <div class="col-md-8">
+                    <div class="col-md-12">
                         <div class="text-center mb-4">
                             <h1>All Results</h1>
                         </div>
-                        <!-- Search Bar -->
-
-                        
-
                         <?php include 'student_record_dropdown.php'; ?>
                         <form action="" method="GET" class="mb-4">
                             <div class="input-group">
@@ -214,11 +208,8 @@ if (isset($_SESSION['program_id'])) {
         });
     });
 </script>
-<!-- Add this JavaScript code within <script> tags at the bottom of your HTML file -->
 
 <script>
-    // Function to filter table rows based on input text
-    // Function to filter table rows based on input text
     function filterTable() {
         const searchInput = document.getElementById("searchInput");
         const value = searchInput.value.toLowerCase();
@@ -235,15 +226,11 @@ if (isset($_SESSION['program_id'])) {
         });
     }
 
-
-    // Function to clear search input and show all rows
     function clearSearch() {
         const searchInput = document.getElementById("searchInput");
         searchInput.value = "";
-        filterTable(); // Call filterTable to show all rows
+        filterTable(); 
     }
-
-    // Attach event listeners to search input and clear button
     document.getElementById("searchInput").addEventListener("keyup", filterTable);
     document.getElementById("clearSearchButton").addEventListener("click", clearSearch);
 </script>
@@ -251,7 +238,6 @@ if (isset($_SESSION['program_id'])) {
 
 
 <script>
-    // Function to sort table rows based on the clicked header
     function sortTable(columnIndex) {
         const table = document.getElementById("resultTable");
         const rows = Array.from(table.querySelectorAll("tbody tr"));

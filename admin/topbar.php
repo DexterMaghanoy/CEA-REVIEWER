@@ -1,6 +1,8 @@
 <style>
   .navbar-custom {
-    background: linear-gradient(to right, rgba(64, 112, 160, 0.8), rgba(136, 187, 160, 0.8));
+    /* background: linear-gradient(to right, rgba(64, 112, 160, 0.8), rgba(136, 187, 160, 0.8)); */
+    background: linear-gradient(to bottom, rgba(238, 197, 145, 0.5), rgba(218, 164, 87, 0.5));
+
 
 
 
@@ -82,13 +84,14 @@ $selectedYear = isset($_GET['year']) ? htmlspecialchars($_GET['year']) : '';
       <span class="navbar-toggler-icon"></span>
     </button>
 
-    <div class="collapse navbar-collapse" id="navbarNavDropdown">
+    <div style="color: black;" class="collapse navbar-collapse" id="navbarNavDropdown">
       <ul class="navbar-nav">
         <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+          <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="color: black;">
             <?php echo $programId ? $programId : 'Choose Course'; // Placeholder or the selected course name 
             ?>
           </a>
+
           <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
             <?php
             // Assuming $conn is your database connection
@@ -111,21 +114,21 @@ $selectedYear = isset($_GET['year']) ? htmlspecialchars($_GET['year']) : '';
         </li>
 
         <li style="padding-left: 50px;" class="nav-item">
-          <label class="nav-link custom-radio">
+          <label class="text-black nav-link custom-radio">
             <input type="radio" name="navigation" id="testRadio" value="1" <?php echo $quizType == '1' ? 'checked' : ''; ?>>
             <i class="fas fa-check-circle"></i> Test
           </label>
         </li>
 
         <li class="nav-item">
-          <label class="nav-link custom-radio">
+          <label class="text-black nav-link custom-radio">
             <input type="radio" name="navigation" id="quizRadio" value="2" <?php echo $quizType == '2' ? 'checked' : ''; ?>>
             <i class="fas fa-check-circle"></i> Quiz
           </label>
         </li>
 
         <li class="nav-item">
-          <label class="nav-link custom-radio">
+          <label class="text-black nav-link custom-radio">
             <input type="radio" name="navigation" id="examRadio" value="3" <?php echo $quizType == '3' ? 'checked' : ''; ?>>
             <i class="fas fa-check-circle"></i> Exam
           </label>

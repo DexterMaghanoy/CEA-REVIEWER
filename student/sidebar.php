@@ -65,7 +65,7 @@ require '../api/db-connect.php';
             ?>
             <h6>
                 <a href="dashboard.php">Hello, <?php echo htmlspecialchars($Student_user); ?>!
-                    <p style="text-align: center; font-size: 13px;"><?php echo htmlspecialchars($programName_students) ."  " ." Student"; ?></p>
+                    <p style="text-align: center; font-size: 13px;"><?php echo htmlspecialchars($programName_students) . "  " . " Student"; ?></p>
                 </a>
             </h6>
         </div>
@@ -88,13 +88,21 @@ require '../api/db-connect.php';
                 <i class="lni lni-agenda"></i>
                 <span>Course</span>
             </a>
-            <?php if (!empty($courses)) : ?>
+            <?php
+            $displayedCourseIDs = []; 
+            if (!empty($courses)) :
+            ?>
                 <ul id="auth" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
-                    <?php foreach ($courses as $row) : ?>
-                        <li class="sidebar-item">
-                            <a href="module.php?course_id=<?php echo htmlspecialchars($row['course_id']); ?>" class="sidebar-link"><?php echo htmlspecialchars($row['course_name']); ?></a>
-                        </li>
-                    <?php endforeach; ?>
+                    <?php foreach ($courses as $row) :
+                 
+                        if (!in_array($row['course_id'], $displayedCourseIDs)) :
+                            $displayedCourseIDs[] = $row['course_id']; 
+                    ?>
+                            <li class="sidebar-item">
+                                <a href="module.php?course_id=<?php echo htmlspecialchars($row['course_id']); ?>" class="sidebar-link"><?php echo htmlspecialchars($row['course_name']); ?></a>
+                            </li>
+                    <?php endif;
+                    endforeach; ?>
                 </ul>
             <?php endif; ?>
         </li>
@@ -129,7 +137,7 @@ require '../api/db-connect.php';
         ?>
 
         <li class="sidebar-item">
-            <?php if ($examCount > 2) : ?>
+            <?php if ($examCount >= 1) : ?>
                 <a href="exam.php" class="sidebar-link">
                     <i class="lni lni-pencil-alt"></i>
                     <span>Exam</span>

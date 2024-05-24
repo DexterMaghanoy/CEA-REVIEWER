@@ -9,7 +9,7 @@ if (isset($_SESSION['program_id'])) {
     header("Location: ../index.php");
     exit();
 }
-
+$program_id =1;
 $course_id = $_GET['course_id'];
 
 $recordsPerPage = 10;
@@ -107,7 +107,7 @@ if (isset($_POST['moduleId']) && isset($_POST['moduleStatus'])) {
 
         <div class="container">
             <div class="row justify-content-center">
-                <div class="col-md-8">
+                <div class="col-md-12">
                     <div class="text-center mt-5 mb-5">
                         <h1>Subject:
                             <?php echo htmlspecialchars($course_name); ?>
@@ -126,6 +126,8 @@ if (isset($_POST['moduleId']) && isset($_POST['moduleStatus'])) {
                             </tr>
                         </thead>
                         <tbody>
+
+                        
                             <?php if ($result->rowCount() > 0) : ?>
                                 <?php $count = 1; ?>
                                 <?php while ($row = $result->fetch(PDO::FETCH_ASSOC)) : ?>
@@ -139,6 +141,7 @@ if (isset($_POST['moduleId']) && isset($_POST['moduleStatus'])) {
                                             <a class="btn btn-primary btn-sm" href="question.php?program_id=<?php echo $program_id ?>&module_id=<?php echo $row['module_id']; ?>&course_id=<?php echo $course_id; ?>">
                                                 <i class="lni lni-upload" style="font-size: 1.2rem;"></i>
                                             </a>
+
                                         </td>
 
                                         <td class="text-center align-middle">

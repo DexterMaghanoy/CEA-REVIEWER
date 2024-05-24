@@ -24,8 +24,6 @@ if (isset($_SESSION['program_id'])) {
         $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         if ($results) {
-            $stud_fname = $results['stud_fname'];
-            $stud_lname = $results['stud_lname'];
         } else {
             $error_message = "No results found for the selected student.";
         }
@@ -104,6 +102,11 @@ if (isset($_SESSION['program_id'])) {
             transform: scale(1, 1);
         }
     }
+
+
+    .table-container {
+        overflow-x: auto;
+    }
 </style>
 
 <body>
@@ -113,7 +116,7 @@ if (isset($_SESSION['program_id'])) {
         <div class="container">
             <?php include 'back.php'; ?>
             <div class="row justify-content-center mt-1">
-                <div class="col-md-8">
+                <div class="col-md-">
                     <div class="text-center mb-1">
                         <div class="text-center mb-1">
                             <h1>Record data of:
@@ -159,12 +162,11 @@ if (isset($_SESSION['program_id'])) {
                     </form>
 
                     <!-- Display all results in a table -->
-                    <div class="table-responsive">
-                        <table id="resultTable" class="table table-bordered border-secondary">
-                            <caption>List of Scores</caption>
+                    <div class="table-container">
+                        <table id="resultTable" style="background: linear-gradient(to left, rgba(220, 210, 211, 0.3), rgba(200, 240, 241, 0.3));" class="table table-bordered table-custom">
+                            <caption>List of Scores</capt   ion>
                             <thead class="table-dark">
                                 <tr style="text-align: center;">
-                                    <!-- Wrap each th inside an <a> tag for clickability -->
                                     <th scope="col"><a href="#" class="sortable" data-column="0">Title</a></th>
                                     <th scope="col"><a href="#" class="sortable" data-column="1">Score</a></th>
                                     <th scope="col"><a href="#" class="sortable" data-column="2">Result</a></th>
@@ -197,8 +199,8 @@ if (isset($_SESSION['program_id'])) {
                                 <?php endif; ?>
                             </tbody>
                         </table>
-
                     </div>
+
 
                 </div>
             </div>

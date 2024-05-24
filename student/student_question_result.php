@@ -2,6 +2,8 @@
 session_start();
 
 require '../api/db-connect.php';
+global $results;
+
 if (isset($_SESSION['program_id'])) {
 
     $program_id = $_SESSION['program_id'];
@@ -15,11 +17,10 @@ if (isset($_SESSION['program_id'])) {
     // Fetch the result and store it in a variable to use later
     $courses = $result->fetchAll(PDO::FETCH_ASSOC);
 } else {
-    
+
     // Redirect to login page if session data is not set
     header("Location: ../index.php");
     exit();
-
 }
 
 
@@ -43,7 +44,17 @@ if ($result->rowCount() == 0) {
 } else {
     $results = $result->fetchAll(PDO::FETCH_ASSOC);
 }
-global $results;
+
+// Find the course name corresponding to the given course_id
+$courseName = "";
+foreach ($courses as $course) {
+    if ($course['course_id'] == $course_id) {
+        $courseName = $course['course_name'];
+        break;
+    }
+}
+
+// Echo the course name
 ?>
 
 <!DOCTYPE html>
@@ -67,9 +78,12 @@ global $results;
         <div class="main p-3">
             <div class="container">
                 <div class="row justify-content-center mt-2">
-                    <div class="col-md-8">
+                    <div class="col-md-12">
                         <div class="text-center mb-4">
-                            <h1>All Results</h1>
+                            <h1><?php
+                                echo "Subject: ".$courseName;
+
+                                ?></h1>
                         </div>
 
                         <!-- Search Bar -->
@@ -82,7 +96,11 @@ global $results;
 
                         <!-- Display all results in a table -->
                         <div class="table-responsive">
-                            <table id="resultTable" class="table table-bordered border-secondary">
+
+
+                            <table id="resultTable" style="background: linear-gradient(to left, rgba(220, 210, 211, 0.3), rgba(200, 240, 241, 0.3));" class="table table-bordered table-custom">
+
+
                                 <caption>List of Scores</caption>
                                 <thead class="table-dark">
                                     <tr style="text-align: center;">

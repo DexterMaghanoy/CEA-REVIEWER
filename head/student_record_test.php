@@ -95,7 +95,7 @@ if (isset($_SESSION['program_id'])) {
             <div class="container">
             <?php include 'back.php'; ?> 
                 <div class="row justify-content-center mt-1">
-                    <div class="col-md-8">
+                    <div class="col-md-12">
                         <div class="text-center mb-1">
                             <h1>All Results</h1>
                         </div>

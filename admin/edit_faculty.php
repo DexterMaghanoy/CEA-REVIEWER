@@ -161,7 +161,7 @@ if (isset($_POST['update'])) {
         ?>
         <div class="main py-3">
             <div class="text-center mb-4">
-                <h1>Edit Faculty</h1>
+                <h1>Edit User</h1>
             </div>
             <div class="container">
                 <div class="row justify-content-center">
@@ -278,3 +278,4 @@ if (isset($_POST['update'])) {
 
 
 </html>
+

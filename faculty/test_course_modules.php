@@ -14,7 +14,7 @@ $program_id = $_SESSION['program_id'];
 $user_id = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : null;
 $course_id = isset($_GET['course_id']) ? $_GET['course_id'] : null;
 $page = isset($_GET['page']) ? $_GET['page'] : 1;
-$offset = ($page - 1) * 10; 
+$offset = ($page - 1) * 10;
 
 // Retrieve modules for the specified course
 if ($course_id) {
@@ -96,18 +96,39 @@ WHERE c.program_id = :program_id";
         $stmt->bindValue(':module_id', $module_id);
     }
     $stmt->execute();
-    $results = $stmt->fetchAll(PDO::FETCH_ASSOC); // Fetch the results
-
+    $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } else {
-    // Redirect if user ID is not set in the session
 }
 
-// Fetch courses for the given program
 $sql = "SELECT * FROM tbl_course WHERE program_id = :program_id";
 $result = $conn->prepare($sql);
 $result->bindParam(':program_id', $program_id, PDO::PARAM_INT);
 $result->execute();
 $courses = $result->fetchAll(PDO::FETCH_ASSOC);
+
+
+$course_id = $_GET['course_id'];
+
+$courseQuery = $conn->prepare("SELECT course_name FROM tbl_course WHERE course_id = :course_id");
+$courseQuery->bindParam(':course_id', $course_id, PDO::PARAM_INT);
+$courseQuery->execute();
+$course = $courseQuery->fetch(PDO::FETCH_ASSOC);
+
+$module_id = $_GET['module_id'];
+
+$moduleQuery = $conn->prepare("SELECT module_name FROM tbl_module WHERE module_id = :module_id");
+$moduleQuery->bindParam(':module_id', $module_id, PDO::PARAM_INT);
+$moduleQuery->execute();
+$module = $moduleQuery->fetch(PDO::FETCH_ASSOC);
+
+
+// Check if $module contains any data
+if ($module && isset($module['module_name'])) {
+    $module['module_name'];
+} else {
+    $module['module_name'] =  "No module available";
+}
+
 ?>
 
 
@@ -138,7 +159,17 @@ $courses = $result->fetchAll(PDO::FETCH_ASSOC);
                 <div class="row justify-content-center mt-5">
                     <div class="col-md-8">
                         <div class="text-center mb-4">
-                            <h1>Module Test Report</h1>
+                            <h1>
+
+                                <?php
+                                echo '<h2>' . $course['course_name'] . '</h2>';
+                                echo '<h5>' . $module['module_name'] . '</h5>';
+                                ?>
+
+
+
+
+                            </h1>
                         </div>
                     </div>
                 </div>

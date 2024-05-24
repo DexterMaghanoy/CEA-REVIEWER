@@ -160,6 +160,34 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <link rel="shortcut icon" href="../img/cea_logo.png" type="image/x-icon">
 </head>
 
+<style>
+        .question-text {
+            font-size: 20px;
+            /* Adjust the font size as needed */
+            font-weight: bold;
+            /* Optionally make the text bold */
+            margin-bottom: 10px;
+            /* Add some space between questions */
+
+
+
+
+        }
+
+        .form-check-input[type="radio"] {
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #000;
+            border-radius: 50%;
+            outline: none;
+            margin-right: 5px;
+            /* Adjust the margin as needed */
+        }
+    </style>
+
 <body>
     <div class="wrapper">
         <?php include 'sidebar.php'; ?>

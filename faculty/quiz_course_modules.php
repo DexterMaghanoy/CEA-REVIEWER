@@ -13,7 +13,6 @@ if (!isset($_SESSION['program_id'])) {
 $program_id = $_SESSION['program_id'];
 $user_id = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : null;
 $course_id = isset($_GET['course_id']) ? $_GET['course_id'] : null;
-$search = isset($_GET['search']) ? $_GET['search'] : '';
 $page = isset($_GET['page']) ? $_GET['page'] : 1;
 $offset = ($page - 1) * 10;
 
@@ -24,7 +23,6 @@ if ($course_id) {
 } else {
     $stmt = $conn->prepare("SELECT * FROM tbl_module");
 }
-
 $stmt->execute();
 $modules = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
@@ -36,13 +34,13 @@ if (isset($_GET['module_id'])) {
 // Pagination
 $resultsPerPage = 10;
 if ($user_id) {
+    // Main query for retrieving results with provided filters
     $sql = "SELECT r.stud_id, s.stud_fname, s.stud_mname, s.stud_lname, c.course_name, m.module_name, r.created_at, r.total_questions, r.result_score, SUM(r.result_score) AS total_score
-    FROM tbl_result r
-    INNER JOIN tbl_student s ON r.stud_id = s.stud_id
-    INNER JOIN tbl_module m ON r.module_id = m.module_id
-    INNER JOIN tbl_course c ON m.course_id = c.course_id
-    WHERE c.program_id = :program_id"; // Filter by program ID
-
+FROM tbl_result r
+INNER JOIN tbl_student s ON r.stud_id = s.stud_id
+INNER JOIN tbl_module m ON r.module_id = m.module_id
+INNER JOIN tbl_course c ON m.course_id = c.course_id
+WHERE c.program_id = :program_id";
 
     // Add conditions to filter by course ID and module ID if they are provided
     if ($course_id) {
@@ -52,18 +50,28 @@ if ($user_id) {
         $sql .= " AND r.module_id = :module_id";
     }
 
-    if (!empty($search)) {
-        $sql .= " AND (s.stud_fname LIKE :search OR s.stud_lname LIKE :search OR c.course_name LIKE :search OR m.module_name LIKE :search)";
-    }
-
     $sql .= " GROUP BY r.stud_id, c.course_id ";
 
-    // Count total number of results for pagination
-    $countQuery = "SELECT COUNT(*) AS count FROM ($sql) AS sub";
-    $stmtCount = $conn->prepare($countQuery);
-    if (!empty($search)) {
-        $stmtCount->bindValue(':search', '%' . $search . '%');
+    // Count query to calculate the total number of results with provided filters
+    $countQuery = "SELECT COUNT(*) AS count FROM (
+    SELECT r.stud_id
+    FROM tbl_result r
+    INNER JOIN tbl_student s ON r.stud_id = s.stud_id
+    INNER JOIN tbl_module m ON r.module_id = m.module_id
+    INNER JOIN tbl_course c ON m.course_id = c.course_id
+    WHERE c.program_id = :program_id";
+
+    // Add conditions to count query
+    if ($course_id) {
+        $countQuery .= " AND m.course_id = :course_id";
     }
+    if (isset($module_id)) {
+        $countQuery .= " AND r.module_id = :module_id";
+    }
+
+    $countQuery .= " GROUP BY r.stud_id, c.course_id ) AS sub";
+
+    $stmtCount = $conn->prepare($countQuery);
     $stmtCount->bindValue(':program_id', $program_id);
     if ($course_id) {
         $stmtCount->bindValue(':course_id', $course_id);
@@ -76,13 +84,10 @@ if ($user_id) {
     $totalCount = $countResult['count'];
     $totalPages = ceil($totalCount / $resultsPerPage);
 
-    // Add pagination to the main query
+    // Add pagination and execute main query
     $sql .= " LIMIT $resultsPerPage OFFSET $offset";
 
     $stmt = $conn->prepare($sql);
-    if (!empty($search)) {
-        $stmt->bindValue(':search', '%' . $search . '%');
-    }
     $stmt->bindValue(':program_id', $program_id);
     if ($course_id) {
         $stmt->bindValue(':course_id', $course_id);
@@ -91,19 +96,40 @@ if ($user_id) {
         $stmt->bindValue(':module_id', $module_id);
     }
     $stmt->execute();
-    $results = $stmt->fetchAll(PDO::FETCH_ASSOC); // Fetch the results
-
+    $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } else {
-    // Redirect if user ID is not set in the session
 }
 
-// Fetch courses for the given program
 $sql = "SELECT * FROM tbl_course WHERE program_id = :program_id";
 $result = $conn->prepare($sql);
 $result->bindParam(':program_id', $program_id, PDO::PARAM_INT);
 $result->execute();
 $courses = $result->fetchAll(PDO::FETCH_ASSOC);
+
+
+$course_id = $_GET['course_id'];
+
+$courseQuery = $conn->prepare("SELECT course_name FROM tbl_course WHERE course_id = :course_id");
+$courseQuery->bindParam(':course_id', $course_id, PDO::PARAM_INT);
+$courseQuery->execute();
+$course = $courseQuery->fetch(PDO::FETCH_ASSOC);
+
+$module_id = $_GET['module_id'];
+
+$moduleQuery = $conn->prepare("SELECT module_name FROM tbl_module WHERE module_id = :module_id");
+$moduleQuery->bindParam(':module_id', $module_id, PDO::PARAM_INT);
+$moduleQuery->execute();
+$module = $moduleQuery->fetch(PDO::FETCH_ASSOC);
+// Check if $module contains any data
+if ($module && isset($module['module_name'])) {
+    $module['module_name'];
+} else {
+    $module['module_name'] =  "No module available";
+}
+
+
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -132,7 +158,12 @@ $courses = $result->fetchAll(PDO::FETCH_ASSOC);
                 <div class="row justify-content-center mt-5">
                     <div class="col-md-8">
                         <div class="text-center mb-4">
-                            <h1>Student Quiz Report</h1>
+                            <?php
+                            echo '<h2>' . $course['course_name'] . '</h2>';
+                            echo '<h5>' . $module['module_name'] . '</h5>';
+                            ?>
+
+
                         </div>
                     </div>
                 </div>
@@ -211,15 +242,9 @@ $courses = $result->fetchAll(PDO::FETCH_ASSOC);
 
 
                     <div class="col-sm">
-                      
 
-                        <!-- Search form -->
-                        <form action="" method="GET" class="mb-3">
-                            <div class="input-group">
-                                <input type="text" class="form-control" name="search" placeholder="Search..." value="<?php echo $search; ?>">
-                                <button class="btn btn-primary" type="submit">Search</button>
-                            </div>
-                        </form>
+
+          
                         <table id="resultTable" class="table table-bordered border-secondary">
                             <caption>List of Student Performance</caption>
                             <thead class="table-dark">
@@ -273,7 +298,7 @@ $courses = $result->fetchAll(PDO::FETCH_ASSOC);
                                                 $attemptsData = $stmtAttempts->fetch(PDO::FETCH_ASSOC);
                                                 $attempts = $attemptsData['attempts'];
                                                 $passRate = ($attempts != 0) ? number_format(100 / $attempts, 2) : 0; // Calculate pass rate with 2 decimal places
-                                                echo $passRate."%";
+                                                echo $passRate . "%";
                                             }
                                             ?>
 

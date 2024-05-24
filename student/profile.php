@@ -76,6 +76,13 @@ if ($stmt->rowCount() > 0) {
     <link rel="stylesheet" href="profile.css" type="text/css">
 </head>
 
+<style>
+  .card {
+    border: none;
+    box-shadow: 10px 20px 30px rgba(0, 0, 0, 0.1);
+  }
+</style>
+
 <body>
     <div style="background-color: rgb(252, 249, 249);" class="wrapper">
 

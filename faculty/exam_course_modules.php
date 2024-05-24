@@ -125,6 +125,30 @@ $result = $conn->prepare($sql);
 $result->bindParam(':program_id', $program_id, PDO::PARAM_INT);
 $result->execute();
 $courses = $result->fetchAll(PDO::FETCH_ASSOC);
+
+
+
+
+$course_id = $_GET['course_id'];
+
+$courseQuery = $conn->prepare("SELECT course_name FROM tbl_course WHERE course_id = :course_id");
+$courseQuery->bindParam(':course_id', $course_id, PDO::PARAM_INT);
+$courseQuery->execute();
+$course = $courseQuery->fetch(PDO::FETCH_ASSOC);
+
+$module_id = $_GET['module_id'];
+
+$moduleQuery = $conn->prepare("SELECT module_name FROM tbl_module WHERE module_id = :module_id");
+$moduleQuery->bindParam(':module_id', $module_id, PDO::PARAM_INT);
+$moduleQuery->execute();
+$module = $moduleQuery->fetch(PDO::FETCH_ASSOC);
+// Check if $module contains any data
+if ($module && isset($module['module_name'])) {
+    $module['module_name'];
+} else {
+    $module['module_name'] =  "No module available";
+}
+
 ?>
 
 <!DOCTYPE html>
@@ -154,7 +178,11 @@ $courses = $result->fetchAll(PDO::FETCH_ASSOC);
                 <div class="row justify-content-center mt-5">
                     <div class="col-md-8">
                         <div class="text-center mb-4">
-                            <h1>Student Exam Report</h1>
+                            <?php
+                            echo '<h2>' . $course['course_name'] . '</h2>';
+                            echo '<h5>' . $module['module_name'] . '</h5>';
+                            ?>
+
                         </div>
                     </div>
                 </div>

@@ -108,7 +108,7 @@ $totalPages = ceil($totalCount / $recordsPerPage);
         <div class="main p-3">
             <div class="container">
                 <div class="row justify-content-center mt-5">
-                    <div class="col-md-8">
+                    <div class="col-md-12">
                         <div class="text-center mb-4">
                             <h1>Students</h1>
                         </div>
@@ -121,7 +121,9 @@ $totalPages = ceil($totalCount / $recordsPerPage);
                         </form>
 
                         <div class="table-responsive">
-                            <table class="table table-bordered border-secondary">
+
+                            <table style="background: linear-gradient(to left, rgba(220, 210, 211, 0.3), rgba(200, 240, 241, 0.3));" class="table table-bordered table-custom">
+
                                 <caption>List of Student</caption>
                                 <thead class="table-dark">
                                     <tr>

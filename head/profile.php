@@ -41,6 +41,12 @@ if ($stmt->rowCount() > 0) {
 
 
 </head>
+<style>
+    .card {
+        border: none;
+        box-shadow: 10px 20px 30px rgba(0, 0, 0, 0.1);
+    }
+</style>
 
 
 
@@ -54,7 +60,7 @@ if ($stmt->rowCount() > 0) {
 
 
 
-            <div class="text-center">
+            <div class="text-center mt-4">
                 <h1>Profile</h1>
 
             </div>
@@ -65,7 +71,11 @@ if ($stmt->rowCount() > 0) {
                             <div class="card mb-3" style="border-radius: .5rem;">
                                 <div class="row g-0">
                                     <div class="col-md-4 gradient-custom text-center text-white" style="border-top-left-radius: .5rem; border-bottom-left-radius: .5rem;">
-                                        <img src="/cea-reviewer/img/faculty.png" alt="Avatar" class="rounded-circle img-fluid my-5" style="width: 100px;">
+                                        <!-- <img src="/cea-reviewer/img/faculty.png" alt="Avatar" class="rounded-circle img-fluid my-5" style="width: 100px;"> -->
+                                        <?php
+
+                                        echo '<img src="/cea-reviewer/img/faculty.png" alt="Avatar" class="rounded-circle img-fluid my-5" style="width: 100px;">';
+                                        ?>
                                         <h5><?php echo $user['user_fname'] . ' ' . $user['user_lname'] ?></h5>
                                         <p><?php echo $user['type_name']; ?></p>
                                         <i class="far fa-edit mb-5"></i>

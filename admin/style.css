@@ -260,14 +260,14 @@ a.sidebar-link:hover {
         height: 100vh;
          width: 100vw;
         overflow-y: auto;
-        background-color: rgb(252, 249, 249); /* Light pastel green */
+        background: linear-gradient(to bottom, rgb(255, 255, 255), rgb(245, 245, 245));
     }
     .container {
+        
         margin-top: .5%;
         margin-bottom: .5%;
         overflow-y: auto;
         border-radius: 10px; 
-        background-color: rgb(252, 249, 249); /* Light pastel green */
     }
     
     

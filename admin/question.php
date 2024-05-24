@@ -11,6 +11,7 @@ if (isset($_SESSION['program_id'])) {
 }
 
 $module_id = $_GET['module_id'];
+$program_id = $_GET['program_id'];
 
 // Fetch course_id and module_name based on module_id
 $sql_module = "SELECT course_id, module_name FROM tbl_module WHERE module_id = :module_id";
@@ -58,6 +59,8 @@ $totalPages = ceil($totalCount / $recordsPerPage);
 <body>
     <div class="wrapper">
         <?php include 'sidebar.php'; ?>
+
+        <?php include 'back.php'; ?>
 
         <div class="main p-3">
             <div class="container">
@@ -164,3 +167,4 @@ $totalPages = ceil($totalCount / $recordsPerPage);
 
 </body>
 </html>
+

@@ -1,20 +1,8 @@
 <?php
 require_once "../api/db-connect.php"; // Adjust the path as needed
 session_start();
-
-
-
-// Fetch 30 quiz questions from the database
-$sql = "SELECT * FROM tbl_question LIMIT 30";
-
-$stmt = $conn->prepare($sql);
-$stmt->execute();
-$questions = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-// Shuffle the questions
-shuffle($questions);
-
 if (isset($_SESSION['program_id'])) {
+
     $program_id = $_SESSION['program_id'];
 
     // Prepare SQL query to fetch courses for the given program
@@ -29,6 +17,19 @@ if (isset($_SESSION['program_id'])) {
     // Redirect to login page if session data is not set
     header("Location: ../index.php");
     exit();
+}
+
+
+
+if (isset($_SESSION['program_id'])) {
+    $program_id = $_SESSION['program_id'];
+
+    $sql = "SELECT * FROM tbl_question WHERE program_id = :program_id";
+    $stmt = $conn->prepare($sql);
+    $stmt->bindParam(':program_id', $program_id, PDO::PARAM_INT);
+    $stmt->execute();
+    $questions = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    shuffle($questions);
 }
 
 
@@ -67,7 +68,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             if ($answer === $correct_answer) {
                 $score++;
             }
-            $quiz_type = 3;
 
             // Insert the answer into tbl_quiz_answers
             // Fetch the maximum attempt_id for the current combination
@@ -80,8 +80,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $max_attempt_row = $stmtMaxAttempt->fetch(PDO::FETCH_ASSOC);
             $new_attempt_id = $max_attempt_row['max_attempt'] + 1; // Increment the maximum attempt_id by 1
 
-            // Assuming you have $question_id and $conn available
-
             // Fetch the module_id from tbl_question based on question_id
             $sqlFetchModuleId = "SELECT module_id FROM tbl_question WHERE question_id = :question_id";
             $stmtFetchModuleId = $conn->prepare($sqlFetchModuleId);
@@ -90,26 +88,42 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $row = $stmtFetchModuleId->fetch(PDO::FETCH_ASSOC);
             $module_id = $row['module_id'];
 
-            // Now you have the correct module_id, proceed with inserting the answer into tbl_quiz_answers
-            $sqlInsertAnswer = "INSERT INTO tbl_quiz_answers (module_id, student_id, question_id, chosen_answer, quiz_type, attempt_id) VALUES (:module_id, :student_id, :question_id, :chosen_answer, :quiz_type, :attempt_id)";
+            $quiz_type = 3;
+            $module_id = 1;
+            $course_id = 1;
+            // Insert the answer into tbl_quiz_answers
+            $sqlInsertAnswer = "INSERT INTO tbl_quiz_answers (course_id, module_id, student_id, question_id, chosen_answer, quiz_type, attempt_id) VALUES (:course_id,:module_id, :student_id, :question_id, :chosen_answer, :quiz_type, :attempt_id)";
             $stmtInsertAnswer = $conn->prepare($sqlInsertAnswer);
+            $stmtInsertAnswer->bindParam(":course_id", $course_id, PDO::PARAM_INT);
             $stmtInsertAnswer->bindParam(":module_id", $module_id, PDO::PARAM_INT);
             $stmtInsertAnswer->bindParam(":student_id", $stud_id, PDO::PARAM_INT);
             $stmtInsertAnswer->bindParam(":question_id", $question_id, PDO::PARAM_INT);
             $stmtInsertAnswer->bindParam(":chosen_answer", $answer, PDO::PARAM_STR);
-            $stmtInsertAnswer->bindValue(":quiz_type", $quiz_type, PDO::PARAM_INT);
+            $stmtInsertAnswer->bindValue(":quiz_type", 3, PDO::PARAM_INT); // Setting quiz_type to 2
             $stmtInsertAnswer->bindParam(":attempt_id", $new_attempt_id, PDO::PARAM_INT); // Using the new attempt_id
             $stmtInsertAnswer->execute();
         }
-        // Insert the result into tbl_result
-        $sql = "INSERT INTO tbl_result (module_id, stud_id, result_score, total_questions, quiz_type) 
-                VALUES (:module_id, :stud_id, :result_score, :total_questions, :quiz_type)";
+        $quiz_type = 3;
+        $module_id = 1;
+        $course_id = 1;
+
+        $passingScore = 0.5;
+        $passStatus = ($score / $total_questions) >= $passingScore ? 1 : 0;
+
+        // Insert the result into tbl_result including result_status
+        $sql = "INSERT INTO tbl_result (course_id, program_id, module_id, stud_id, result_score, total_questions, quiz_type, result_status) 
+        VALUES (:course_id, :program_id, :module_id, :stud_id, :result_score, :total_questions, :quiz_type, :result_status)";
         $stmt = $conn->prepare($sql);
+        $stmt->bindParam(":course_id", $course_id, PDO::PARAM_INT);
+        $stmt->bindParam(":program_id", $program_id, PDO::PARAM_INT); // Add this line to bind program_id
         $stmt->bindParam(":module_id", $module_id, PDO::PARAM_INT);
         $stmt->bindParam(":stud_id", $stud_id, PDO::PARAM_INT);
         $stmt->bindParam(":result_score", $score, PDO::PARAM_INT);
         $stmt->bindParam(":total_questions", $total_questions, PDO::PARAM_INT); // Pass the total questions attempted
         $stmt->bindParam(":quiz_type", $quiz_type, PDO::PARAM_INT);
+        $stmt->bindParam(":result_status", $passStatus, PDO::PARAM_INT); // Bind result_status
+
+        // Execute the statement to insert the result
         $stmt->execute();
     }
 
@@ -125,7 +139,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         text: "Good Job!",
         icon: "success"
         }).then(() => {
-        window.location.href = "index.php";
+        window.location.href = "dashboard.php";
         });
         });
         </script>';
@@ -138,11 +152,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         exit(); // Terminate the script execution
     }
 }
-
-
-
-
-
 ?>
 
 
@@ -160,6 +169,29 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <link rel="shortcut icon" href="../img/cea_logo.png" type="image/x-icon">
 </head>
 
+<style>
+    .question-text {
+        font-size: 30px;
+        /* Adjust the font size as needed */
+        font-weight: bold;
+        /* Optionally make the text bold */
+        margin-bottom: 10px;
+        /* Add some space between questions */
+    }
+    .form-check-input[type="radio"] {
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        width: 20px;
+        height: 20px;
+        border: 2px solid #000;
+        border-radius: 50%;
+        outline: none;
+        margin-right: 5px;
+        /* Adjust the margin as needed */
+    }
+</style>
+
 <body>
     <div class="wrapper">
         <?php include 'sidebar.php'; ?>
@@ -167,13 +199,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <div class="container">
             <div class="row justify-content-center mt-5">
                 <div class="col-lg-8">
-                    <br> <br>
-                    <h1 id="quiz-title" class="text-center mb-4">Exam</h1>
-                    <br> <br>
-                    <form id="quiz-form" method="post">
-                        <input type="hidden" name="user_id" value="<?php echo isset($_SESSION['user_id']) ? $_SESSION['user_id'] : ''; ?>">
+                    <br><br>
+                    <h1 style="font-size: 40px;" id="quiz-title" class="text-center mb-4">Quiz</h1>
+                    <br><br>
+                    <?php if (!empty($questions)) : ?>
 
-                        <?php if (!empty($questions)) : ?>
+
+                        <form  style="font-size: 20px;" id="quiz-form" method="post">
                             <?php $counter = 0; ?>
                             <?php foreach ($questions as $key => $question) : ?>
                                 <div class="question-box <?php echo $counter === 0 ? '' : 'd-none'; ?>">
@@ -188,21 +220,23 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                 </div>
                                 <?php $counter++; ?>
                             <?php endforeach; ?>
-                            <br> <br>
+                            <br><br>
                             <div class="text-end">
-                                <button id="submit-btn" type="submit" class="btn btn-primary d-none">Submit</button>
+                                <button id="submit-btn" type="submit" class="btn btn-primary">Submit</button>
                                 <button id="next-btn" class="btn btn-primary" type="button">Next</button>
                             </div>
-                        <?php else : ?>
-                            <p>No questions found.</p>
-                        <?php endif; ?>
-                    </form>
-                    <br>
-                    <br>
+
+
+                        </form>
+                    <?php else : ?>
+                        <p>No questions found.</p>
+                    <?php endif; ?>
+                    <br><br>
                 </div>
             </div>
         </div>
     </div>
+
 
 </body>
 
@@ -257,6 +291,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             updateButtonVisibility();
             updateNextButtonVisibility();
             updateSubmitButtonVisibility();
+        });
+
+        // Add an event listener for the form submission
+        submitButton.addEventListener('click', function() {
+            // Check if any option is selected before submitting
+            if (isAnyOptionSelected()) {
+                // Submit the form
+                document.querySelector('form').submit();
+            } else {
+                // Show an alert or message indicating that an option must be selected
+                alert('Please select an option before submitting.');
+            }
         });
 
         questions.forEach(question => {

@@ -25,11 +25,12 @@ if (isset($_POST['toggle_status']) && isset($_POST['course_id'])) {
     $updateStmt->bindParam(':course_id', $course_id, PDO::PARAM_INT);
     $updateStmt->execute();
 
-    // header("Location: " . $_SERVER['PHP_SELF']);
+    header("Location: " . $_SERVER['PHP_SELF']);
     exit;
 }
 
-$recordsPerPage = 5;
+$recordsPerPage = 10; // Update to display 10 records per page
+
 $page = isset($_GET['page']) ? $_GET['page'] : 1;
 $offset = ($page - 1) * $recordsPerPage;
 
@@ -79,7 +80,7 @@ $totalPages = ceil($totalCount / $recordsPerPage);
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Course</title>
+    <title>Subjects</title>
     <link href="https://cdn.lineicons.com/4.0/lineicons.css" rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous">
     <link rel="shortcut icon" href="../img/cea_logo.png" type="image/x-icon">
@@ -101,7 +102,7 @@ $totalPages = ceil($totalCount / $recordsPerPage);
                     <div class="text-center mt-3">
                         <h1>Subjects</h1>
                     </div>
-                    <a class="btn btn-outline-primary btn-sm" href="add_course.php"><i class="lni lni-plus"></i></a><br><br>
+                    <a class="btn btn-outline-primary btn-sm" href="add_subject.php"><i class="lni lni-plus"></i></a><br><br>
                     <!-- Search bar -->
                     <form action="" method="GET" class="mb-3">
                         <div class="input-group">
@@ -136,16 +137,19 @@ $totalPages = ceil($totalCount / $recordsPerPage);
                                                 <a class="btn btn-primary btn-sm" href="view_module.php?course_id=<?php echo $row['course_id']; ?>"><i class="lni lni-radio-button"></i></a>
                                             </td>
                                             <td>
-                                                <form method="post" style="display: inline;">
+                                                <!-- Inside the table row for toggling status -->
+                                                <form method="post" action="<?php echo $_SERVER['PHP_SELF']; ?>" style="display: inline;" id="statusForm_<?php echo $row['course_id']; ?>">
                                                     <input type="hidden" name="course_id" value="<?php echo $row['course_id']; ?>">
-                                                    <button type="submit" name="toggle_status" class="btn btn-sm <?php echo $row['course_status'] == 1 ? 'btn-success' : 'btn-warning'; ?>">
+                                                    <button type="submit" name="toggle_status" class="btn btn-sm <?php echo $row['course_status'] == 1 ? 'btn-success' : 'btn-warning'; ?>" onclick="submitForm(<?php echo $row['course_id']; ?>)">
                                                         <?php if ($row['course_status'] == 1) : ?>
-                                                            <i class="lni lni-checkmark-circle"></i> <!-- Green circle icon for activated -->
+                                                            <i class="lni lni-checkmark-circle"></i>
                                                         <?php else : ?>
-                                                            <i class="lni lni-checkmark-circle"></i> <!-- Yellow circle icon for deactivated -->
+                                                            <i class="lni lni-checkmark-circle"></i>
                                                         <?php endif; ?>
                                                     </button>
                                                 </form>
+
+
                                             </td>
                                         </tr>
                                     <?php endwhile; ?>

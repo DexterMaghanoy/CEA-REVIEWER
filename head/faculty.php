@@ -96,8 +96,8 @@ $totalPages = ceil($totalCount / $recordsPerPage);
             <div class="container">
   
                 <div class="row justify-content-center">
-                    <div class="col-md-8">
-                        <div class="text-center">
+                    <div class="col-md-12">
+                        <div class="text-center mt-3">
                             <h1>Faculty</h1>
                         </div>
                         <a class="btn btn-outline-primary btn-sm" href="add_faculty.php"><i class="lni lni-plus"></i></a><br><br>

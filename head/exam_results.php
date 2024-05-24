@@ -85,7 +85,7 @@ if (isset($_SESSION['program_id'])) {
         <div class="container">
             
             <div class="row justify-content-center">
-                <div class="text-center">
+                <div class="text-center mt-3">
                     <h1>Exam Report</h1>
                 </div>
 

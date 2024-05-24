@@ -95,7 +95,7 @@ if (isset($_SESSION['program_id'])) {
         <div class="main p-3">
             <div class="container">
                 <div class="row justify-content-center mt-2">
-                    <div class="col-md-8">
+                    <div class="col-md-12">
                         <div class="text-center mb-4">
                             <h1>All Results</h1>
                         </div>

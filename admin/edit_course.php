@@ -55,7 +55,7 @@ if (isset($_POST['update'])) {
                                 text: "Course updated successfully.",
                                 icon: "success"
                             }).then(() => {
-                                window.location.href = "course.php";
+                                window.location.href = "subjects.php";
                             });
                         });
                     </script>';
@@ -67,7 +67,7 @@ if (isset($_POST['update'])) {
                             text: "Failed to update course.",
                             icon: "error"
                         }).then(() => {
-                            window.location.href = "course.php";
+                            window.location.href = "subjects.php";
                         });
                     });
                     </script>';
@@ -145,9 +145,12 @@ if (isset($_GET['course_id'])) {
                                 <label for="user_id" class="form-label">Faculty</label>
                                 <select class="form-select" id="user_id" name="user_id">
                                     <?php
-                                    $sqlUser = "SELECT user_id, user_fname, user_lname, user_mname FROM tbl_user WHERE user_status = 1 and type_id != 1";
-
+                                    $sqlUser = "SELECT u.user_id, u.user_fname, u.user_lname, u.user_mname 
+                            FROM tbl_user u 
+                            JOIN tbl_course c ON u.program_id = c.program_id 
+                            WHERE u.user_status = 1 AND u.type_id != 1 AND c.course_id = :course_id";
                                     $stmtUser = $conn->prepare($sqlUser);
+                                    $stmtUser->bindParam(":course_id", $course_id);
                                     $stmtUser->execute();
                                     $users = $stmtUser->fetchAll(PDO::FETCH_ASSOC);
 
@@ -216,3 +219,9 @@ if (isset($_GET['course_id'])) {
         xhr.send();
     });
 </script>
+<!-- 
+<script>
+    window.onload = function() {
+        history.replaceState({}, document.title, window.location.pathname);
+    };
+</script> -->

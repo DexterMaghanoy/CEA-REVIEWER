@@ -7,6 +7,7 @@ if (!isset($_SESSION['user_id'])) {
     exit();
 }
 $user_id = $_SESSION['user_id'];
+$program_id = $_SESSION['program_id'];
 try {
     // Query to get program names and count of students in each program
     $stmt = $conn->prepare("SELECT p.program_name, COUNT(s.stud_id) AS num_students 
@@ -86,10 +87,8 @@ try {
 
         .card-header {
 
-            background: linear-gradient(to left, rgba(95, 170, 252, 0.5), rgba(175, 210, 255, 0.5));
-
-
-
+            background: linear-gradient(to right, rgba(95, 170, 252, 0.5), rgba(175, 210, 255, 0.5));
+            /* background: linear-gradient(to right, rgba(95, 252, 95, 0.5), rgba(175, 255, 175, 0.5)); */
 
         }
 
@@ -118,7 +117,7 @@ try {
 <body>
     <div class="wrapper">
         <?php include 'sidebar.php'; ?>
-        <div class="main p-3">
+        <div style="overflow-y: auto" class="main p-3">
 
             <style>
                 .custom-card {
@@ -287,84 +286,236 @@ try {
 
 
                 <div class="col-md-4">
-                    <a href="report.php" class="text-light text-decoration-none">
-                        <div class="card text-bg-light text-black shadow-lg mb-3">
-                            <div class="card-header">Student Count</div>
-                            <div class="card-body">
+                    <div class="card text-bg-light text-black shadow-lg mb-3">
 
+                        <div class="card-header" style="display: flex; align-items: center;">Pass Rate</div>
+
+
+
+
+                        <div class="card-body">
+                            <div style="display: flex; align-items: center;">
 
                                 <?php
 
-                                // Set default values for parameters
-                                $program_id = $_GET['program_id'] ?? $_SESSION['program_id'];
+                                $program_id = $_GET['program_id'] ?? $_SESSION['program_id'] ?? 1; // Default program_id if not set
                                 $quiz_type = $_GET['quiz_type'] ?? 1;
                                 $created_at = $_GET['created_at'] ?? date('Y');
 
-                                // Query to fetch course data
-                                $sql = "SELECT
-c.course_id,
-c.course_code,
-c.course_name,
-r.module_id,
-COALESCE(passed_attempts, 0) AS passed_attempts,
-COALESCE(failed_attempts, 0) AS failed_attempts
-FROM
-tbl_course c
-LEFT JOIN
-(SELECT
-course_id,
-module_id,
-COUNT(CASE WHEN result_status = 1 THEN 1 END) AS passed_attempts,
-COUNT(CASE WHEN result_status = 0 THEN 1 END) AS failed_attempts
-FROM tbl_result
-WHERE quiz_type = :quiz_type
-AND YEAR(created_at) = :created_year
-GROUP BY course_id, module_id) r
-ON c.course_id = r.course_id
-WHERE c.program_id = :program_id";
+                                // Store the values in session
+                                $_SESSION['program_id'] = $program_id;
+                                $_SESSION['quiz_type'] = $quiz_type;
+                                $_SESSION['created_at'] = $created_at;
 
-                                // Prepare and execute the query
-                                $result = $conn->prepare($sql);
-                                $result->bindParam(':program_id', $program_id, PDO::PARAM_INT);
-                                $result->bindParam(':quiz_type', $quiz_type, PDO::PARAM_INT);
-                                $result->bindParam(':created_year', $created_at, PDO::PARAM_STR);
-                                $result->execute();
-                                $courses = $result->fetchAll(PDO::FETCH_ASSOC);
-
-                                // Process the fetched data
-                                foreach ($courses as &$course) {
-                                    $course['passed_attempts'] = $course['passed_attempts'] ?? 0;
-                                    $course['failed_attempts'] = $course['failed_attempts'] ?? 0;
+                                try {
+                                    // Assuming you're using PDO and have a database connection ($conn)
+                                    $user_id = $_SESSION['user_id'] ?? 1; // Assuming default user_id is 1
+                                    $stmt = $conn->prepare("SELECT program_id FROM tbl_user WHERE user_id = :user_id");
+                                    $stmt->bindParam(':user_id', $user_id, PDO::PARAM_INT);
+                                    $stmt->execute();
+                                    $result = $stmt->fetch(PDO::FETCH_ASSOC);
+                                    if ($result) {
+                                        $temp_program_id = $result['program_id'];
+                                    } else {
+                                        echo '<option value="" disabled>User not found</option>';
+                                    }
+                                } catch (PDOException $e) {
+                                    echo '<option value="" disabled>Error fetching programs</option>';
                                 }
-                                unset($course);
-                                // Prepare data for the pie chart
-
-                                // Prepare data for the pie chart
-                                $labels = [];
-                                $data = [];
-
-                                foreach ($courses as $course) {
-                                    $courseName =  $course['course_name'];
-                                    $passedAttempts = $course['passed_attempts'] ?? 0; // Default to 0 if null
-                                    $failedAttempts = $course['failed_attempts'] ?? 0; // Default to 0 if null
-
-                                    // Calculate total attempts
-                                    $totalAttempts = $passedAttempts + $failedAttempts;
-
-                                    // Calculate pass rate percentage
-                                    $passRate = ($totalAttempts > 0) ? ($passedAttempts / $totalAttempts) * 100 : 0;
-
-                                    // Add course name and pass rate to labels and data arrays
-                                    $labels[] = $courseName;
-                                    $data[] = $passRate;
-                                }
-
-
                                 ?>
 
+
+
+
+
+
+                                <form class="mt-5" id="quizTypeForm" style="display: flex;">
+                                    <div class="form-check" style="margin-right: 20px;">
+                                        <input class="form-check-input" type="radio" name="quizType" id="test" value="1" <?php if ($quiz_type == 1) echo "checked"; ?>>
+                                        <label class="form-check-label" for="test">TEST</label>
+                                    </div>
+
+                                    <div class="form-check" style="margin-right: 20px;">
+                                        <input class="form-check-input" type="radio" name="quizType" id="quiz" value="2" <?php if ($quiz_type == 2) echo "checked"; ?>>
+                                        <label class="form-check-label" for="quiz">QUIZ</label>
+                                    </div>
+
+                                    <div class="form-check" style="margin-right: 20px;">
+                                        <input class="form-check-input" type="radio" name="quizType" id="exam" value="3" <?php if ($quiz_type == 3) echo "checked"; ?>>
+                                        <label class="form-check-label" for="exam">EXAM</label>
+                                    </div>
+                                </form>
                             </div>
+
+                            <script>
+                                document.addEventListener('DOMContentLoaded', function() {
+                                    const quizTypeForm = document.getElementById('quizTypeForm');
+                                    quizTypeForm.addEventListener('change', function(event) {
+                                        if (event.target.name === 'quizType') {
+                                            const selectedQuizType = event.target.value;
+                                            const currentUrl = new URL(window.location.href);
+                                            currentUrl.searchParams.set('quiz_type', selectedQuizType);
+                                            window.location.href = currentUrl.toString();
+                                        }
+                                    });
+
+                                    // Set initial quiz type value in URL
+                                    const initialQuizType = document.querySelector('input[name="quizType"]:checked').value;
+                                    const currentUrl = new URL(window.location.href);
+                                    currentUrl.searchParams.set('quiz_type', initialQuizType);
+                                    history.replaceState(null, '', currentUrl.toString());
+                                });
+                            </script>
+
+                            <?php
+                            // Query to fetch course data
+                            $sql = "SELECT
+                c.course_id,
+                c.course_code,
+                c.course_name,
+                COALESCE(SUM(r.passed_attempts), 0) AS passed_attempts,
+                COALESCE(SUM(r.failed_attempts), 0) AS failed_attempts
+            FROM
+                tbl_course c
+            LEFT JOIN
+                (SELECT
+                    course_id,
+                    COUNT(CASE WHEN result_status = 1 THEN 1 END) AS passed_attempts,
+                    COUNT(CASE WHEN result_status = 0 THEN 1 END) AS failed_attempts
+                FROM tbl_result
+                WHERE quiz_type = :quiz_type
+                AND YEAR(created_at) = :created_year
+                GROUP BY course_id) r
+            ON c.course_id = r.course_id
+            WHERE c.program_id = :program_id
+            GROUP BY c.course_id, c.course_code, c.course_name";
+
+                            // Prepare and execute the query
+                            $result = $conn->prepare($sql);
+                            $result->bindParam(':program_id', $program_id, PDO::PARAM_INT);
+                            $result->bindParam(':quiz_type', $quiz_type, PDO::PARAM_INT);
+                            $result->bindParam(':created_year', $created_at, PDO::PARAM_STR);
+                            $result->execute();
+                            $courses = $result->fetchAll(PDO::FETCH_ASSOC);
+
+                            // Process the fetched data
+                            foreach ($courses as &$course) {
+                                $course['passed_attempts'] = $course['passed_attempts'] ?? 0;
+                                $course['failed_attempts'] = $course['failed_attempts'] ?? 0;
+                            }
+                            unset($course);
+
+                            // Prepare data for the pie chart
+                            $labels = [];
+                            $data = [];
+
+
+                            try {
+                                // Assuming you're using PDO and have a database connection
+                                $stmt = $conn->prepare("SELECT COUNT(*) AS STUDENT_COUNT FROM tbl_student WHERE stud_status = 1 AND program_id = :program_id");
+                                $stmt->bindParam(':program_id', $program_id, PDO::PARAM_INT);
+                                $stmt->execute();
+                                $rowProg = $stmt->fetch(PDO::FETCH_ASSOC);
+                                $studentCountByProgram = $rowProg['STUDENT_COUNT'];
+                            } catch (PDOException $e) {
+                                echo "Error: " . $e->getMessage();
+                            }
+
+                            foreach ($courses as $course) {
+                                $courseName = $course['course_name'];
+                                $passedAttempts = $course['passed_attempts'];
+                                $failedAttempts = $course['failed_attempts'];
+                                $totalAttempts = $passedAttempts + $failedAttempts;
+                                // Calculate the pass rate as a percentage of the total attempts
+                                $passRate = ($totalAttempts > 0) ? (($passedAttempts / $totalAttempts) * 100) : 0;
+                                $labels[] = $courseName;
+                                $data[] = $passRate;
+                            }
+
+                            $noData = empty($labels) || array_sum($data) == 0;
+                            ?>
+
+                            <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+                            <div id="noDataMessage" style="display: none; margin-top: 45px;">No data to display.</div>
+                            <canvas id="myPieChart"></canvas>
+                            <div id="noDataMessage" style="display: none;">No data available</div>
+
+                            <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+                            <script>
+                                document.addEventListener('DOMContentLoaded', function() {
+                                    // Check if there's no data to display
+                                    if (<?php echo $noData ? 'true' : 'false'; ?>) {
+                                        document.getElementById('noDataMessage').style.display = 'block';
+                                    } else {
+                                        const labels = <?php echo json_encode($labels); ?>;
+                                        const data = <?php echo json_encode($data); ?>;
+
+                                        // Debugging: Check the lengths of labels and data
+                                        console.log('Labels:', labels);
+                                        console.log('Data:', data);
+
+                                        const backgroundColors = ['#007bff', '#6c757d', '#17a2b8', '#28a745', '#ffc107', '#dc3545', '#6610f2'];
+
+                                        // Ensure the background color array matches the data length
+                                        while (backgroundColors.length < data.length) {
+                                            backgroundColors.push('#000000'); // Fallback color
+                                        }
+
+                                        const pieData = {
+                                            labels: labels,
+                                            datasets: [{
+                                                data: data,
+                                                backgroundColor: backgroundColors
+                                            }]
+                                        };
+
+                                        const ctx = document.getElementById('myPieChart').getContext('2d');
+                                        const myPieChart = new Chart(ctx, {
+                                            type: 'pie',
+                                            data: pieData,
+                                            options: {
+                                                responsive: true,
+                                                plugins: {
+                                                    legend: {
+                                                        position: 'left',
+                                                    },
+                                                    tooltip: {
+                                                        callbacks: {
+                                                            label: function(context) {
+                                                                var label = context.label || '';
+                                                                if (label) {
+                                                                    label += ': ';
+                                                                }
+                                                                label += context.formattedValue + '%';
+                                                                return label;
+                                                            }
+                                                        }
+                                                    },
+                                                    datalabels: {
+                                                        color: '#ffffff',
+                                                        font: {
+                                                            weight: 'bold',
+                                                            size: 14
+                                                        },
+                                                        formatter: function(value, context) {
+                                                            return context.chart.data.labels[context.dataIndex] + ': ' + value + ' %';
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        });
+                                    }
+                                });
+                            </script>
+
                         </div>
-                    </a>
+
+
+
+
+
+
+                    </div>
                 </div>
 
             </div>
@@ -377,59 +528,7 @@ WHERE c.program_id = :program_id";
 
 <!-- Include Chart.js library -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-    // Pie Chart Data
-    const pieData = {
-        labels: <?php echo json_encode($labels); ?>,
-        datasets: [{
-            data: <?php echo json_encode($data); ?>,
-            backgroundColor: ['#007bff', '#6c757d', '#17a2b8', '#28a745', '#ffc107', '#dc3545', '#6610f2'] // Add more colors as needed
-        }]
-    };
 
-    // Pie Chart Configuration
-    const ctx1 = document.getElementById('myPieChart').getContext('2d');
-    const myPieChart = new Chart(ctx1, {
-        type: 'pie',
-        data: pieData,
-        options: {
-            height: 20,
-            width: 20,
-            responsive: false,
-            plugins: {
-                legend: {
-                    position: 'left', // Move legend to the left side
-                },
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            var label = context.label || '';
-                            if (label) {
-                                label += ': ';
-                            }
-                            label += context.formattedValue;
-                            return label;
-                        }
-                    }
-                },
-                datalabels: {
-                    color: '#ffffff', // Text color
-                    font: {
-                        weight: 'bold',
-                        size: '14'
-                    },
-                    formatter: function(value, context) {
-                        return context.chart.data.labels[context.dataIndex] + ': ' + value;
-                    }
-                }
-            }
-        }
-    });
-
-    // Adjust canvas size
-    document.getElementById('myPieChart').style.width = '400px';
-    document.getElementById('myPieChart').style.height = '400px';
-</script>
 
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe" crossorigin="anonymous"></script>

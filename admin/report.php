@@ -2,9 +2,18 @@
 session_start();
 require '../api/db-connect.php';
 
-$program_id = $_GET['program_id'] ?? $_SESSION['program_id'];
-$quiz_type = $_GET['quiz_type'] ?? 1;
-$created_at = $_GET['created_at'] ?? date('Y');
+$program_id = isset($_GET['program_id']) ? intval($_GET['program_id']) : (isset($_SESSION['program_id']) ? intval($_SESSION['program_id']) : 0);
+$quiz_type = isset($_GET['quiz_type']) ? intval($_GET['quiz_type']) : 1;
+$created_at = isset($_GET['created_at']) ? $_GET['created_at'] : date('Y');
+
+global $hideTestGraph;
+global $hideQuizGraph;
+global $hideExamGraph;
+global $hideExamCard;
+global $hideTestCard;
+global $hideQuizCard;
+global $hideAllGraph;
+global $course_id;
 
 $sql = "SELECT 
         c.course_id,
@@ -38,9 +47,38 @@ $courses = $result->fetchAll(PDO::FETCH_ASSOC);
 foreach ($courses as &$course) {
     $course['passed_attempts'] = $course['passed_attempts'] ?? 0;
     $course['failed_attempts'] = $course['failed_attempts'] ?? 0;
+    $passRate = isset($passRates[$course['course_code']]) ? $passRates[$course['course_code']] : 0;
+    $stmtAnswered = $conn->prepare("SELECT COUNT(DISTINCT stud_id) AS answered FROM tbl_result WHERE course_id = :course_id AND quiz_type = :quiz_type AND YEAR(created_at) = :created_year");
+    $stmtAnswered->bindValue(':course_id', $course['course_id'], PDO::PARAM_INT);
+    $stmtAnswered->bindValue(':quiz_type', $quiz_type, PDO::PARAM_INT);
+    $stmtAnswered->bindValue(':created_year', date('Y'), PDO::PARAM_STR);
+    $stmtAnswered->execute();
+    $answeredData = $stmtAnswered->fetch(PDO::FETCH_ASSOC);
+    $answeredStudents = $answeredData['answered'];
+
+    $stmtTotalStudents = $conn->prepare("SELECT COUNT(stud_id) AS total_students FROM tbl_student WHERE program_id = :program_id AND stud_status = :stud_status  AND YEAR(created_at) = :created_year");
+    $stmtTotalStudents->bindValue(':program_id', $program_id, PDO::PARAM_INT);
+    $stmtTotalStudents->bindValue(':stud_status', 1, PDO::PARAM_INT); // Assuming stud_status for active students is 1
+    $stmtTotalStudents->bindValue(':created_year', date('Y'), PDO::PARAM_STR);
+    $stmtTotalStudents->execute();
+    $totalStudentsData = $stmtTotalStudents->fetch(PDO::FETCH_ASSOC);
+    $totalStudents = $totalStudentsData['total_students'];
+
+
+    $stmtTotalModule = $conn->prepare("SELECT COUNT(*) AS total_module_count 
+FROM tbl_module 
+WHERE course_id = :course_id 
+AND program_id = :program_id");
+    $stmtTotalModule->bindValue(':course_id', $course['course_id'], PDO::PARAM_INT);
+    $stmtTotalModule->bindValue(':program_id', $program_id, PDO::PARAM_INT);
+    $stmtTotalModule->execute();
+    $totalModuleData = $stmtTotalModule->fetch(PDO::FETCH_ASSOC);
+    $totalModuleCount = $totalModuleData['total_module_count'];
 }
+
 unset($course);
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -48,7 +86,7 @@ unset($course);
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Report</title>
+    <title>Reports</title>
     <link href="https://cdn.lineicons.com/4.0/lineicons.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="shortcut icon" href="../img/cea_logo.png" type="image/x-icon">
@@ -69,18 +107,97 @@ unset($course);
 
 
 
-                <div style="border: 1px solid lightblue; /* Adds a light blue border for emphasis */
-                padding: 10px; /* Optional: Adds some padding inside the div */
-                box-sizing: border-box; /* Ensures padding and border are included in the element's total width and height */
-                border-radius: 15px; /* Makes the border rounded */
-                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Adds a subtle box shadow */
-                " id="myChart" class="col-sm"></div>
+                <div <?php if (isset($_GET['quiz_type'])) {
+                            $quiz_type = $_GET['quiz_type'];
+
+                            if ($quiz_type != 1) {
+                                $hideTestGraph = 'hidden';
+                            } else {
+                                $hideTestGraph = '';
+                            }
+                        } else {
+                            $hideTestGraph = 'hidden';
+                        }
+                        echo $hideTestGraph; ?> style="border: 1px solid lightblue;
+                        padding: 10px;
+                        box-sizing: border-box;
+                        border-radius: 15px; 
+                        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+                        height: 100vhl;" id="myChartTest" class="col-sm"></div>
+
+                <div <?php
+                        if (isset($_GET['quiz_type'])) {
+                            $quiz_type = $_GET['quiz_type'];
+
+                            if ($quiz_type != 2) {
+                                $hideQuizGraph = 'hidden';
+                            } else {
+                                $hideQuizGraph = '';
+                            }
+                        } else {
+                            $hideQuizGraph = 'hidden';
+                        }
+                        echo $hideQuizGraph;
+                        ?> style="border: 1px solid lightblue;
+                                    padding: 10px;
+                                    box-sizing: border-box;
+                                    border-radius: 15px; 
+                                    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+                                    height: 100vhl;
+                " id="myChartQuiz" class="col-sm"></div>
+
+
+
+                <div <?php
+                        if (isset($_GET['quiz_type'])) {
+                            $quiz_type = $_GET['quiz_type'];
+
+                            if ($quiz_type != 3) {
+                                $hideExamGraph = 'hidden';
+                            } else {
+
+
+                                $hideExamGraph = '';
+                            }
+                        } else {
+                            $hideExamGraph = 'hidden';
+                        }
+                        echo $hideExamGraph;
+                        ?> style="border: 1px solid lightblue;
+                                    padding: 10px;
+                                    box-sizing: border-box;
+                                    border-radius: 15px; 
+                                    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+                                    height: 525px;
+                " id="myChartExam" class="col-sm"></div>
+
+                <div <?php
+                        if (isset($_GET['quiz_type'])) {
+                            $quiz_type = $_GET['quiz_type'];
+
+                            if ($quiz_type != 3 && $quiz_type != 2 && $quiz_type != 1) {
+                                $hideAllGraph = '';
+                            } else {
+                                $hideAllGraph = 'hidden';
+                            }
+                        }
+                        echo $hideAllGraph;
+                        ?> style="border: 1px solid lightblue;
+                                    padding: 10px;
+                                    box-sizing: border-box;
+                                    border-radius: 15px; 
+                                    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+                                    height: 450px;
+                " id="myChartAll" class="col-sm"></div>
+
+            
                 <div class="col-sm">
                     <?php if (!empty($courses)) : ?>
                         <?php
                         $uniqueCourses = [];
                         foreach ($courses as $course) {
                             $courseId = $course['course_id'];
+
                             if (!isset($uniqueCourses[$courseId])) {
                                 $uniqueCourses[$courseId] = $course;
                             } else {
@@ -89,129 +206,31 @@ unset($course);
                             }
                         }
                         ?>
-                        <?php foreach ($uniqueCourses as $index => $course) : ?>
-                            <a href="test_course_modules.php?course_id=<?php echo $course['course_id']; ?>&user_id=<?php echo $_SESSION['user_id']; ?>&module_id=<?php echo $course['module_id']; ?>">
-                                <div class="card subject-<?php echo ($index % 3) + 1; ?> mb-1" style="  background: linear-gradient(to left, rgba(220, 210, 211, 0.3), rgba(200, 240, 241, 0.3));">
-                                    <div class="card-body" style="padding: 0.5rem;">
-                                        <h5 class="card-title" style="font-size: 1rem;"><?php echo $course['course_code'] . ' -  ' . $course['course_name']; ?></h5>
-                                        <p style="font-size: 0.8rem; margin-bottom: 0;">Student who answered:
-                                            <?php
-                                            $stmtAnswered = $conn->prepare("SELECT COUNT(DISTINCT stud_id) AS answered FROM tbl_result WHERE course_id = :course_id AND quiz_type = $quiz_type  AND YEAR(created_at) = :created_year");
-                                            $stmtAnswered->bindValue(':course_id', $course['course_id']);
-                                            $stmtAnswered->bindParam(':created_year', $created_at, PDO::PARAM_STR);
-                                            $stmtAnswered->execute();
-                                            $answeredData = $stmtAnswered->fetch(PDO::FETCH_ASSOC);
-                                            $answeredStudents = $answeredData['answered'];
 
-                                            $stmtTotalStudents = $conn->prepare("SELECT COUNT(DISTINCT stud_id) AS total_students FROM tbl_result WHERE program_id = :program_id AND YEAR(created_at) = :created_year");
-                                            $stmtTotalStudents->bindValue(':program_id', $program_id);
-                                            $stmtTotalStudents->bindParam(':created_year', $created_at, PDO::PARAM_STR);
-                                            $stmtTotalStudents->execute();
-                                            $totalStudentsData = $stmtTotalStudents->fetch(PDO::FETCH_ASSOC);
-                                            $totalStudents = $totalStudentsData['total_students'];
+                        <?php
+                        // Check if the quiz_type parameter is not present in the URL
+                        if (isset($_GET['quiz_type'])) {
+                            include 'report_script_test.php';
+                            include 'report_script_quiz.php';
+                            include 'report_script_exam.php';
+                        } else {
+                            include 'report_script_all.php';
+                        }
+                        ?>
 
-                                            echo $answeredStudents . " / " . $totalStudents;
-                                            ?>
-                                        </p>
-                                        <p style="font-size: 0.8rem; margin-bottom: 0;">Module Passed: <?php echo $course['passed_attempts']; ?></p>
-                                        <p style="font-size: 0.8rem; margin-bottom: 0;">Attempts: <?php echo $course['failed_attempts'] + $course['passed_attempts']; ?></p>
-                                    </div>
-                                </div>
-                            </a>
-                        <?php endforeach; ?>
+
                     <?php else : ?>
-                        <div class="col-sm">
-                            <div class="card h-100" style="background: linear-gradient(to left, rgba(220, 210, 211, 0.3), rgba(200, 240, 241, 0.3));">
-                                <div class="card-body">
-                                    <h5 class="card-title" style="font-size: 1rem;">Results</h5>
-                                    <p class="card-text" style="font-size: 0.8rem;">
-                                    <h1>No results found.</h1>
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
+
                     <?php endif; ?>
                 </div>
+
+
             </div>
         </div>
     </div>
-    <script>
-        google.charts.load('current', {
-            'packages': ['corechart']
-        });
-        google.charts.setOnLoadCallback(drawChart);
-
-        function drawChart() {
-            const courseData = <?php echo json_encode($courses); ?>;
-            const chartData = [
-                ['Course', 'Pass Rate', {
-                    role: 'style'
-                }]
-            ];
-            const coursePassRates = {};
-
-            courseData.forEach(course => {
-                const passRate = (course.passed_attempts + course.failed_attempts) > 0 ?
-                    100 * course.passed_attempts / (course.passed_attempts + course.failed_attempts) : 0;
-                if (!coursePassRates[course.course_id]) {
-                    coursePassRates[course.course_id] = [];
-                }
-                coursePassRates[course.course_id].push(passRate);
-            });
-
-            for (const courseId in coursePassRates) {
-                const course = courseData.find(c => c.course_id == courseId);
-                const courseCode = course ? course.course_code : '';
-                const averagePassRate = coursePassRates[courseId].reduce((a, b) => a + b, 0) / coursePassRates[courseId].length;
-                chartData.push([courseCode, averagePassRate, getRandomColor()]);
-            }
-
-            const overallAveragePassRate = chartData.reduce((sum, row, index) => {
-                if (index === 0) return sum;
-                return sum + row[1];
-            }, 0) / (chartData.length - 1);
-            chartData.push(['Overall', overallAveragePassRate, getRandomColor()]);
-
-            const data = google.visualization.arrayToDataTable(chartData);
-            const options = {
-                title: 'Test Pass Rate by Module',
-                chartArea: {
-                    width: '50%'
-                },
-                hAxis: {
-                    title: 'Pass Rate',
-                    minValue: 0,
-                    maxValue: 100
-                },
-                vAxis: {
-                    title: 'Course'
-                },
-                bars: 'horizontal',
-                legend: {
-                    position: 'none'
-                },
-                tooltip: {
-                    isHtml: true,
-                    textStyle: {
-                        fontSize: 14
-                    },
-                    trigger: 'focus'
-                }
-            };
-
-            const chart = new google.visualization.BarChart(document.getElementById('myChart'));
-            chart.draw(data, options);
-        }
-
-        function getRandomColor() {
-            return '#' + Math.floor(Math.random() * 16777215).toString(16);
-        }
-    </script>
 </body>
 
 </html>
-
-
 <script>
     const hamBurger = document.querySelector(".toggle-btn");
 

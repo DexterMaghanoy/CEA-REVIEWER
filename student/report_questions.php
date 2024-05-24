@@ -95,6 +95,17 @@ if (isset($_SESSION['program_id'], $_SESSION['stud_id'])) {
                 <?php include 'report_dropdown.php'; ?>
                 <div class="col-sm">
 
+                    <style>
+                        #myChart {
+                            border: 1px solid lightblue;
+                            padding: 10px;
+                            box-sizing: border-box;
+                            border-radius: 15px;
+                            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+                            height: 350px;
+                        }
+                    </style>
+
                     <div id="myChart" style="width:100%; max-width:100%; height:100%;">
                     </div>
 
@@ -232,12 +243,21 @@ if (isset($_SESSION['program_id'], $_SESSION['stud_id'])) {
                         <?php foreach ($uniqueCourses as $index => $course) : ?>
                             <!-- Debug output -->
                             <a href="student_question_result.php?course_id=<?php echo $course['course_id']; ?>&stud_id=<?php echo $_SESSION['stud_id']; ?>">
-                                <div class="card subject-<?php echo ($index % 3) + 1; ?> mb-1">
+                                <div class="card subject-<?php echo ($index % 3) + 1; ?> mb-1" style="background: linear-gradient(to left, rgba(220, 210, 211, 0.3), rgba(200, 240, 241, 0.3));">
                                     <div class="card-body" style="padding: 0.5rem;">
                                         <h5 class="card-title" style="font-size: 1rem;"><?php echo $course['course_code'] . ' -  ' . $course['course_name']; ?></h5>
                                         <!-- Display consolidated data for attempts -->
                                         <p style="font-size: 0.8rem; margin-bottom: 0;">Module Passed: <?php echo $course['passed_attempts']; ?></p>
                                         <p style="font-size: 0.8rem; margin-bottom: 0;">Attempts: <?php echo $course['failed_attempts'] + $course['passed_attempts']; ?></p>
+                                        <p style="font-size: 0.8rem; margin-bottom: 0;">
+                                            Pass Rate:
+                                            <?php
+                                            $totalAttempts = $course['failed_attempts'] + $course['passed_attempts'];
+                                            $passRate = $totalAttempts > 0 ? (100 * $course['passed_attempts'] / $totalAttempts) : 'N/A';
+                                            echo is_numeric($passRate) ? number_format($passRate, 2) . '%' : $passRate;
+                                            ?>
+                                        </p>
+
                                     </div>
                                 </div>
                             </a>

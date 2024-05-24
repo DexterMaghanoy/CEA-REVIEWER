@@ -97,12 +97,13 @@ if (isset($_POST['moduleId']) && isset($_POST['moduleStatus'])) {
         <div class="container">
             <?php include 'back.php'; ?>
             <div class="row justify-content-center mt-5">
-                <div class="col-md-8">
+                <div class="col-md-12">
                     <div class="text-center mb-4">
                         <h1>Module</h1>
                     </div>
 
-                    <table class="table table-bordered border-secondary">
+                    <table style="background: linear-gradient(to left, rgba(220, 210, 211, 0.3), rgba(200, 240, 241, 0.3));" class="table table-bordered table-custom">
+
                         <caption>List of Modules</caption>
                         <thead class="table-dark">
                             <tr>

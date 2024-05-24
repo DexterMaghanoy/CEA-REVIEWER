@@ -41,10 +41,9 @@ if ($stmt->rowCount() > 0) {
 
 <style>
   .card {
-  border: none;
-  box-shadow: 10px 20px 30px rgba(0, 0, 0, 0.1);
-}
-
+    border: none;
+    box-shadow: 10px 20px 30px rgba(0, 0, 0, 0.1);
+  }
 </style>
 
 <body>
@@ -52,7 +51,7 @@ if ($stmt->rowCount() > 0) {
     <?php include 'sidebar.php'; ?>
     <?php include 'back.php'; ?>
 
-      <div class="container">
+    <div class="container">
       <div class="text-center mt-4">
         <h1>Profile</h1>
 
@@ -64,7 +63,10 @@ if ($stmt->rowCount() > 0) {
               <div class="card mb-3" style="border-radius: .5rem;">
                 <div class="row g-0">
                   <div class="col-md-4 gradient-custom text-center text-white" style="border-top-left-radius: .5rem; border-bottom-left-radius: .5rem;">
-                    <img src="/cea-reviewer/img/faculty.png" alt="Avatar" class="rounded-circle img-fluid my-5" style="width: 100px;">
+                    <?php
+
+                    echo '<img src="/cea-reviewer/img/faculty.png" alt="Avatar" class="rounded-circle img-fluid my-5" style="width: 100px;">';
+                    ?>
                     <h5><?php echo $user['user_fname'] . ' ' . $user['user_lname'] ?></h5>
                     <p><?php echo $user['type_name']; ?></p>
                     <i class="far fa-edit mb-5"></i>
@@ -105,46 +107,46 @@ if ($stmt->rowCount() > 0) {
       </section>
 
 
-  </div>
+    </div>
 
-  <!-- Modal for changing password -->
-  <div class="modal fade" id="changePasswordModal" tabindex="-1" aria-labelledby="changePasswordModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="changePasswordModalLabel">Change Password</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-          <form id="changePasswordForm">
-            <div class="mb-3">
-              <label for="currentPassword" class="form-label">Current Password</label>
-              <input type="password" class="form-control" id="currentPassword" name="currentPassword" required>
-            </div>
-            <div class="mb-3">
-              <label for="newPassword" class="form-label">New Password</label>
-              <input type="password" class="form-control" id="newPassword" name="newPassword" required>
-            </div>
-            <div class="mb-3">
-              <label for="confirmPassword" class="form-label">Confirm Password</label>
-              <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" required>
-            </div>
-            <button type="submit" class="btn btn-success">Change Password</button>
-          </form>
+    <!-- Modal for changing password -->
+    <div class="modal fade" id="changePasswordModal" tabindex="-1" aria-labelledby="changePasswordModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="changePasswordModalLabel">Change Password</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <form id="changePasswordForm">
+              <div class="mb-3">
+                <label for="currentPassword" class="form-label">Current Password</label>
+                <input type="password" class="form-control" id="currentPassword" name="currentPassword" required>
+              </div>
+              <div class="mb-3">
+                <label for="newPassword" class="form-label">New Password</label>
+                <input type="password" class="form-control" id="newPassword" name="newPassword" required>
+              </div>
+              <div class="mb-3">
+                <label for="confirmPassword" class="form-label">Confirm Password</label>
+                <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" required>
+              </div>
+              <button type="submit" class="btn btn-success">Change Password</button>
+            </form>
+          </div>
         </div>
       </div>
     </div>
-  </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe" crossorigin="anonymous"></script>
-  <script>
-    const hamBurger = document.querySelector(".toggle-btn");
-    hamBurger.addEventListener("click", function() {
-      document.querySelector("#sidebar").classList.toggle("expand");
-    });
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe" crossorigin="anonymous"></script>
+    <script>
+      const hamBurger = document.querySelector(".toggle-btn");
+      hamBurger.addEventListener("click", function() {
+        document.querySelector("#sidebar").classList.toggle("expand");
+      });
 
-    // Add JavaScript for form validation and submission here
-  </script>
+      // Add JavaScript for form validation and submission here
+    </script>
 </body>
 
 </html>

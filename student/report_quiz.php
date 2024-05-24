@@ -39,6 +39,13 @@ if (isset($_SESSION['program_id'], $_SESSION['stud_id'])) {
     foreach ($courses as &$course) {
         $course['passed_attempts'] = isset($course['passed_attempts']) ? $course['passed_attempts'] : 0;
         $course['failed_attempts'] = isset($course['failed_attempts']) ? $course['failed_attempts'] : 0;
+
+        // Calculate pass rate for each course
+        $total_attempts = $course['passed_attempts'] + $course['failed_attempts'];
+        $pass_rate = $total_attempts > 0 ? round(($course['passed_attempts'] / $total_attempts) * 100, 2) : 0;
+
+        // Add pass rate to the course data
+        $course['pass_rate'] = $pass_rate . "%";
     }
     unset($course); // unset reference variable to prevent accidental modification
 
@@ -47,7 +54,6 @@ if (isset($_SESSION['program_id'], $_SESSION['stud_id'])) {
     exit();
 }
 ?>
-
 
 <!DOCTYPE html>
 <html lang="en">
@@ -80,6 +86,16 @@ if (isset($_SESSION['program_id'], $_SESSION['stud_id'])) {
                 <?php include 'report_dropdown.php'; ?>
                 <div class="col-sm">
 
+                    <style>
+                        #myChart {
+                            border: 1px solid lightblue;
+                            padding: 10px;
+                            box-sizing: border-box;
+                            border-radius: 15px;
+                            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+                            height: 350px;
+                        }
+                    </style>
 
                     <div id="myChart" style="width:100%; max-width:100%; height:100%;">
                     </div>
@@ -151,7 +167,7 @@ if (isset($_SESSION['program_id'], $_SESSION['stud_id'])) {
 
                             // Set Options
                             const options = {
-                                title: 'Pass Rates by Module',
+                                title: 'Pass Rates by Subject',
                                 chartArea: {
                                     width: '50%'
                                 },
@@ -198,13 +214,39 @@ if (isset($_SESSION['program_id'], $_SESSION['stud_id'])) {
                 <div class="col-sm">
                     <?php if (!empty($courses)) : ?>
                         <?php foreach ($courses as $index => $course) : ?>
-                            <!-- Debug output -->
                             <a href="student_quiz_result.php?course_id=<?php echo $course['course_id']; ?>&stud_id=<?php echo $_SESSION['stud_id']; ?>">
-                                <div class="card subject-<?php echo ($index % 3) + 1; ?> mb-1">
+                                <div class="card subject-<?php echo ($index % 3) + 1; ?> mb-1" style="background: linear-gradient(to left, rgba(220, 210, 211, 0.3), rgba(200, 240, 241, 0.3));">
                                     <div class="card-body" style="padding: 0.5rem;">
                                         <h5 class="card-title" style="font-size: 1rem;"><?php echo $course['course_code'] . ' -  ' . $course['course_name']; ?></h5>
-                                        <p style="font-size: 0.8rem; margin-bottom: 0;">Attempts: <?php echo $course['failed_attempts'] + $course['passed_attempts']; ?></p>
+                                        <?php
+                                        $total_attempts = $course['failed_attempts'] + $course['passed_attempts'];
+                                        if ($total_attempts > 0) {
+                                            $pass_rate = 100 * $course['passed_attempts'] / $total_attempts;
+                                        } else {
+                                            $pass_rate = 'N/A';
+                                            $total_attempts = '0';
+                                        }
+                                        ?>
+                                        <p style="font-size: 0.8rem; margin-bottom: 0;">Pass Rate: <?php echo is_numeric($pass_rate) ? number_format($pass_rate, 2) . '%' : $pass_rate; ?></p>
+                                        <p style="font-size: 0.8rem; margin-bottom: 0;">Attempts: <?php echo $total_attempts; ?></p>
+                                        <?php
+                                        // Prepare SQL query to fetch score for specific course ID and stud_id
+                                        $sqlScore = "SELECT result_score,total_questions FROM tbl_result WHERE course_id = :course_id AND stud_id = :stud_id AND result_status = 1 AND quiz_type = 2";
+                                        $resultScore = $conn->prepare($sqlScore);
+                                        $resultScore->bindParam(':course_id', $course['course_id'], PDO::PARAM_INT);
+                                        $resultScore->bindParam(':stud_id', $_SESSION['stud_id'], PDO::PARAM_INT);
+                                        $resultScore->execute();
+                                        // Fetch the result
+                                        $score = $resultScore->fetch(PDO::FETCH_ASSOC);
+                                        // Display the score if available
+                                        if ($score !== false) {
+                                            echo "<p style='font-size: 0.8rem; margin-bottom: 0;'>Score: " . $score['result_score'] . " / " . $score['total_questions'] . "</p>";
+                                        } else {
+                                            echo "<p style='font-size: 0.8rem; margin-bottom: 0;'>Score: N/A</p>";
+                                        }
+                                        ?>
                                     </div>
+
                                 </div>
 
                             </a>
@@ -213,6 +255,9 @@ if (isset($_SESSION['program_id'], $_SESSION['stud_id'])) {
                         <p>No courses found.</p>
                     <?php endif; ?>
                 </div>
+
+
+
             </div>
         </div>
     </div>

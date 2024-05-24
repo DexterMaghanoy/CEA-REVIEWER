@@ -12,10 +12,10 @@ global $NA_counter;
 global $percentage;
 global $questionCount;
 
-$sql = "SELECT tbl_course.program_id, tbl_course.course_id 
- FROM tbl_course 
- INNER JOIN tbl_program ON tbl_course.program_id = tbl_program.program_id
- WHERE tbl_course.user_id = :user_id";
+$sql = "SELECT tbl_course.program_id, tbl_course.course_id, tbl_course.course_name 
+        FROM tbl_course 
+        INNER JOIN tbl_program ON tbl_course.program_id = tbl_program.program_id
+        WHERE tbl_course.user_id = :user_id";
 
 
 if (isset($_SESSION['program_id'])) {
@@ -30,7 +30,7 @@ if (isset($_SESSION['program_id'])) {
     $moduleSql = "SELECT module_id FROM tbl_module WHERE course_id = :course_id";
     $moduleStmt = $conn->prepare($moduleSql);
     $moduleStmt->bindParam(':course_id', $course_id, PDO::PARAM_INT);
-    
+
     $moduleStmt->execute();
 
     // Array to store questions
@@ -91,10 +91,11 @@ if (isset($_SESSION['program_id'])) {
     header("Location: ../index.php");
     exit();
 }
-
+// SQL query with proper indentation
 
 
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -115,17 +116,35 @@ if (isset($_SESSION['program_id'])) {
         <!-- <div class="main p-3"> -->
         <div class="container">
             <div class="row justify-content-center mt-5">
-                <div class="col-md-8">
+                <div class="col-md-12">
                     <div class="text-center mb-4">
-                        <h1>Module</h1>
+                        <h1>Subject: <?php
 
+
+                                        $sql = "
+    SELECT c.course_name, c.course_id
+    FROM tbl_course AS c
+    WHERE c.course_id = :course_id
+      AND c.program_id = (
+          SELECT program_id
+          FROM tbl_course
+          WHERE course_id = :course_id
+      );
+";
+
+                                        $stmtModule = $conn->prepare($sql);
+                                        $stmtModule->bindParam(':course_id', $course_id, PDO::PARAM_INT);
+                                        $stmtModule->execute();
+                                        $Module = $stmtModule->fetch(PDO::FETCH_ASSOC);
+                                        if ($row !== false) {
+                                            $Module = $row['course_name'];
+                                        } else {
+                                            $Module = "Unknown";
+                                        }
+                                        echo  $Module;
+                                        ?></h1>
                     </div>
-
-
-
-
-
-                    <table class="table table-bordered border-secondary">
+                    <table style="background: linear-gradient(to left, rgba(220, 210, 211, 0.3), rgba(200, 240, 241, 0.3));" class="table table-bordered table-custom">
                         <caption>List of Modules</caption>
                         <thead class="table-dark">
                             <tr>

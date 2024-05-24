@@ -86,7 +86,7 @@ if (isset($_SESSION['program_id'])) {
 
             <div class="row justify-content-center">
 
-                <div class="text-center">
+                <div class="text-center mt-3">
                     <h1>Module Test Report</h1>
                 </div>
 

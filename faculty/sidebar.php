@@ -27,7 +27,7 @@ if ($stmt->rowCount() > 0) {
         <div class="sidebar-logo mt-3">
             <h6>
                 <a href="index.php">Hello, <?php echo htmlspecialchars($user['user_fname']); ?>!</a>
-                <p style="text-align: center; font-size: 13px; color: white;">
+                <p style="text-align: left; font-size: 13px; color: white;">
                     <?php echo htmlspecialchars($user['program_name']) . '<br>' . htmlspecialchars($user['type_name']); ?>
                 </p>
             </h6>
@@ -54,9 +54,9 @@ if ($stmt->rowCount() > 0) {
             </a>
         </li>
         <li class="sidebar-item">
-            <a href="course.php" class="sidebar-link">
+            <a href="subjects.php" class="sidebar-link">
                 <i class="lni lni-library"></i>
-                <span>Course</span>
+                <span>Subjects</span>
             </a>
         </li>
         <li class="sidebar-item">

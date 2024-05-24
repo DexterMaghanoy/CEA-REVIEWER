@@ -3,10 +3,30 @@ session_start();
 require("../api/db-connect.php");
 
 if (isset($_SESSION['program_id'])) {
-    $program_id = $_SESSION['program_id'];  
+    $program_id = $_SESSION['program_id'];
 } else {
     header("Location: ../index.php");
     exit();
+}
+
+
+if (isset($_GET['user_id'])) {
+    $user_id = $_GET['user_id'];
+    $sql = "SELECT * FROM tbl_user WHERE user_id = :user_id";
+    $stmt = $conn->prepare($sql);
+    $stmt->bindParam(":user_id", $user_id);
+    $stmt->execute();
+
+    if ($stmt->rowCount() > 0) {
+        $row = $stmt->fetch();
+        $user_id = $row['user_id'];
+        $user_fname = $row['user_fname'];
+        $user_mname = $row['user_mname'];
+        $user_lname = $row['user_lname'];
+        $user_image = $row['user_image'];
+        $user_name = $row['user_name'];
+        $user_password = $row['user_password'];
+    }
 }
 
 if (isset($_POST['update'])) {
@@ -89,24 +109,6 @@ if (isset($_POST['update'])) {
     }
 }
 
-if (isset($_GET['user_id'])) {
-    $user_id = $_GET['user_id'];
-    $sql = "SELECT * FROM tbl_user WHERE user_id = :user_id";
-    $stmt = $conn->prepare($sql);
-    $stmt->bindParam(":user_id", $user_id);
-    $stmt->execute();
-
-    if ($stmt->rowCount() > 0) {
-        $row = $stmt->fetch();
-        $user_id = $row['user_id'];
-        $user_fname = $row['user_fname'];
-        $user_mname = $row['user_mname'];
-        $user_lname = $row['user_lname'];
-        $user_image = $row['user_image'];
-        $user_name = $row['user_name'];
-        $user_password = $row['user_password'];
-    }
-}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -125,7 +127,7 @@ if (isset($_GET['user_id'])) {
 
 <body>
     <div class="wrapper">
-    <?php
+        <?php
         include 'sidebar.php';
         ?>
         <div class="main py-3">

@@ -59,13 +59,12 @@ global $results;
 </head>
 
 <body>
-    <!-- Body content goes here -->
     <div class="wrapper">
-        <?php include 'sidebar.php'; ?> <!-- Assuming sidebar.php contains your sidebar code -->
+        <?php include 'sidebar.php'; ?>
         <div class="main p-3">
             <div class="container">
                 <div class="row justify-content-center mt-2">
-                    <div class="col-md-8">
+                    <div class="col-md-12">
                         <div class="text-center mb-4">
                             <h1>All Results</h1>
                         </div>
@@ -80,7 +79,9 @@ global $results;
 
                         <!-- Display all results in a table -->
                         <div class="table-responsive">
-                            <table id="resultTable" class="table table-bordered border-secondary">
+                              <table id="resultTable" style="background: linear-gradient(to left, rgba(220, 210, 211, 0.3), rgba(200, 240, 241, 0.3));" class="table table-bordered table-custom">
+                       
+
                                 <caption>List of Scores</caption>
                                 <thead class="table-dark">
                                     <tr style="text-align: center;">

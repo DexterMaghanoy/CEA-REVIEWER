@@ -53,6 +53,12 @@ if ($stmt->rowCount() > 0) {
                 <span>Profile</span>
             </a>
         </li>
+        <li class="sidebar-item">
+            <a href="faculty.php" class="sidebar-link">
+                <i class="lni lni-users"></i>
+                <span>Faculty</span>
+            </a>
+        </li>
 
         <li class="sidebar-item">
             <a href="student.php" class="sidebar-link">
@@ -60,12 +66,7 @@ if ($stmt->rowCount() > 0) {
                 <span>Students</span>
             </a>
         </li>
-        <li class="sidebar-item">
-            <a href="faculty.php" class="sidebar-link">
-                <i class="lni lni-users"></i>
-                <span>Faculty</span>
-            </a>
-        </li>
+
         <li class="sidebar-item">
             <a href="course.php" class="sidebar-link">
                 <i class="lni lni-library"></i>
@@ -87,5 +88,3 @@ if ($stmt->rowCount() > 0) {
         </a>
     </div>
 </aside>
-
-

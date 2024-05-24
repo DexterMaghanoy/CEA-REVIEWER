@@ -5,7 +5,7 @@ require '../api/db-connect.php';
 
 if (isset($_SESSION['program_id'])) {
     $program_id = $_SESSION['program_id'];
-    
+
 
     // Fetch courses and their quiz counts along with the module_id
     $sql = "SELECT 
@@ -90,7 +90,12 @@ if (isset($_SESSION['program_id'])) {
                 <?php include 'report_dropdown.php'; ?>
                 <div class="col-sm">
 
-                    <div id="myChart" style="width:100%; max-width:100%; height:100%;">
+                    <div id="myChart" style="border: 1px solid lightblue;
+                                    padding: 10px;
+                                    box-sizing: border-box;
+                                    border-radius: 15px; 
+                                    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+                                    height: 525px;">
                     </div>
 
 
@@ -229,7 +234,7 @@ if (isset($_SESSION['program_id'])) {
                             <a href="quiz_course_modules.php?course_id=<?php echo $course['course_id']; ?>&user_id=<?php echo $_SESSION['user_id']; ?>&module_id=<?php echo $course['module_id']; ?>">
 
 
-                                <div class="card subject-<?php echo ($index % 3) + 1; ?> mb-1">
+                                <div class="card subject-<?php echo ($index % 3) + 1; ?> mb-1" style="background: linear-gradient(to left, rgba(220, 210, 211, 0.3), rgba(200, 240, 241, 0.3));">
                                     <div class="card-body" style="padding: 0.5rem;">
                                         <h5 class="card-title" style="font-size: 1rem;"><?php echo $course['course_code'] . ' -  ' . $course['course_name']; ?></h5>
                                         <!-- Display consolidated data for attempts -->
@@ -247,7 +252,7 @@ if (isset($_SESSION['program_id'])) {
                                                 // Calculate total students enrolled in the program
                                                 $totalStudents = 0;
                                                 if ($answeredStudents > 0) {
-                                                    $stmtTotalStudents = $conn->prepare("SELECT COUNT(DISTINCT stud_id) AS total_students FROM tbl_result WHERE program_id = :program_id");
+                                                    $stmtTotalStudents = $conn->prepare("SELECT COUNT(DISTINCT stud_id) AS total_students FROM tbl_student WHERE program_id = :program_id");
                                                     $stmtTotalStudents->bindValue(':program_id', $program_id);
                                                     if (!$stmtTotalStudents->execute()) {
                                                         echo "Error executing query: " . implode(" ", $stmtTotalStudents->errorInfo());

@@ -54,109 +54,122 @@ if (isset($_SESSION['program_id'])) {
 
 <style>
     .table {
-    border-radius: 10px; /* Adjust the value as needed */
-    overflow: hidden; /* Ensures the border-radius is applied to the table */
-}
+        border-radius: 10px;
+        /* Adjust the value as needed */
+        overflow: hidden;
+        /* Ensures the border-radius is applied to the table */
+    }
 
 
-.table th {
-    cursor: pointer;
-    transition: background-color 0.1s ease;
-    padding: 10px 15px;
-    border-radius: 2px;
-}
+    .table th {
+        cursor: pointer;
+        transition: background-color 0.1s ease;
+        padding: 10px 15px;
+        border-radius: 2px;
+    }
 
-.table th:hover {
-    background-color: #f0f0f0;
-}
+    .table th:hover {
+        background-color: #f0f0f0;
+    }
 
-.table th:active {
-    background-color: #d0d0d0;
-}
+    .table th:active {
+        background-color: #d0d0d0;
+    }
 
 
-.table th:active {
-    animation: jelly 0.3s ease;
-}
+    .table th:active {
+        animation: jelly 0.3s ease;
+    }
 
-@keyframes jelly {
-    0% { transform: scale(1,1); }
-    25% { transform: scale(1.1,.9); }
-    50% { transform: scale(1.1,.9); }
-    75% { transform: scale(1,.9); }
-    100% { transform: scale(1,1); }
-}
+    @keyframes jelly {
+        0% {
+            transform: scale(1, 1);
+        }
+
+        25% {
+            transform: scale(1.1, .9);
+        }
+
+        50% {
+            transform: scale(1.1, .9);
+        }
+
+        75% {
+            transform: scale(1, .9);
+        }
+
+        100% {
+            transform: scale(1, 1);
+        }
+    }
 </style>
 
 <body>
     <!-- Body content goes here -->
     <div class="wrapper">
         <?php include 'sidebar.php'; ?> <!-- Assuming sidebar.php contains your sidebar code -->
-            <div class="container">
+        <div class="container">
             <?php include 'back.php'; ?>
-                <div class="row justify-content-center mt-1">
-                    <div class="col-md-8">
-                        <div class="text-center mb-2">
-                            <h1>All Results</h1>
+            <div class="row justify-content-center mt-1">
+                <div class="col-md-12">
+                    <div class="text-center mb-2">
+                        <h1>All Results</h1>
+                    </div>
+
+                    <?php include 'student_record_dropdown.php'; ?>
+                    <form action="" method="GET" class="mb-4">
+                        <div class="input-group">
+                            <input type="text" class="form-control" placeholder="Search by module name" name="search" id="searchInput">
+                            <button class="btn btn-outline-secondary" type="button" id="clearSearchButton"><i class="lni lni-close"></i></button>
                         </div>
-                        <!-- Search Bar -->
+                    </form>
 
-                        
-
-                        <?php include 'student_record_dropdown.php'; ?>
-                        <form action="" method="GET" class="mb-4">
-                            <div class="input-group">
-                                <input type="text" class="form-control" placeholder="Search by module name" name="search" id="searchInput">
-                                <button class="btn btn-outline-secondary" type="button" id="clearSearchButton"><i class="lni lni-close"></i></button>
-                            </div>
-                        </form>
-
-                        <!-- Display all results in a table -->
-                        <div class="table-responsive">
-                            <table id="resultTable" class="table table-bordered border-secondary">
-                                <caption>List of Scores</caption>
-                                <thead class="table-dark">
-                                    <tr style="text-align: center;">
-                                        <!-- Wrap each th inside an <a> tag for clickability -->
-                                        <th scope="col"><a href="#" class="sortable" data-column="0">Title</a></th>
-                                        <th scope="col"><a href="#" class="sortable" data-column="1">Score</a></th>
-                                        <th scope="col"><a href="#" class="sortable" data-column="2">Result</a></th>
-                                        <th scope="col"><a href="#" class="sortable" data-column="3">Date</a></th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <?php if (!empty($results)) : ?>
-                                        <?php foreach ($results as $row) : ?>
-                                            <tr style="text-align: center;">
-                                                <td><?php echo isset($row['module_name']) ? $row['module_name'] : 'N/A'; ?></td>
-                                                <td><?php echo $row['result_score'] ?? 'N/A'; ?> / <?php echo $row['total_questions'] ?? 'N/A'; ?></td>
-                                                <td scope="col">
-                                                    <?php
-                                                    if (isset($row['result_score'], $row['total_questions'])) {
-                                                        $res = ($row['result_score'] / $row['total_questions']) * 100;
-                                                        echo $res >= 50 ? "Pass" : "Failed";
-                                                    } else {
-                                                        echo 'N/A';
-                                                    }
-                                                    ?>
-                                                </td>
-                                                <td><?php echo isset($row['created_at']) ? date("M d, Y", strtotime($row['created_at'])) : 'N/A'; ?></td>
-                                            </tr>
-                                        <?php endforeach; ?>
-                                    <?php else : ?>
-                                        <tr>
-                                            <td colspan="4" class="text-center">No records found.</td>
+                    <!-- Display all results in a table -->
+                    <div class="table-responsive">
+                        <table id="resultTable" style="background: linear-gradient(to left, rgba(220, 210, 211, 0.3), rgba(200, 240, 241, 0.3));" class="table table-bordered table-custom">
+                            <caption>List of Scores</caption>
+                            <thead class="table-dark">
+                                <tr style="text-align: center;">
+                                    <!-- Wrap each th inside an <a> tag for clickability -->
+                                    <th scope="col"><a href="#" class="sortable" data-column="0">Title</a></th>
+                                    <th scope="col"><a href="#" class="sortable" data-column="1">Score</a></th>
+                                    <th scope="col"><a href="#" class="sortable" data-column="2">Result</a></th>
+                                    <th scope="col"><a href="#" class="sortable" data-column="3">Date</a></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php if (!empty($results)) : ?>
+                                    <?php foreach ($results as $row) : ?>
+                                        <tr style="text-align: center;">
+                                            <td><?php echo isset($row['module_name']) ? $row['module_name'] : 'N/A'; ?></td>
+                                            <td><?php echo $row['result_score'] ?? 'N/A'; ?> / <?php echo $row['total_questions'] ?? 'N/A'; ?></td>
+                                            <td scope="col">
+                                                <?php
+                                                if (isset($row['result_score'], $row['total_questions'])) {
+                                                    $res = ($row['result_score'] / $row['total_questions']) * 100;
+                                                    echo $res >= 50 ? "Pass" : "Failed";
+                                                } else {
+                                                    echo 'N/A';
+                                                }
+                                                ?>
+                                            </td>
+                                            <td><?php echo isset($row['created_at']) ? date("M d, Y", strtotime($row['created_at'])) : 'N/A'; ?></td>
                                         </tr>
-                                    <?php endif; ?>
-                                </tbody>
-                            </table>
-
-                        </div>
+                                    <?php endforeach; ?>
+                                <?php else : ?>
+                                    <tr>
+                                        <td colspan="4" class="text-center">No records found.</td>
+                                    </tr>
+                                <?php endif; ?>
+                            </tbody>
+                        </table>
 
                     </div>
+
                 </div>
             </div>
-     
+        </div>
+
     </div>
 </body>
 

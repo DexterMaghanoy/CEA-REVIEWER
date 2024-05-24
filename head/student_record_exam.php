@@ -95,7 +95,7 @@ if (isset($_SESSION['program_id'])) {
             <div class="container">
             <?php include 'back.php'; ?>
                 <div class="row justify-content-center mt-1">
-                    <div class="col-md-8">
+                    <div class="col-md-12">
                         <div class="text-center mb-2">
                             <h1>All Results</h1>
                         </div>
@@ -112,7 +112,7 @@ if (isset($_SESSION['program_id'])) {
                         </form>
 
                         <!-- Display all results in a table -->
-                        <div class="table-responsive">
+                        <div class="table-responsive" >
                             <table id="resultTable" class="table table-bordered border-secondary">
                                 <caption>List of Scores</caption>
                                 <thead class="table-dark">
