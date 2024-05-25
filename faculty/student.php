@@ -105,69 +105,87 @@ $totalPages = ceil($totalCount / $recordsPerPage);
         include 'sidebar.php';
         ?>
 
-        <div class="main p-3">
-            <div class="container">
-                <div class="row justify-content-center mt-5">
-                    <div class="col-md-12">
-                        <div class="text-center mb-4">
-                            <h1>Students</h1>
-                        </div>
-                        <!-- Search bar -->
-                        <form action="" method="GET" class="mb-4">
-                            <div class="input-group">
-                                <input type="text" class="form-control" placeholder="Search by module name" name="search" id="searchInput">
-                                <button class="btn btn-outline-secondary" type="button" id="clearSearchButton"><i class="lni lni-close"></i></button>
-                            </div>
-                        </form>
-
-                        <div class="table-responsive">
-
-                            <table style="background: linear-gradient(to left, rgba(220, 210, 211, 0.3), rgba(200, 240, 241, 0.3));" class="table table-bordered table-custom">
-
-                                <caption>List of Student</caption>
-                                <thead class="table-dark">
-                                    <tr>
-                                        <th scope="col">Student No.</th>
-                                        <th scope="col">Program</th>
-                                        <th scope="col">Fullname</th>
-                                        <th scope="col">Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <?php if ($result->rowCount() > 0) : ?>
-                                        <?php while ($row = $result->fetch(PDO::FETCH_ASSOC)) : ?>
-                                            <tr>
-                                                <td><?php echo $row['stud_no']; ?></td>
-                                                <td><?php echo $row['program_name']; ?></td>
-                                                <td><?php echo $row['stud_lname'] . ', ' . $row['stud_fname'] . ' ' . $row['stud_mname']; ?></td>
-                                                <td>
-                                                    <a href="student_record_test.php?student_id=<?php echo $row['stud_id']; ?>"class="btn btn-info">View Record</a>
-                                                </td>
-
-                                            </tr>
-                                        <?php endwhile; ?>
-                                    <?php else : ?>
-                                        <tr>
-                                            <td colspan="4" class="text-center">No records found for student.</td>
-                                        </tr>
-                                    <?php endif; ?>
-                                </tbody>
-                            </table>
-                        </div>
-                        <!-- Pagination -->
-                        <nav aria-label="Page navigation">
-                            <ul class="pagination justify-content-center">
-                                <?php for ($i = 1; $i <= $totalPages; $i++) : ?>
-                                    <li class="page-item <?php echo $i == $page ? 'active' : ''; ?>">
-                                        <a class="page-link" href="?page=<?php echo $i; ?>&search=<?php echo $search; ?>"><?php echo $i; ?></a>
-                                    </li>
-                                <?php endfor; ?>
-                            </ul>
-                        </nav>
+        <div class="container">
+            <div class="row justify-content-center mt-4">
+                <div class="col-md-12">
+                    <div class="text-center ">
+                        <h1 class="mb-4">Students</h1>
                     </div>
+                    <!-- Search bar -->
+
+
+
+                    <form action="" method="GET" class="mb-4" id="searchForm">
+                        <div class="input-group">
+                            <input type="text" class="form-control" placeholder="Search by module name" name="search" id="searchInput">
+                            <button class="btn btn-outline-secondary" type="button" id="clearSearchButton"><i class="lni lni-close"></i></button>
+                        </div>
+                    </form>
+                    <script>
+                        const searchForm = document.getElementById("searchForm");
+
+                        searchForm.addEventListener("submit", function(event) {
+                            event.preventDefault(); // Prevent the form from submitting
+                        });
+                    </script>
+
+                    <style>
+                        .scrollable-tbody {
+                            max-height: 300px;
+                            overflow-y: auto;
+                        }
+                    </style>
+
+
+                    <div class="table-responsive">
+                        <!-- <table class="table table-bordered table-custom"> -->
+                        <table style="background: linear-gradient(to left, rgba(220, 210, 211, 0.3), rgba(200, 240, 241, 0.3));" class="table table-bordered table-custom" id="courseTable">
+                    
+                            <caption>List of Students</caption>
+                            <thead class="table-dark">
+                                <tr>
+                                    <th scope="col">Student No.</th>
+                                    <th scope="col">Program</th>
+                                    <th scope="col">Fullname</th>
+                                    <th scope="col">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody class="scrollable-tbody">
+                                <?php if ($result->rowCount() > 0) : ?>
+                                    <?php while ($row = $result->fetch(PDO::FETCH_ASSOC)) : ?>
+                                        <tr>
+                                            <td><?php echo $row['stud_no']; ?></td>
+                                            <td><?php echo $row['program_name']; ?></td>
+                                            <td><?php echo $row['stud_lname'] . ', ' . $row['stud_fname'] . ' ' . $row['stud_mname']; ?></td>
+                                            <td>
+                                                <a href="student_record_test.php?student_id=<?php echo $row['stud_id']; ?>" class="btn btn-info">View Record</a>
+                                            </td>
+                                        </tr>
+                                    <?php endwhile; ?>
+                                <?php else : ?>
+                                    <tr>
+                                        <td colspan="4" class="text-center">No records found for students.</td>
+                                    </tr>
+                                <?php endif; ?>
+                            </tbody>
+                        </table>
+                    </div>
+
+
+                    <!-- Pagination -->
+                    <nav aria-label="Page navigation">
+                        <ul class="pagination justify-content-center">
+                            <?php for ($i = 1; $i <= $totalPages; $i++) : ?>
+                                <li class="page-item <?php echo $i == $page ? 'active' : ''; ?>">
+                                    <a class="page-link" href="?page=<?php echo $i; ?>&search=<?php echo $search; ?>"><?php echo $i; ?></a>
+                                </li>
+                            <?php endfor; ?>
+                        </ul>
+                    </nav>
                 </div>
             </div>
         </div>
+
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe" crossorigin="anonymous"></script>
     <script>

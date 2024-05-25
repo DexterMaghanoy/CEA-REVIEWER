@@ -76,7 +76,50 @@ $module_name = isset($questions_and_answers[0]) ? $questions_and_answers[0]['mod
         .attempt-table td {
             cursor: pointer;
         }
+
+        .attempt-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            background: linear-gradient(to bottom right, #e0f7fa, #80deea);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .attempt-row {
+            background-color: rgba(255, 255, 255, 0.8);
+            border-bottom: 1px solid #dee2e6;
+            transition: background-color 0.3s ease;
+        }
+
+        .attempt-row:hover {
+            background-color: rgba(255, 255, 255, 1);
+        }
+
+        .attempt-cell {
+            padding: 15px;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            margin: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .attempt-cell span {
+            float: right;
+        }
+
+        .attempt-cell span.red {
+            color: red;
+            font-size: 30px;
+        }
+
+        .attempt-cell span.green {
+            color: green;
+            font-size: 25px;
+        }
     </style>
+
 </head>
 
 <body>
@@ -116,12 +159,14 @@ $module_name = isset($questions_and_answers[0]) ? $questions_and_answers[0]['mod
                         <!-- Modal -->
                         <?php $attemptCounter = 1; ?>
                         <?php foreach ($grouped_questions_and_answers as $questions_and_answers) : ?>
+
+
                             <div class="modal fade" id="attemptModal<?php echo $attemptCounter; ?>" tabindex="-1" role="dialog" aria-labelledby="attemptModalLabel<?php echo $attemptCounter; ?>" aria-hidden="true">
                                 <div class="modal-dialog modal-lg" role="document">
                                     <div class="modal-content">
-                                        <div class="modal-header">
-                                            <h5 class="modal-title" id="attemptModalLabel<?php echo $attemptCounter; ?>">Attempt <?php echo $attemptCounter++; ?></h5>
-                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        <div class="modal-header bg-primary text-white">
+                                            <h5 class="modal-title"><?php echo $module_name ?>: Attempt <?php echo $attemptCounter++; ?></h5>
+                                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                                         </div>
                                         <div class="modal-body" style="max-height: 530px; overflow-y: auto;">
                                             <div class="modal-body-content">
@@ -145,10 +190,16 @@ $module_name = isset($questions_and_answers[0]) ? $questions_and_answers[0]['mod
                                     </div>
                                 </div>
                             </div>
+
+
+
                         <?php endforeach; ?>
                     <?php else : ?>
                         <p>No questions found.</p>
                     <?php endif; ?>
+
+
+
                 </div>
                 <div class="col-sm-3"></div>
             </div>

@@ -23,9 +23,7 @@ if (isset($_POST['save'])) {
     $question_D = $_POST['question_D'];
     $question_answer = $_POST['question_answer'];
 
-    // Validate form data
     if (empty($question_text) || empty($question_A) || empty($question_B) || empty($question_C) || empty($question_D) || empty($question_answer)) {
-        // Handle empty fields
         echo '
             <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
             <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10.16.6/dist/sweetalert2.min.js"></script>
@@ -70,7 +68,7 @@ if (isset($_POST['save'])) {
                                 text: "Question added successfully.",
                                 icon: "success"
                             }).then(() => {
-                                window.location.href = "course.php";
+                                window.location.href = "question.php";
                             });
                         });
                     </script>';
@@ -86,6 +84,8 @@ if (isset($_POST['save'])) {
                                 title: "Failed!",
                                 text: "Failed to add question.",
                                 icon: "error"
+                            }).then(() => {
+                                window.location.href = "question.php";
                             });
                         });
                     </script>';
@@ -118,7 +118,21 @@ if (isset($_POST['save'])) {
         <?php include 'sidebar.php'; ?>
         <div class="main py-3">
             <div class="text-center mb-4">
-                <h1>Add Question</h1>
+                <?php
+
+                $sql_module_name = "SELECT module_name FROM tbl_module WHERE module_id = :module_id"; // Fixed variable name
+                $stmt_module_name = $conn->prepare($sql_module_name); // Fixed variable name
+                $stmt_module_name->bindParam(':module_id', $_GET['module_id'], PDO::PARAM_INT);
+                $stmt_module_name->execute();
+                $module_name = $stmt_module_name->fetch(PDO::FETCH_ASSOC);
+                $moduleName = isset($module_name['module_name']) ? $module_name['module_name'] : "Unknown Module"; // Check if module name is fetched successfully
+                ?>
+
+                <h1>
+                    Add Question: <span style="font-weight: normal;">
+                        <?php
+                        echo htmlspecialchars($moduleName); // Use htmlspecialchars to prevent XSS attacks
+                        ?></span></h1>
             </div>
             <div class="container">
                 <div class="row justify-content-center">

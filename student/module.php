@@ -119,30 +119,26 @@ if (isset($_SESSION['program_id'])) {
                 <div class="col-md-12">
                     <div class="text-center mb-4">
                         <h1>Subject: <?php
-
-
-                                        $sql = "
-    SELECT c.course_name, c.course_id
-    FROM tbl_course AS c
-    WHERE c.course_id = :course_id
-      AND c.program_id = (
-          SELECT program_id
-          FROM tbl_course
-          WHERE course_id = :course_id
-      );
-";
+                                        $sql = "SELECT c.course_name
+                                        FROM tbl_course AS c
+                                        WHERE c.course_id = :course_id
+                                        AND c.program_id = (
+                                        SELECT program_id
+                                        FROM tbl_course
+                                        WHERE course_id = :course_id)";
 
                                         $stmtModule = $conn->prepare($sql);
                                         $stmtModule->bindParam(':course_id', $course_id, PDO::PARAM_INT);
                                         $stmtModule->execute();
                                         $Module = $stmtModule->fetch(PDO::FETCH_ASSOC);
-                                        if ($row !== false) {
-                                            $Module = $row['course_name'];
+
+                                        if ($Module !== false) {
+                                            echo $Module['course_name'];
                                         } else {
-                                            $Module = "Unknown";
+                                            echo "Unknown";
                                         }
-                                        echo  $Module;
                                         ?></h1>
+
                     </div>
                     <table style="background: linear-gradient(to left, rgba(220, 210, 211, 0.3), rgba(200, 240, 241, 0.3));" class="table table-bordered table-custom">
                         <caption>List of Modules</caption>
@@ -276,7 +272,7 @@ if (isset($_SESSION['program_id'])) {
                                             // Calculate and display pass rate
                                             if ($resultCount > 0 && $percentage >= 50) {
                                                 if ($totalQuestions > 0) {
-                                                    echo 'Pass';
+                                                    echo 'Passed';
                                                 } else {
                                                     echo 'N/A ';
                                                     $qs = -1;
@@ -390,7 +386,7 @@ if (isset($_SESSION['program_id'])) {
                                         if ($passed_result['passed_count'] > 0) {
                                             // User has already passed the quiz, disable the button
                                             echo '<button class="btn btn-info mb-2" disabled><i class="lni lni-invention"></i></button>';
-                                            $quiz_result_final = "Pass";
+                                            $quiz_result_final = "Passed";
                                         } else {
                                             // User hasn't passed the quiz, enable the button
                                             echo '<button onclick="window.location.href=\'quiz.php?course_id=' . $course_id . '\'" class="btn btn-info mb-2" ' . $quiz_button . '><i class="lni lni-invention"></i></button>';

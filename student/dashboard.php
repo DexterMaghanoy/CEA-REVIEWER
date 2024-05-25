@@ -164,11 +164,9 @@ try {
 
                                                         if ($PassedQuiz == 0 || $PassedQuiz == null) {
                                                             $displayQuizStatus = '
-                                                            <img src="./icons/warning-mark.gif" alt="Warning" width="25" height="25">
-
-                                                            N/A';
+                                                            <img src="./icons/warning-mark.gif" alt="Warning" width="25" height="25">';
                                                         } elseif ($PassedQuiz == 1) {
-                                                            $displayQuizStatus = '<img src="./icons/check-mark.gif" alt="Warning" width="20" height="20"> Done ';
+                                                            $displayQuizStatus = '<img src="./icons/check-mark.gif" alt="Warning" width="20" height="20">';
                                                         } else {
                                                             $displayQuizStatus = $PassedQuiz; // Fallback in case there are other values
                                                         }

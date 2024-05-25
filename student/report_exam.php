@@ -85,19 +85,12 @@ $stmt = $conn->prepare($sql);
 if ($course_id) {
     $stmt->bindValue(':course_id', $course_id, PDO::PARAM_INT);
 }
-
 $stmt->execute();
 $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-// Output results or handle if no results found
 if ($results) {
-    // Output results
     foreach ($results as $result) {
-        // Output each result
     }
 } else {
-    // Handle no results found
-    // echo "No results found.";
 }
 ?>
 

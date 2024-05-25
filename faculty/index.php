@@ -415,7 +415,7 @@ try {
                                 $failedAttempts = $course['failed_attempts'];
                                 $totalAttempts = $passedAttempts + $failedAttempts;
                                 // Calculate the pass rate as a percentage of the total attempts
-                                $passRate = ($totalAttempts > 0) ? (($passedAttempts / $totalAttempts) * 100) : 0;
+                                $passRate = ($totalAttempts > 0) ? (($passedAttempts / $totalAttempts) * 100) / $studentCount : 0;
                                 $labels[] = $courseName;
                                 $data[] = $passRate;
                             }

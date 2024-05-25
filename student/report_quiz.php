@@ -79,7 +79,7 @@ if (isset($_SESSION['program_id'], $_SESSION['stud_id'])) {
         <div class="container mt-3 mb-3">
             <div class="row justify-content-center mt-2">
                 <div class="text-center mb-2 mt-3">
-                    <h1>Subject Quizzes Report</h1>
+                    <h1>Quiz Report</h1>
                 </div>
 
 
@@ -107,29 +107,23 @@ if (isset($_SESSION['program_id'], $_SESSION['stud_id'])) {
                         });
                         google.charts.setOnLoadCallback(drawChart);
 
-                        // Function to draw the chart
                         function drawChart() {
                             const courseData = <?php echo json_encode($courses); ?>;
                             var chartData = [
                                 ['Course', 'Pass Rate', {
                                     role: 'style'
                                 }]
-                            ]; // Initialize chart data array
+                            ];
 
-                            // Initialize an object to store pass rates for each course_id
                             var coursePassRates = {};
 
-                            // Loop through each course data
                             courseData.forEach(function(course) {
-                                // Initialize pass rate for the current course
                                 var passRate = 0;
 
-                                // Calculate pass rate only if there are attempts
                                 if (course.passed_attempts + course.failed_attempts > 0) {
                                     passRate = 100 * course.passed_attempts / (course.passed_attempts + course.failed_attempts);
                                 }
 
-                                // Store pass rate for the current course_id
                                 if (!coursePassRates[course.course_id]) {
                                     coursePassRates[course.course_id] = [];
                                 }
@@ -137,35 +131,24 @@ if (isset($_SESSION['program_id'], $_SESSION['stud_id'])) {
                                 coursePassRates[course.course_id].push(passRate);
                             });
 
-                            // Loop through each course_id and add its pass rate to chartData
                             for (var courseId in coursePassRates) {
-                                // Get the course object based on the courseId
                                 var course = courseData.find(c => c.course_id == courseId);
-                                // Get the course code
-                                var courseCode = course ? course.course_code : ''; // If course is not found, use an empty string
-                                // Calculate average pass rate for the current course_id
+                                var courseCode = course ? course.course_code : '';
                                 var averagePassRate = coursePassRates[courseId].reduce(function(a, b) {
                                     return a + b;
                                 }, 0) / coursePassRates[courseId].length;
 
-                                // Add course data to chartData
                                 chartData.push([courseCode, averagePassRate, getRandomColor()]);
                             }
-
-                            // Calculate overall average pass rate
                             var overallAveragePassRate = chartData.reduce(function(sum, row, index) {
-                                // Skip header row
                                 if (index === 0) return sum;
-                                return sum + row[1]; // row[1] contains pass rate
-                            }, 0) / (chartData.length - 1); // Exclude header row from count
+                                return sum + row[1];
+                            }, 0) / (chartData.length - 1);
 
-                            // Add overall pass rate to chart data
-                            chartData.push(['Overall', overallAveragePassRate, getRandomColor()]);
+                            // chartData.push(['Overall', overallAveragePassRate, getRandomColor()]);
 
-                            // Set Data
                             const data = google.visualization.arrayToDataTable(chartData);
 
-                            // Set Options
                             const options = {
                                 title: 'Pass Rates by Subject',
                                 chartArea: {
@@ -192,13 +175,10 @@ if (isset($_SESSION['program_id'], $_SESSION['stud_id'])) {
                                 }
                             };
 
-                            // Draw
                             const chart = new google.visualization.BarChart(document.getElementById('myChart'));
                             chart.draw(data, options);
                         }
 
-
-                        // Function to generate random color
                         function getRandomColor() {
                             var letters = '0123456789ABCDEF';
                             var color = '#';
@@ -227,8 +207,7 @@ if (isset($_SESSION['program_id'], $_SESSION['stud_id'])) {
                                             $total_attempts = '0';
                                         }
                                         ?>
-                                        <p style="font-size: 0.8rem; margin-bottom: 0;">Pass Rate: <?php echo is_numeric($pass_rate) ? number_format($pass_rate, 2) . '%' : $pass_rate; ?></p>
-                                        <p style="font-size: 0.8rem; margin-bottom: 0;">Attempts: <?php echo $total_attempts; ?></p>
+
                                         <?php
                                         // Prepare SQL query to fetch score for specific course ID and stud_id
                                         $sqlScore = "SELECT result_score,total_questions FROM tbl_result WHERE course_id = :course_id AND stud_id = :stud_id AND result_status = 1 AND quiz_type = 2";
@@ -240,11 +219,16 @@ if (isset($_SESSION['program_id'], $_SESSION['stud_id'])) {
                                         $score = $resultScore->fetch(PDO::FETCH_ASSOC);
                                         // Display the score if available
                                         if ($score !== false) {
-                                            echo "<p style='font-size: 0.8rem; margin-bottom: 0;'>Score: " . $score['result_score'] . " / " . $score['total_questions'] . "</p>";
+                                            echo "<p style='font-size: 0.8rem; margin-bottom: 0;'>Passed Score: " . $score['result_score'] . " / " . $score['total_questions'] . "</p>";
                                         } else {
                                             echo "<p style='font-size: 0.8rem; margin-bottom: 0;'>Score: N/A</p>";
                                         }
                                         ?>
+                                        <p style="font-size: 0.8rem; margin-bottom: 0;">Attempts: <?php echo $total_attempts; ?></p>
+
+
+                                        <p style="font-size: 0.8rem; margin-bottom: 0;">Pass Rate: <?php echo is_numeric($pass_rate) ? number_format($pass_rate, 2) . '%' : $pass_rate; ?></p>
+
                                     </div>
 
                                 </div>

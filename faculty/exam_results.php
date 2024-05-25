@@ -187,6 +187,7 @@ if (isset($_SESSION['program_id'])) {
 
                                             // Calculate total students enrolled in the program
                                             $totalStudents = 0;
+                                            
                                             if ($answeredStudents > 0) {
                                                 $stmtTotalStudents = $conn->prepare("SELECT COUNT(DISTINCT stud_id) AS total_students FROM tbl_student WHERE program_id = :program_id");
                                                 $stmtTotalStudents->bindValue(':program_id', $program_id);
@@ -205,6 +206,7 @@ if (isset($_SESSION['program_id'])) {
 
                                     <p style="font-size: 0.8rem; margin-bottom: 0;">Exam Passed: <?php echo $course['passed_attempts']; ?></p>
                                     <p style="font-size: 0.8rem; margin-bottom: 0;">Attempts: <?php echo $course['failed_attempts'] + $course['passed_attempts']; ?></p>
+                                   
                                     <p style="font-size: 0.8rem; margin-bottom: 0;">Rate: <?php echo number_format(($answeredStudents / $totalStudents) * 100, 2) . "%"; ?></p>
                                 </div>
                             </div>

@@ -220,7 +220,26 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <div class="row justify-content-center mt-2">
                 <div class="col-lg-8">
                     <br> <br>
-                    <h1 id="quiz-title" class="text-center mb-4">Questions</h1>
+                    <center>
+                        <h1 style="font-size: 25px;">Questions: <?php
+                                                                $sql = "SELECT m.module_name
+                                        FROM tbl_module AS m
+                                        WHERE m.module_id = :module_id
+                                        AND m.course_id = :course_id";
+                                                                $stmtModule = $conn->prepare($sql);
+                                                                $stmtModule->bindParam(':module_id', $module_id, PDO::PARAM_INT); // Assuming $module_id is defined elsewhere
+                                                                $stmtModule->bindParam(':course_id', $course_id, PDO::PARAM_INT);
+                                                                $stmtModule->execute();
+                                                                $Module = $stmtModule->fetch(PDO::FETCH_ASSOC);
+                                                                if ($Module !== false) {
+                                                                    $Module = $Module['module_name'];
+                                                                } else {
+                                                                    $Module = "Unknown";
+                                                                }
+                                                                echo $Module;
+                                                                ?>
+                        </h1>
+                    </center>
                     <br> <br>
                     <form id="quiz-form" method="post">
                         <input type="hidden" name="user_id" value="<?php echo isset($_SESSION['user_id']) ? $_SESSION['user_id'] : ''; ?>">

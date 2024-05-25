@@ -59,7 +59,7 @@ if ($stmt->rowCount() > 0) {
         include 'sidebar.php';
         ?>
         <div class="main p-3">
-            <div class="text-center">
+            <div class="text-center mt-3">
                 <h1>Profile</h1>
             </div>
             <section class="vh-90">

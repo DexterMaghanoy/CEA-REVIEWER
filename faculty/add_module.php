@@ -10,15 +10,21 @@ if (isset($_SESSION['program_id'])) {
     exit();
 }
 
+global $avoid;
+
 $user_id = $_SESSION['user_id'];
 
 if (isset($_POST['save'])) {
 
     $course_id = $_POST['course_id'];
     $module_name = $_POST['module_name'];
-    $module_file = file_get_contents($_FILES["module_file"]["tmp_name"]);
 
-    if (empty($course_id) || empty($module_name) || empty($module_file)) {
+    $module_file = null;
+    if (isset($_FILES["module_file"]) && $_FILES["module_file"]["error"] == UPLOAD_ERR_OK) {
+        $module_file = file_get_contents($_FILES["module_file"]["tmp_name"]);
+    }
+
+    if (empty($course_id) || empty($module_name) || is_null($module_file)) {
         echo '<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>';
         echo '<script src="https://cdn.jsdelivr.net/npm/sweetalert2@10.16.6/dist/sweetalert2.min.js"></script>';
         echo '<link href="https://cdn.jsdelivr.net/npm/sweetalert2@10.16.6/dist/sweetalert2.min.css" rel="stylesheet">';
@@ -26,60 +32,85 @@ if (isset($_POST['save'])) {
             $(document).ready(function(){
                 Swal.fire({
                     title: "Failed!",
-                    text: "Please input the fields.",
+                    text: "Please fill in all fields.",
                     icon: "error"
                 });
             });
         </script>';
     } else {
-        // Generate module number automatically
-        $module_number = generateModuleNumber(); // Call a function to generate module number
+        try {
+            // Insert new module
+            $sql = "INSERT INTO `tbl_module` (`program_id`, `course_id`, `module_name`, `module_file`)
+                VALUES (:program_id, :course_id, :module_name, :module_file)";
+            $stmt = $conn->prepare($sql);
+            $stmt->bindParam(":program_id", $program_id);
+            $stmt->bindParam(":course_id", $course_id);
+            $stmt->bindParam(":module_name", $module_name);
+            $stmt->bindParam(":module_file", $module_file, PDO::PARAM_LOB);
 
-        // Insert new module
-        $sql = "INSERT INTO `tbl_module` (`program_id`, `course_id`, `module_number`, `module_name`, `module_file`)
-            VALUES (:program_id, :course_id, :module_number, :module_name, :module_file)";
-        $stmt = $conn->prepare($sql);
-        $stmt->bindParam(":program_id", $program_id); // Assuming $program_id is available in your context
-        $stmt->bindParam(":course_id", $course_id);
-        $stmt->bindParam(":module_number", $module_number);
-        $stmt->bindParam(":module_name", $module_name);
-        $stmt->bindParam(":module_file", $module_file);
-
-
-        if ($stmt->execute()) {
+            if ($stmt->execute()) {
+                echo '<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>';
+                echo '<script src="https://cdn.jsdelivr.net/npm/sweetalert2@10.16.6/dist/sweetalert2.min.js"></script>';
+                echo '<link href="https://cdn.jsdelivr.net/npm/sweetalert2@10.16.6/dist/sweetalert2.min.css" rel="stylesheet">';
+                echo '<script>
+                        $(document).ready(function(){
+                            Swal.fire({
+                                title: "Success!",
+                                text: "Module added successfully.",
+                                icon: "success"
+                            }).then(() => {
+                                window.location.href = "subjects.php";
+                            });
+                        });
+                    </script>';
+            } else {
+                echo '<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>';
+                echo '<script src="https://cdn.jsdelivr.net/npm/sweetalert2@10.16.6/dist/sweetalert2.min.js"></script>';
+                echo '<link href="https://cdn.jsdelivr.net/npm/sweetalert2@10.16.6/dist/sweetalert2.min.css" rel="stylesheet">';
+                echo '<script>
+                        $(document).ready(function(){
+                            Swal.fire({
+                                title: "Failed!",
+                                text: "Failed to add module.",
+                                icon: "error"
+                            }).then(() => {
+                                window.location.href = "subjects.php";
+                            });
+                        });
+                    </script>';
+            }
+        } catch (PDOException $e) {
             echo '<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>';
             echo '<script src="https://cdn.jsdelivr.net/npm/sweetalert2@10.16.6/dist/sweetalert2.min.js"></script>';
             echo '<link href="https://cdn.jsdelivr.net/npm/sweetalert2@10.16.6/dist/sweetalert2.min.css" rel="stylesheet">';
-            echo '<script>
-                    $(document).ready(function(){
-                        Swal.fire({
-                            title: "Success!",
-                            text: "Module added successfully.",
-                            icon: "success"
-                        }).then(() => {
-                            window.location.href = "course.php";
+            if (strpos($e->getMessage(), 'SQLSTATE[HY000]: General error: 2006 MySQL server has gone away') !== false) {
+                echo '<script>
+                        $(document).ready(function(){
+                            Swal.fire({
+                                title: "Failed!",
+                                text: "The uploaded file is too large.",
+                                icon: "error"
+                            }).then(() => {
+                                window.location.href = "./subjects.php";
+                            });
                         });
-                    });
-                </script>';
-        } else {
-            echo '<script>
-                    $(document).ready(function(){
-                        Swal.fire({
-                            title: "Failed!",
-                            text: "Failed to add module.",
-                            icon: "error"
-                        }).then(() => {
-                            window.location.href = "course.php";
-                        });
-                    });
                     </script>';
+            } else {
+                echo '<script>
+                        $(document).ready(function(){
+                            Swal.fire({
+                                title: "Failed!",
+                                text: "An unexpected error occurred.",
+                                icon: "error"
+                            }).then(() => {
+                                window.location.href = "subjects.php";
+                            });
+                        });
+                    </script>';
+            }
+            $avoid = 1;
         }
     }
-}
-
-function generateModuleNumber()
-{
-    return 1;
 }
 ?>
 <!DOCTYPE html>
@@ -101,48 +132,66 @@ function generateModuleNumber()
     <div class="wrapper">
 
         <?php
-        include 'sidebar.php';
+
+
+        if ($avoid != 1) {
+            include 'sidebar.php';
+        }
+
+
         ?>
-        <div class="main py-3">
-            <div class="text-center mb-4">
-                <h1>Add Module</h1>
+        <div class="container">
+
+
+            <div class="text-center mb-5 mt-4">
+
+                <?php
+                $courseSql = "SELECT course_name FROM tbl_course WHERE course_id = :course_id";
+                $courseStmt = $conn->prepare($courseSql);
+                $courseStmt->bindParam(':course_id', $_GET['course_id'], PDO::PARAM_INT);
+                $courseStmt->execute();
+                $SubjectName = $courseStmt->fetch(PDO::FETCH_ASSOC);
+
+                // Check if course name is fetched successfully
+                if ($SubjectName) {
+                    $courseName = $SubjectName['course_name'];
+                } else {
+                    $courseName = "Unknown Course"; // Default value if course name not found
+                }
+                ?>
+
+                <h1>Add Module: <span style="font-weight: normal;"><?php echo htmlspecialchars($courseName); ?></span></h1>
+
+
+
             </div>
-            <div class="container">
-                <div class="row justify-content-center">
-                    <div class="col-md-5">
-                        <form action="add_module.php" method="post" enctype="multipart/form-data">
 
-                            <!-- Module Title Input -->
-                            <div class="mb-3">
-                                <label for="module_name" class="form-label">Module Title</label>
-                                <input type="text" class="form-control" id="module_name" name="module_name" required>
-                            </div>
 
-                            <!-- Module File Input -->
-                            <div class="mb-3">
-                                <label for="module_file" class="form-label">Module File</label>
-                                <input type="file" class="form-control" id="module_file" name="module_file" accept=".pdf" required>
-                                <div>
-                                </div>
 
-                                <!-- Hidden Employee ID and Submit Button -->
-                                <input type="hidden" name="course_id" value="<?php echo isset($_GET['course_id']) ? $_GET['course_id'] : ''; ?>">
-
-                                <input type="submit" class="btn btn-success mt-2" value="Save" name="save">
-                        </form>
-                    </div>
+            <div class="row justify-content-center mt-5 mb-5">
+                <div class="col-md-5">
+                    <form action="add_module.php" method="post" enctype="multipart/form-data">
+                        <div class="mb-3">
+                            <label for="module_name" class="form-label">Module Title</label>
+                            <input type="text" class="form-control" id="module_name" name="module_name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="module_file" class="form-label">Module File</label>
+                            <input type="file" class="form-control" id="module_file" name="module_file" accept=".pdf" required>
+                        </div>
+                        <input type="hidden" name="course_id" value="<?php echo htmlspecialchars(isset($_GET['course_id']) ? $_GET['course_id'] : '', ENT_QUOTES, 'UTF-8'); ?>">
+                        <input type="submit" class="btn btn-success mt-2" value="Save" name="save">
+                    </form>
                 </div>
             </div>
         </div>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe" crossorigin="anonymous"></script>
+    </div>
 </body>
 
-
 </html>
-
 <script>
     const hamBurger = document.querySelector(".toggle-btn");
-
     hamBurger.addEventListener("click", function() {
         document.querySelector("#sidebar").classList.toggle("expand");
     });

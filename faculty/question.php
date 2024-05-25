@@ -63,66 +63,73 @@ $totalPages = ceil($totalCount / $recordsPerPage);
 
 
 
-        <div class="main p-3">
-            <div class="container">
-                <div class="row justify-content-center mt-5">
-                    <div class="col-md-10">
-                        <div class="text-center mb-2">
-                            <h1>Question</h1>
-                        </div>
-                        <div class="d-flex mb-2">
-                            <a class="btn btn-outline-success btn-sm me-2" href="add_question.php?program_id=<?php echo $program_id ?>&course_id=<?php echo $course_id ?>&module_id=<?php echo $module_id ?>"><i class="lni lni-plus"></i> Add Question</a>
-                            <a class="btn btn-outline-primary btn-sm" href="import_question.php?program_id=<?php echo $program_id ?>&course_id=<?php echo $course_id ?>&module_id=<?php echo $module_id ?>"><i class="lni lni-upload"></i> Import Question</a>
-                        </div>
+        <div class="container">
+            <div class="row justify-content-center mt-5">
+                <div class="col-md-10">
+                    <div class="text-center mb-2">
+                        <h1>Question: <?php
+                                        $sql_module_name = "SELECT module_name FROM tbl_module WHERE module_id = :module_id"; // Fixed variable name
+                                        $stmt_module_name = $conn->prepare($sql_module_name); // Fixed variable name
+                                        $stmt_module_name->bindParam(':module_id', $module_id, PDO::PARAM_INT);
+                                        $stmt_module_name->execute();
+                                        $module_name = $stmt_module_name->fetch(PDO::FETCH_ASSOC);
+                                        $moduleName = isset($module_name['module_name']) ? $module_name['module_name'] : "Unknown Module"; // Check if module name is fetched successfully
+                                        echo htmlspecialchars($moduleName); // Use htmlspecialchars to prevent XSS attacks
+                                        ?></h1>
 
-                        <table class="table table-bordered border-secondary" style="table-layout: auto; width: 100%;">
-                            <caption>List of Question</caption>
-                            <thead>
-                                <tr>
-                                    <th scope="col">Question</th>
-                                    <th scope="col">Option A</th>
-                                    <th scope="col">Option B</th>
-                                    <th scope="col">Option C</th>
-                                    <th scope="col">Option D</th>
-                                    <th scope="col">Answer</th>
-                                    <th scope="col" style="width: 100px" ;>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php if ($result->rowCount() > 0) : ?>
-                                    <?php while ($row = $result->fetch(PDO::FETCH_ASSOC)) : ?>
-                                        <tr>
-                                            <td style="font-size: 13px; text-align: left;"><?php echo $row['question_text']; ?></td>
-                                            <td style="font-size: 13px; text-align: left;"><?php echo $row['question_A']; ?></td>
-                                            <td style="font-size: 13px; text-align: left;"><?php echo $row['question_B']; ?></td>
-                                            <td style="font-size: 13px; text-align: left;"><?php echo $row['question_C']; ?></td>
-                                            <td style="font-size: 13px; text-align: left;"><?php echo $row['question_D']; ?></td>
-                                            <td style="font-size: 13px; text-align: left;"><?php echo $row['question_answer']; ?></td>
-                                            <td>
-                                                <a class="btn btn-success btn-sm" href="edit_question.php?question_id=<?php echo $row['question_id']; ?>"><i class="lni lni-pencil"></i></a>
-                                                <button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteModal" data-question-id="<?php echo $row['question_id']; ?>"><i class="lni lni-eraser"></i></button>
-                                            </td>
-                                        </tr>
-                                    <?php endwhile; ?>
-                                <?php else : ?>
-                                    <tr>
-                                        <td colspan="4" class="text-center">No questions found for module.</td>
-                                    </tr>
-                                <?php endif; ?>
-                            </tbody>
-                        </table>
                     </div>
-                    <!-- Pagination -->
-                    <nav aria-label="Page navigation">
-                        <ul class="pagination justify-content-center">
-                            <?php for ($i = 1; $i <= $totalPages; $i++) : ?>
-                                <li class="page-item <?php echo $i == $page ? 'active' : ''; ?>">
-                                    <a class="page-link" href="?page=<?php echo $i; ?>&course_id=<?php echo $course_id; ?>"><?php echo $i; ?></a>
-                                </li>
-                            <?php endfor; ?>
-                        </ul>
-                    </nav>
+                    <div class="d-flex mb-2">
+                        <a class="btn btn-outline-success btn-sm me-2" href="add_question.php?program_id=<?php echo $program_id ?>&course_id=<?php echo $course_id ?>&module_id=<?php echo $module_id ?>"><i class="lni lni-plus"></i> Add Question</a>
+                        <a class="btn btn-outline-primary btn-sm" href="import_question.php?program_id=<?php echo $program_id ?>&course_id=<?php echo $course_id ?>&module_id=<?php echo $module_id ?>"><i class="lni lni-upload"></i> Import Question</a>
+                    </div>
+
+                    <table class="table table-bordered border-secondary" style="table-layout: auto; width: 100%;">
+                        <caption>List of Question</caption>
+                        <thead>
+                            <tr>
+                                <th scope="col">Question</th>
+                                <th scope="col">Option A</th>
+                                <th scope="col">Option B</th>
+                                <th scope="col">Option C</th>
+                                <th scope="col">Option D</th>
+                                <th scope="col">Answer</th>
+                                <th scope="col" style="width: 100px" ;>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php if ($result->rowCount() > 0) : ?>
+                                <?php while ($row = $result->fetch(PDO::FETCH_ASSOC)) : ?>
+                                    <tr>
+                                        <td style="font-size: 13px; text-align: left;"><?php echo $row['question_text']; ?></td>
+                                        <td style="font-size: 13px; text-align: left;"><?php echo $row['question_A']; ?></td>
+                                        <td style="font-size: 13px; text-align: left;"><?php echo $row['question_B']; ?></td>
+                                        <td style="font-size: 13px; text-align: left;"><?php echo $row['question_C']; ?></td>
+                                        <td style="font-size: 13px; text-align: left;"><?php echo $row['question_D']; ?></td>
+                                        <td style="font-size: 13px; text-align: left;"><?php echo $row['question_answer']; ?></td>
+                                        <td>
+                                            <a class="btn btn-success btn-sm" href="edit_question.php?question_id=<?php echo $row['question_id']; ?>"><i class="lni lni-pencil"></i></a>
+                                            <button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteModal" data-question-id="<?php echo $row['question_id']; ?>"><i class="lni lni-eraser"></i></button>
+                                        </td>
+                                    </tr>
+                                <?php endwhile; ?>
+                            <?php else : ?>
+                                <tr>
+                                    <td colspan="4" class="text-center">No questions found for module.</td>
+                                </tr>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
                 </div>
+                <!-- Pagination -->
+                <nav aria-label="Page navigation">
+                    <ul class="pagination justify-content-center">
+                        <?php for ($i = 1; $i <= $totalPages; $i++) : ?>
+                            <li class="page-item <?php echo $i == $page ? 'active' : ''; ?>">
+                                <a class="page-link" href="?page=<?php echo $i; ?>&course_id=<?php echo $course_id; ?>"><?php echo $i; ?></a>
+                            </li>
+                        <?php endfor; ?>
+                    </ul>
+                </nav>
             </div>
         </div>
     </div>

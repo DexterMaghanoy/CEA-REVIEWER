@@ -62,7 +62,7 @@ if (isset($_POST['update'])) {
                         text: "Question updated successfully.",
                         icon: "success"
                     }).then(() => {
-                        window.location.href = "course.php";
+                        window.location.href = "question.php.php";
                     });
                 });
             </script>';
@@ -74,7 +74,7 @@ if (isset($_POST['update'])) {
                         text: "Failed to update question.",
                         icon: "error"
                     }).then(() => {
-                        window.location.href = "course.php";
+                        window.location.href = "question.php.php";
                     });
                 });
             </script>';

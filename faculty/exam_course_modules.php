@@ -171,189 +171,189 @@ if ($module && isset($module['module_name'])) {
         <?php
         include 'sidebar.php';
         ?>
-        <div class="main p-3">
 
 
-            <div class="container">
-                <div class="row justify-content-center mt-5">
-                    <div class="col-md-8">
-                        <div class="text-center mb-4">
-                            <?php
-                            echo '<h2>' . $course['course_name'] . '</h2>';
-                            echo '<h5>' . $module['module_name'] . '</h5>';
-                            ?>
 
+        <div class="container">
+            <div class="row justify-content-center mt-5">
+                <div class="col-md-8">
+                    <div class="text-center mb-4">
+                        <?php
+                        echo '<h2>' . $course['course_name'] . '</h2>';
+                        echo '<h5>' . $module['module_name'] . '</h5>';
+                        ?>
+
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+
+                <div class="col-sm">
+                    <div id="myChart" style="border: 1px solid lightblue;
+                                    padding: 10px;
+                                    box-sizing: border-box;
+                                    border-radius: 15px; 
+                                    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+                                    height: 525px;">
+                    </div>
+
+                    <script>
+                        google.charts.load('current', {
+                            'packages': ['corechart']
+                        });
+                        google.charts.setOnLoadCallback(drawChart);
+
+                        function drawChart() {
+                            const data = new google.visualization.DataTable();
+                            data.addColumn('string', 'Module Name');
+                            data.addColumn('number', 'Score');
+                            data.addColumn({
+                                type: 'string',
+                                role: 'tooltip',
+                                'p': {
+                                    'html': true
+                                }
+                            }); // Add tooltip role
+
+                            <?php foreach ($results as $row) : ?>
+                                <?php
+                                // Retrieve module_id from URL parameter if available
+                                $module_id = isset($_GET['module_id']) ? $_GET['module_id'] : null;
+
+                                // Fetch attempts from tbl_result
+                                $stmtAttempts = $conn->prepare("SELECT COUNT(*) AS attempts FROM tbl_result WHERE stud_id = :stud_id AND module_id = :module_id AND quiz_type = 3");
+                                $stmtAttempts->bindValue(':stud_id', $row['stud_id']);
+                                $stmtAttempts->bindValue(':module_id', $module_id);
+                                if (!$stmtAttempts->execute()) {
+                                    echo "Error executing query: " . implode(" ", $stmtAttempts->errorInfo());
+                                } else {
+                                    $attemptsData = $stmtAttempts->fetch(PDO::FETCH_ASSOC);
+                                    $attempts = $attemptsData['attempts'];
+                                    $passRate = ($attempts != 0) ? number_format(100 / $attempts, 2) : 0; // Calculate pass rate with 2 decimal places
+                                    echo $passRate;
+                                }
+                                ?>
+
+                                data.addRow([
+                                    '<?php echo $row['stud_lname'] . ' ' . $row['stud_fname']; ?>',
+                                    <?php echo $attempts; ?>,
+                                    '<?php echo $passRate; ?>' // Construct tooltip with pass rate
+                                ]);
+                            <?php endforeach; ?>
+
+                            const options = {
+                                title: 'Student Exam Performance',
+                                hAxis: {
+                                    title: 'Pass Rate',
+                                    textStyle: {
+                                        fontSize: 12 // Adjust the font size of the axis labels
+                                    }
+                                },
+                                vAxis: {
+                                    title: 'Student Name'
+                                },
+                                chartArea: {
+                                    width: '50%', // Adjust the width of the chart area
+                                    height: '70%' // Adjust the height of the chart area
+                                }
+                            };
+
+                            const chart = new google.visualization.BarChart(document.getElementById('myChart'));
+                            chart.draw(data, options);
+                        }
+                    </script>
+
+                </div>
+
+
+                <div class="col-sm">
+
+                    <!-- Search form -->
+                    <form action="" method="GET" class="mb-3">
+                        <div class="input-group">
+                            <input type="text" class="form-control" name="search" placeholder="Search..." value="<?php echo $search; ?>">
+                            <button class="btn btn-primary" type="submit">Search</button>
                         </div>
-                    </div>
-                </div>
-                <div class="row">
+                    </form>
 
-                    <div class="col-sm">
-                        <div id="myChart" style="width:100%; max-width:600px; height:500px;"></div>
-
-                        <script>
-                            google.charts.load('current', {
-                                'packages': ['corechart']
-                            });
-                            google.charts.setOnLoadCallback(drawChart);
-
-                            function drawChart() {
-                                const data = new google.visualization.DataTable();
-                                data.addColumn('string', 'Module Name');
-                                data.addColumn('number', 'Score');
-                                data.addColumn({
-                                    type: 'string',
-                                    role: 'tooltip',
-                                    'p': {
-                                        'html': true
-                                    }
-                                }); // Add tooltip role
-
-                                <?php foreach ($results as $row) : ?>
-                                    <?php
-                                    // Retrieve module_id from URL parameter if available
-                                    $module_id = isset($_GET['module_id']) ? $_GET['module_id'] : null;
-
-                                    // Fetch attempts from tbl_result
-                                    $stmtAttempts = $conn->prepare("SELECT COUNT(*) AS attempts FROM tbl_result WHERE stud_id = :stud_id AND module_id = :module_id AND quiz_type = 3");
-                                    $stmtAttempts->bindValue(':stud_id', $row['stud_id']);
-                                    $stmtAttempts->bindValue(':module_id', $module_id);
-                                    if (!$stmtAttempts->execute()) {
-                                        echo "Error executing query: " . implode(" ", $stmtAttempts->errorInfo());
-                                    } else {
-                                        $attemptsData = $stmtAttempts->fetch(PDO::FETCH_ASSOC);
-                                        $attempts = $attemptsData['attempts'];
-                                        $passRate = ($attempts != 0) ? number_format(100 / $attempts, 2) : 0; // Calculate pass rate with 2 decimal places
-                                        echo $passRate;
-                                    }
-                                    ?>
-
-                                    data.addRow([
-                                        '<?php echo $row['stud_lname'] . ' ' . $row['stud_fname']; ?>',
-                                        <?php echo $attempts; ?>,
-                                        '<?php echo $passRate; ?>' // Construct tooltip with pass rate
-                                    ]);
-                                <?php endforeach; ?>
-
-                                const options = {
-                                    title: 'Student Exam Performance',
-                                    hAxis: {
-                                        title: 'Pass Rate',
-                                        textStyle: {
-                                            fontSize: 12 // Adjust the font size of the axis labels
-                                        }
-                                    },
-                                    vAxis: {
-                                        title: 'Student Name'
-                                    },
-                                    chartArea: {
-                                        width: '50%', // Adjust the width of the chart area
-                                        height: '70%' // Adjust the height of the chart area
-                                    }
-                                };
-
-                                const chart = new google.visualization.BarChart(document.getElementById('myChart'));
-                                chart.draw(data, options);
-                            }
-                        </script>
-
-                    </div>
-
-
-                    <div class="col-sm">
-
-                        <!-- Search form -->
-                        <form action="" method="GET" class="mb-3">
-                            <div class="input-group">
-                                <input type="text" class="form-control" name="search" placeholder="Search..." value="<?php echo $search; ?>">
-                                <button class="btn btn-primary" type="submit">Search</button>
-                            </div>
-                        </form>
-
-                        <table id="resultTable" class="table table-bordered border-secondary">
-                            <caption>List of Student Performance</caption>
-                            <thead class="table-dark">
+                    <table style="background: linear-gradient(to left, rgba(220, 210, 211, 0.3), rgba(200, 240, 241, 0.3));" class="table table-bordered table-custom">
+                        <caption>List of Student Performance</caption>
+                        <thead class="table-dark">
+                            <tr style="text-align: center;">
+                                <th scope="col">Student Name</th>
+                                <th scope="col">Module Name</th>
+                                <th scope="col">Date</th>
+                                <th scope="col">Attempts</th>
+                                <th scope="col">Rate</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($results as $row) : ?>
                                 <tr style="text-align: center;">
-                                    <th scope="col">Student Name</th>
-                                    <th scope="col">Module Name</th>
-                                    <th scope="col">Date</th>
-                                    <th scope="col">Attempts</th>
-                                    <th scope="col">Rate</th>
+                                    <td><?php echo $row['stud_fname'] . ' ' . $row['stud_mname'] . ' ' . $row['stud_lname']; ?></td>
+                                    <td><?php echo $row['module_name']; ?></td>
+                                    <td><?php echo date("M d, Y", strtotime($row['created_at'])); ?></td>
+                                    <td>
+                                        <?php
+                                        // Retrieve module_id from URL parameter if available
+                                        $module_id = isset($_GET['module_id']) ? $_GET['module_id'] : null;
+
+                                        // Fetch attempts from tbl_result
+                                        $stmtAttempts = $conn->prepare("SELECT COUNT(*) AS attempts FROM tbl_result WHERE stud_id = :stud_id AND module_id = :module_id AND quiz_type = 3");
+                                        $stmtAttempts->bindValue(':stud_id', $row['stud_id']);
+                                        $stmtAttempts->bindValue(':module_id', $module_id);
+                                        if (!$stmtAttempts->execute()) {
+                                            echo "Error executing query: " . implode(" ", $stmtAttempts->errorInfo());
+                                        } else {
+                                            $attemptsData = $stmtAttempts->fetch(PDO::FETCH_ASSOC);
+                                            $attempts = $attemptsData['attempts'];
+                                            echo $attempts;
+                                        }
+                                        ?>
+                                    </td>
+                                    <td>
+                                        <?php
+                                        $module_id = isset($_GET['module_id']) ? $_GET['module_id'] : null;
+                                        $stmtAttempts = $conn->prepare("SELECT COUNT(*) AS attempts FROM tbl_result WHERE stud_id = :stud_id AND module_id = :module_id AND quiz_type = 3");
+                                        $stmtAttempts->bindValue(':stud_id', $row['stud_id']);
+                                        $stmtAttempts->bindValue(':module_id', $module_id);
+                                        if (!$stmtAttempts->execute()) {
+                                            echo "Error executing query: " . implode(" ", $stmtAttempts->errorInfo());
+                                        } else {
+                                            $attemptsData = $stmtAttempts->fetch(PDO::FETCH_ASSOC);
+                                            $attempts = $attemptsData['attempts'];
+                                            $passRate = ($attempts != 0) ? number_format(100 / $attempts, 2) : 0; // Calculate pass rate with 2 decimal places
+                                            echo $passRate . "%";
+                                        }
+                                        ?>
+
+
+                                    </td>
                                 </tr>
-                            </thead>
-                            <tbody>
-                                <?php foreach ($results as $row) : ?>
-                                    <tr style="text-align: center;">
-                                        <td><?php echo $row['stud_fname'] . ' ' . $row['stud_mname'] . ' ' . $row['stud_lname']; ?></td>
-                                        <td><?php echo $row['module_name']; ?></td>
-                                        <td><?php echo date("M d, Y", strtotime($row['created_at'])); ?></td>
-                                        <td>
-                                            <?php
-                                            // Retrieve module_id from URL parameter if available
-                                            $module_id = isset($_GET['module_id']) ? $_GET['module_id'] : null;
-
-                                            // Fetch attempts from tbl_result
-                                            $stmtAttempts = $conn->prepare("SELECT COUNT(*) AS attempts FROM tbl_result WHERE stud_id = :stud_id AND module_id = :module_id AND quiz_type = 3");
-                                            $stmtAttempts->bindValue(':stud_id', $row['stud_id']);
-                                            $stmtAttempts->bindValue(':module_id', $module_id);
-                                            if (!$stmtAttempts->execute()) {
-                                                echo "Error executing query: " . implode(" ", $stmtAttempts->errorInfo());
-                                            } else {
-                                                $attemptsData = $stmtAttempts->fetch(PDO::FETCH_ASSOC);
-                                                $attempts = $attemptsData['attempts'];
-                                                echo $attempts;
-                                            }
-                                            ?>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
 
 
-                                        </td>
-                                        <td>
-
-                                            <?php
-                                            // Retrieve module_id from URL parameter if available
-                                            $module_id = isset($_GET['module_id']) ? $_GET['module_id'] : null;
-
-                                            // Fetch attempts from tbl_result
-                                            $stmtAttempts = $conn->prepare("SELECT COUNT(*) AS attempts FROM tbl_result WHERE stud_id = :stud_id AND module_id = :module_id AND quiz_type = 3");
-                                            $stmtAttempts->bindValue(':stud_id', $row['stud_id']);
-                                            $stmtAttempts->bindValue(':module_id', $module_id);
-                                            if (!$stmtAttempts->execute()) {
-                                                echo "Error executing query: " . implode(" ", $stmtAttempts->errorInfo());
-                                            } else {
-                                                $attemptsData = $stmtAttempts->fetch(PDO::FETCH_ASSOC);
-                                                $attempts = $attemptsData['attempts'];
-                                                $passRate = ($attempts != 0) ? number_format(100 / $attempts, 2) : 0; // Calculate pass rate with 2 decimal places
-                                                echo $passRate . "%";
-                                            }
-                                            ?>
-
-
-                                        </td>
-                                    </tr>
-                                <?php endforeach; ?>
-                            </tbody>
-                        </table>
-
-
-                        <!-- Pagination -->
-                        <nav aria-label="Page navigation">
-                            <ul class="pagination justify-content-center">
-                                <?php for ($i = 1; $i <= $totalPages; $i++) : ?>
-                                    <li class="page-item <?php echo $i == $page ? 'active' : ''; ?>">
-                                        <a class="page-link" href="?page=<?php echo $i; ?>&search=<?php echo $search; ?>&course_id=<?php echo $course_id; ?>&module_id=<?php echo $module_id; ?>"><?php echo $i; ?></a>
-                                    </li>
-                                <?php endfor; ?>
-                            </ul>
-                        </nav>
-
-                    </div>
-
-
+                    <!-- Pagination -->
+                    <nav aria-label="Page navigation">
+                        <ul class="pagination justify-content-center">
+                            <?php for ($i = 1; $i <= $totalPages; $i++) : ?>
+                                <li class="page-item <?php echo $i == $page ? 'active' : ''; ?>">
+                                    <a class="page-link" href="?page=<?php echo $i; ?>&search=<?php echo $search; ?>&course_id=<?php echo $course_id; ?>&module_id=<?php echo $module_id; ?>"><?php echo $i; ?></a>
+                                </li>
+                            <?php endfor; ?>
+                        </ul>
+                    </nav>
 
                 </div>
+
+
 
             </div>
+
         </div>
+
     </div>
     </div>
     <script>

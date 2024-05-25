@@ -200,7 +200,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <div class="row justify-content-center mt-5">
                 <div class="col-lg-8">
                     <br><br>
-                    <h1 style="font-size: 40px;" id="quiz-title" class="text-center mb-4">Quiz</h1>
+                    <h1 style="font-size: 35px;" id="quiz-title" class="text-center mb-4">EXAM</h1>
                     <br><br>
                     <?php if (!empty($questions)) : ?>
 
