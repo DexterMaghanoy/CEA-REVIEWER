@@ -120,11 +120,11 @@ if (isset($_GET['question_id'])) {
 <?php
 include 'sidebar.php';
 ?>
-        <div class="main py-3">
-    <div class="text-center mb-4">
+  
+    <div class="container">
+    <div class="text-center mt-4 mb-4">
         <h1>Edit Question</h1>
     </div>
-    <div class="container">
         <div class="row justify-content-center">
             <div class="col-md-5">
                 <form action="edit_question.php" method="post">   
@@ -172,7 +172,6 @@ include 'sidebar.php';
             </div>
         </div>
     </div>
-</div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe"
         crossorigin="anonymous"></script>

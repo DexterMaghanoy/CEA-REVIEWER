@@ -112,8 +112,37 @@ if (isset($_SESSION['program_id'])) {
             <?php include 'back.php'; ?>
             <div class="row justify-content-center mt-1">
                 <div class="col-md-12">
-                    <div class="text-center mb-2">
-                        <h1>All Results</h1>
+                    <div class="text-center mb-1">
+                        <div class="text-center mb-1">
+                            <h1>Exam data:
+                                <?php
+                                // Check if student_id is provided in the URL
+                                if (isset($_GET['student_id'])) {
+                                    // Get the student_id from the URL
+                                    $student_id = $_GET['student_id'];
+
+                                    // Fetch student name from the database based on the provided student_id
+                                    $stmt = $conn->prepare("SELECT stud_fname, stud_lname FROM tbl_student WHERE stud_id = :student_id");
+                                    $stmt->bindParam(':student_id', $student_id, PDO::PARAM_INT);
+                                    $stmt->execute();
+                                    $student = $stmt->fetch(PDO::FETCH_ASSOC);
+
+                                    // Display the student's name
+                                    if ($student) {
+                                        echo htmlspecialchars($student['stud_fname']) . ' ' . htmlspecialchars($student['stud_lname']);
+                                    } else {
+                                        echo "Student not found";
+                                    }
+                                } else {
+                                    echo "Student ID is missing";
+                                }
+                                ?>
+                            </h1>
+
+                        </div>
+
+
+
                     </div>
 
                     <?php include 'student_record_dropdown.php'; ?>

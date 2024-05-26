@@ -182,12 +182,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <link rel="stylesheet" href="style.css" type="text/css">
     <style>
         .question-text {
-            font-size: 20px;
-            /* Adjust the font size as needed */
+            font-size: 30px;
             font-weight: bold;
-            /* Optionally make the text bold */
             margin-bottom: 10px;
-            /* Add some space between questions */
+            padding-left: 20px;
 
 
 
@@ -204,7 +202,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             border-radius: 50%;
             outline: none;
             margin-right: 5px;
-            /* Adjust the margin as needed */
         }
     </style>
 </head>
@@ -217,41 +214,49 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 
         <div class="container">
-            <div class="row justify-content-center mt-2">
-                <div class="col-lg-8">
+            <div class="row justify-content-center mt-5">
+
+                <div class="col-lg-8" style="background-color: #A1EEBD; border-radius: 10px; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2); border: 2px solid rgba(0, 0, 0, 0.1);">
+
+
                     <br> <br>
                     <center>
-                        <h1 style="font-size: 25px;">Questions: <?php
-                                                                $sql = "SELECT m.module_name
-                                        FROM tbl_module AS m
-                                        WHERE m.module_id = :module_id
-                                        AND m.course_id = :course_id";
-                                                                $stmtModule = $conn->prepare($sql);
-                                                                $stmtModule->bindParam(':module_id', $module_id, PDO::PARAM_INT); // Assuming $module_id is defined elsewhere
-                                                                $stmtModule->bindParam(':course_id', $course_id, PDO::PARAM_INT);
-                                                                $stmtModule->execute();
-                                                                $Module = $stmtModule->fetch(PDO::FETCH_ASSOC);
-                                                                if ($Module !== false) {
-                                                                    $Module = $Module['module_name'];
-                                                                } else {
-                                                                    $Module = "Unknown";
-                                                                }
-                                                                echo $Module;
-                                                                ?>
+
+                        <h1 class="mb-4" style="font-size: 30px;">
+                            <img height="35" src="./icons/test.gif" alt="" style="border-radius: 50%; border: 2px solid #000;">
+
+
+                            Questions: <?php
+                                        $sql = "SELECT m.module_name
+            FROM tbl_module AS m
+            WHERE m.module_id = :module_id
+            AND m.course_id = :course_id";
+                                        $stmtModule = $conn->prepare($sql);
+                                        $stmtModule->bindParam(':module_id', $module_id, PDO::PARAM_INT); // Assuming $module_id is defined elsewhere
+                                        $stmtModule->bindParam(':course_id', $course_id, PDO::PARAM_INT);
+                                        $stmtModule->execute();
+                                        $Module = $stmtModule->fetch(PDO::FETCH_ASSOC);
+                                        if ($Module !== false) {
+                                            $Module = $Module['module_name'];
+                                        } else {
+                                            $Module = "Unknown";
+                                        }
+                                        ?> <span><?php echo "'" . $Module . "'"; ?> </span>
+
                         </h1>
                     </center>
                     <br> <br>
-                    <form id="quiz-form" method="post">
-                        <input type="hidden" name="user_id" value="<?php echo isset($_SESSION['user_id']) ? $_SESSION['user_id'] : ''; ?>">
 
+                    <form style="font-size: 20px;" id="quiz-form" method="post">
+                        <input type="hidden" name="user_id" value="<?php echo isset($_SESSION['user_id']) ? $_SESSION['user_id'] : ''; ?>">
                         <?php if (!empty($result)) : ?>
                             <?php $counter = 0; ?>
                             <?php foreach ($result as $key => $question) : ?>
                                 <div class="question-box <?php echo $counter === 0 ? '' : 'd-none'; ?>">
-                                    <div style="font-size: 35px;" class="question-text"><?php echo $counter + 1 . ". " . sanitizeInput($question['question_text']); ?></div>
+                                    <div class="question-text"><?php echo $counter + 1 . ". " . sanitizeInput($question['question_text']); ?></div>
                                     <?php foreach (['A', 'B', 'C', 'D'] as $option) : ?>
                                         <?php $optionKey = 'question_' . $option; ?>
-                                        <div class="form-check" style="font-size: 25px;">
+                                        <div style="padding-left: 100px;" class="form-check">
                                             <input class="form-check-input" type="radio" name="answer_<?php echo $question['question_id']; ?>" id="option<?php echo $option; ?>_<?php echo $question['question_id']; ?>" value="<?php echo sanitizeInput($question[$optionKey]); ?>">
                                             <label class="form-check-label" for="option<?php echo $option; ?>_<?php echo $question['question_id']; ?>"><?php echo sanitizeInput($question[$optionKey]); ?></label>
                                         </div>
@@ -260,35 +265,22 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                 <?php $counter++; ?>
                             <?php endforeach; ?>
                             <br> <br>
-                            <!-- <div class="text-end">
-
-                                <button style="font-size: 20px;" id="back-btn" class="text-start btn btn-primary <?php echo $counter === 0 ? 'd-none' : ''; ?>" type="button">Back</button>
-
-                                <button style="font-size: 20px;" id="submit-btn" type="submit" class="text-end btn btn btn-primary">Submit</button>
-                                <button style="font-size: 20px;" id="next-btn" class="text-end btn btn-primary <?php echo $counter === count($result) - 1 ? 'd-none' : ''; ?>" type="button">Next</button>
-                            </div> -->
-
-
-                            <div class="container">
+                            <div class="container" style="background-color: #A1EEBD;">
                                 <div class="row">
                                     <div class="col text-start">
                                         <button style="font-size: 20px;" id="back-btn" class="text-start btn btn-primary <?php echo $counter === 0 ? 'd-none' : ''; ?>" type="button">◁ Back</button>
-
                                     </div>
                                     <div class="col text-end">
                                         <button style="font-size: 20px;" id="submit-btn" type="submit" class="text-end btn btn btn-primary">Submit</button>
-
                                         <button style="font-size: 20px;" id="next-btn" class="text-end btn btn-primary <?php echo $counter === count($result) - 1 ? 'd-none' : ''; ?>" type="button">Next ▷</button>
                                     </div>
                                 </div>
                             </div>
-
-
-
                         <?php else : ?>
                             <p>No questions found.</p>
                         <?php endif; ?>
                     </form>
+
                     <br>
                     <br>
                 </div>

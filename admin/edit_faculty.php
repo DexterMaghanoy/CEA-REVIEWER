@@ -206,19 +206,19 @@ if (isset($_POST['update'])) {
                             <!-- First Name Input -->
                             <div class="mb-3">
                                 <label for="user_fname" class="form-label">First Name</label>
-                                <input type="text" class="form-control" id="user_fname" name="user_fname" value="<?php echo $user_fname; ?>" pattern="[A-Za-z]+" title="Please enter only alphabetic characters" required>
+                                <input type="text" class="form-control" id="user_fname" name="user_fname" value="<?php echo htmlspecialchars($user_fname); ?>" pattern="[A-Za-z]+" title="Please enter only alphabetic characters" required>
                             </div>
 
                             <!-- Middle Name Input -->
                             <div class="mb-3">
                                 <label for="user_mname" class="form-label">Middle Name</label>
-                                <input type="text" class="form-control" id="user_mname" name="user_mname" value="<?php echo $user_mname; ?>" pattern="[A-Za-z]+" title="Please enter only alphabetic characters" required>
+                                <input type="text" class="form-control" id="user_mname" name="user_mname" value="<?php echo htmlspecialchars($user_mname); ?>" pattern="[A-Za-z]+" title="Please enter only alphabetic characters" required>
                             </div>
 
                             <!-- Last Name Input -->
                             <div class="mb-3">
                                 <label for="user_lname" class="form-label">Last Name</label>
-                                <input type="text" class="form-control" id="user_lname" name="user_lname" value="<?php echo $user_lname; ?>" pattern="[A-Za-z]+" title="Please enter only alphabetic characters" required>
+                                <input type="text" class="form-control" id="user_lname" name="user_lname" value="<?php echo htmlspecialchars($user_lname); ?>" pattern="[A-Za-z]+" title="Please enter only alphabetic characters" required>
                             </div>
 
                             <!-- User Image Input -->
@@ -230,17 +230,34 @@ if (isset($_POST['update'])) {
                             <!-- Username Input -->
                             <div class="mb-3">
                                 <label for="user_name" class="form-label">Username</label>
-                                <input type="text" class="form-control" id="user_name" name="user_name" value="<?php echo $user_name; ?>" required>
+                                <input type="text" class="form-control" id="user_name" name="user_name" value="<?php echo htmlspecialchars($user_name); ?>" required>
                             </div>
+                            <style>
+                            .password-input-container {
+                                position: relative;
+                            }
+
+                            .toggle-password {
+                                position: absolute;
+                                right: 10px;
+                                /* Adjust as needed */
+                                top: 50%;
+                                transform: translateY(-50%);
+                                cursor: pointer;
+                                z-index: 1;
+                            }
+                      
+                        </style>
 
                             <!-- Password Input -->
                             <div class="mb-3">
                                 <label for="user_password" class="form-label">Password</label>
                                 <div class="password-input-container">
-                                    <input type="password" class="form-control" id="user_password" name="user_password" value="<?php echo $user_password; ?>" pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{12,}" title="Must contain at least one number and one uppercase and lowercase letter, and at least 12 or more characters" required>
+                                    <input type="password" class="form-control" id="user_password" name="user_password" value="<?php echo htmlspecialchars($user_password); ?>" pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{12,}" title="Must contain at least one number and one uppercase and lowercase letter, and at least 12 or more characters" required>
                                     <span class="toggle-password" onclick="togglePasswordVisibility()"><i class="far fa-eye-slash"></i></span>
                                 </div>
                             </div>
+
                             <!-- Hidden Employee ID and Submit Button -->
                             <input type="hidden" name="user_id" value="<?php echo $user_id; ?>">
                             <input type="submit" class="btn btn-success mt-2" value="Update" name="update">
@@ -278,4 +295,3 @@ if (isset($_POST['update'])) {
 
 
 </html>
-

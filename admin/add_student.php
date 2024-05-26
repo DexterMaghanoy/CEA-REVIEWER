@@ -160,8 +160,17 @@ if (isset($_POST['save'])) {
                         <!-- Number Input -->
                         <div class="mb-3">
                             <label for="stud_no" class="form-label">Student No.</label>
-                            <input type="text" class="form-control" id="stud_no" name="stud_no" required autocomplete="off">
+                            <input type="text" class="form-control" id="stud_no" name="stud_no" required autocomplete="off" pattern="[0-9-]*">
+                            <div class="invalid-feedback">
+                                Please enter a valid student number.
+                            </div>
                         </div>
+                        <script>
+                            // Prevent script injection in input fields
+                            document.getElementById('stud_no').addEventListener('input', function() {
+                                this.value = this.value.replace(/[^0-9-]/g, '');
+                            });
+                        </script>
 
                         <!-- First Name Input -->
                         <div class="mb-3">
@@ -181,6 +190,22 @@ if (isset($_POST['save'])) {
                             <input type="text" class="form-control" id="stud_lname" name="stud_lname" pattern="[A-Za-z]+" title="Please enter only alphabetic characters" required autocomplete="off">
                         </div>
 
+                        <style>
+                            .password-input-container {
+                                position: relative;
+                            }
+
+                            .toggle-password {
+                                position: absolute;
+                                right: 10px;
+                                /* Adjust as needed */
+                                top: 50%;
+                                transform: translateY(-50%);
+                                cursor: pointer;
+                                z-index: 1;
+                            }
+                        </style>
+
                         <!-- Password Input -->
                         <div class="mb-3">
                             <label for="stud_password" class="form-label">Password</label>
@@ -189,6 +214,7 @@ if (isset($_POST['save'])) {
                                 <span class="toggle-password" onclick="togglePasswordVisibility()"><i class="far fa-eye-slash"></i></span>
                             </div>
                         </div>
+
                         <!-- Hidden Employee ID and Submit Button -->
                         <input type="submit" class="btn btn-success mt-2" value="Save" name="save">
                     </form>

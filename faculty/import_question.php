@@ -3,7 +3,7 @@ session_start();
 
 require '../api/db-connect.php';
 
-if(isset($_SESSION['program_id'])){
+if (isset($_SESSION['program_id'])) {
     $program_id = $_SESSION['program_id'];
 } else {
     header("Location: ../index.php");
@@ -28,7 +28,7 @@ if (isset($_POST["import"])) {
     require "../excelReader/SpreadsheetReader.php";
 
     $test_id = $_POST['test_id'];
-    
+
     // Check if the necessary session variables are set
     if (isset($_POST['module_id'])) {
         $module_id = $_POST['module_id'];
@@ -85,46 +85,69 @@ if (isset($_POST["import"])) {
                 });
                 </script>';
             }
-                }
-            } else {
-                echo "Session variables not set.";
-            }
+        }
+    } else {
+        echo "Session variables not set.";
+    }
 }
 ?>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Import Questions</title>
     <link href="https://cdn.lineicons.com/4.0/lineicons.css" rel="stylesheet" />
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet"
-        integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous">
     <link rel="shortcut icon" href="../img/cea_logo.png" type="image/x-icon">
     <link rel="stylesheet" href="style.css" type="text/css">
 </head>
+
 <body>
-<div class="wrapper">
-    
-<?php
-include 'sidebar.php';
-?>
-        <div class="main p-3">
-            <div class="container">
-                <div class="row justify-content-center mt-5">
-                    <div class="col-md-10">
-                        <div class="text-center mb-4">
-                            <h1>Import Question</h1>
-                        </div>
-                        <div class="container">
-                            <form action="" method="POST" enctype="multipart/form-data">
-                                <input type="hidden" name="module_id" value="<?= isset($_GET['module_id']) ? $_GET['module_id'] : ''; ?>">
-                                <div class="mb-3">
-                                    <input type="file" name="excel" class="form-control" required accept=".xlsx, .xls">
-                                </div>
-                                <button type="submit" name="import" class="btn btn-success">Save</button>
-                            </form>
+    <div class="wrapper">
+
+        <?php
+        include 'sidebar.php';
+        ?>
+        <div class="container">
+            <div class="row justify-content-center mt-5">
+                <div class="col-md-10">
+
+
+                    <div class="text-center mb-4">
+                        <?php
+
+                        $sql_module_name = "SELECT module_name FROM tbl_module WHERE module_id = :module_id"; // Fixed variable name
+                        $stmt_module_name = $conn->prepare($sql_module_name); // Fixed variable name
+                        $stmt_module_name->bindParam(':module_id', $_GET['module_id'], PDO::PARAM_INT);
+                        $stmt_module_name->execute();
+                        $module_name = $stmt_module_name->fetch(PDO::FETCH_ASSOC);
+                        $moduleName = isset($module_name['module_name']) ? $module_name['module_name'] : "Unknown Module"; // Check if module name is fetched successfully
+                        ?>
+
+                        <h1>
+                            Import Question: <span style="font-weight: normal;">
+                                <?php
+                                echo htmlspecialchars($moduleName); // Use htmlspecialchars to prevent XSS attacks
+                                ?></span></h1>
+                    </div>
+                    <div class="container mt-5">
+
+
+                        <div class="row">
+                            <div class="col-sm-2"> </div>
+                            <div class="col-sm">
+                                <form action="" method="POST" enctype="multipart/form-data">
+                                    <input type="hidden" name="module_id" value="<?= isset($_GET['module_id']) ? $_GET['module_id'] : ''; ?>">
+                                    <div class="mb-3">
+                                        <input type="file" name="excel" class="form-control" required accept=".xlsx, .xls">
+                                    </div>
+                                    <button type="submit" name="import" class="btn btn-success">Save</button>
+                                </form>
+                            </div>
+                            <div class="col-sm-2"> </div>
                         </div>
                     </div>
                 </div>
@@ -132,15 +155,14 @@ include 'sidebar.php';
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"
-        integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe"
-        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe" crossorigin="anonymous"></script>
 </body>
 <script>
-const hamBurger = document.querySelector(".toggle-btn");
+    const hamBurger = document.querySelector(".toggle-btn");
 
-hamBurger.addEventListener("click", function () {
-  document.querySelector("#sidebar").classList.toggle("expand");
-});
+    hamBurger.addEventListener("click", function() {
+        document.querySelector("#sidebar").classList.toggle("expand");
+    });
 </script>
+
 </html>

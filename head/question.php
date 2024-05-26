@@ -67,51 +67,65 @@ $totalPages = ceil($totalCount / $recordsPerPage);
             <div class="container">
                 <div class="row justify-content-center mt-5">
                     <div class="col-md-10">
-                        <div class="text-center mb-2">
-                            <h1>Question</h1>
+                        <div class="text-center mb-4">
+                            <h1>Questions</h1>
                         </div>
-                        <div class="d-flex mb-2">
-                            <a class="btn btn-outline-success btn-sm me-2" href="add_question.php?program_id=<?php echo $program_id ?>&course_id=<?php echo $course_id ?>&module_id=<?php echo $module_id ?>"><i class="lni lni-plus"></i> Add Question</a>
-                            <a class="btn btn-outline-primary btn-sm" href="import_question.php?program_id=<?php echo $program_id ?>&course_id=<?php echo $course_id ?>&module_id=<?php echo $module_id ?>"><i class="lni lni-upload"></i> Import Question</a>
+                        <div class="d-flex mb-4">
+                            <a class="btn btn-outline-success btn-sm me-2" href="add_question.php?program_id=<?php echo $program_id ?>&course_id=<?php echo $course_id ?>&module_id=<?php echo $module_id ?>">
+                                <i class="lni lni-plus"></i> Add Question
+                            </a>
+                            <a class="btn btn-outline-primary btn-sm" href="import_question.php?program_id=<?php echo $program_id ?>&course_id=<?php echo $course_id ?>&module_id=<?php echo $module_id ?>">
+                                <i class="lni lni-upload"></i> Import Question
+                            </a>
                         </div>
 
-                        <table class="table table-bordered border-secondary" style="table-layout: auto; width: 100%;">
+                        <!-- <table class="table table-bordered border-secondary"> -->
+                        <table style="background: linear-gradient(to left, rgba(220, 210, 211, 0.3), rgba(200, 240, 241, 0.3));" class="table table-bordered table-custom">
+
+
                             <caption>List of Question</caption>
                             <thead>
-                                <tr>
+                                <tr class="bg-dark text-light">
                                     <th scope="col">Question</th>
                                     <th scope="col">Option A</th>
                                     <th scope="col">Option B</th>
                                     <th scope="col">Option C</th>
                                     <th scope="col">Option D</th>
                                     <th scope="col">Answer</th>
-                                    <th scope="col" style="width: 100px" ;>Actions</th>
+                                    <th scope="col" style="width: 100px">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <?php if ($result->rowCount() > 0) : ?>
                                     <?php while ($row = $result->fetch(PDO::FETCH_ASSOC)) : ?>
                                         <tr>
-                                            <td style="font-size: 13px; text-align: left;"><?php echo $row['question_text']; ?></td>
-                                            <td style="font-size: 13px; text-align: left;"><?php echo $row['question_A']; ?></td>
-                                            <td style="font-size: 13px; text-align: left;"><?php echo $row['question_B']; ?></td>
-                                            <td style="font-size: 13px; text-align: left;"><?php echo $row['question_C']; ?></td>
-                                            <td style="font-size: 13px; text-align: left;"><?php echo $row['question_D']; ?></td>
-                                            <td style="font-size: 13px; text-align: left;"><?php echo $row['question_answer']; ?></td>
+                                            <td><?php echo $row['question_text']; ?></td>
+                                            <td><?php echo $row['question_A']; ?></td>
+                                            <td><?php echo $row['question_B']; ?></td>
+                                            <td><?php echo $row['question_C']; ?></td>
+                                            <td><?php echo $row['question_D']; ?></td>
+                                            <td><?php echo $row['question_answer']; ?></td>
                                             <td>
-                                                <a class="btn btn-success btn-sm" href="edit_question.php?question_id=<?php echo $row['question_id']; ?>"><i class="lni lni-pencil"></i></a>
-                                                <button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteModal" data-question-id="<?php echo $row['question_id']; ?>"><i class="lni lni-eraser"></i></button>
+                                                <a class="btn btn-success btn-sm me-2" href="edit_question.php?question_id=<?php echo $row['question_id']; ?>">
+                                                    <i class="lni lni-pencil"></i> Edit
+                                                </a>
+                                                <button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteModal" data-question-id="<?php echo $row['question_id']; ?>">
+                                                    <i class="lni lni-eraser"></i> Delete
+                                                </button>
                                             </td>
                                         </tr>
                                     <?php endwhile; ?>
                                 <?php else : ?>
                                     <tr>
-                                        <td colspan="4" class="text-center">No questions found for module.</td>
+                                        <td colspan="7" class="text-center">No questions found for this module.</td>
                                     </tr>
                                 <?php endif; ?>
                             </tbody>
+
+
                         </table>
                     </div>
+
                     <!-- Pagination -->
                     <nav aria-label="Page navigation">
                         <ul class="pagination justify-content-center">

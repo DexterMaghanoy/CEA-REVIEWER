@@ -29,17 +29,45 @@
     <button style="font-size: 40px; background: none; border: none; padding-left: 15px; margin-left: 15px;" onclick="goBack()" class="back-button"><i class="bi bi-arrow-left-circle"></i></button>
 </div>
 
-
 <script>
     function goBack() {
         // Check if the current page is one of the specified pages
-        const pages = ["profile.php", "user.php", "student.php", "program.php", "course.php", "report.php"];
+        const pages = ["profile.php", "user.php", "student.php", "courses.php", "subjects.php", "report.php"];
         const currentPage = window.location.href;
 
         if (pages.some(page => currentPage.includes(page))) {
             window.location = "index.php";
+
+        } else if (currentPage.includes("add_faculty.php") || currentPage.includes("edit_faculty.php")) { // Check if current page is add_faculty.php
+            window.location = "user.php";
+        } else if (currentPage.includes("add_student.php") ||
+            currentPage.includes("import_student.php") ||
+            currentPage.includes("import_student.php") ||
+            currentPage.includes("student_record_test.php") ||
+
+            currentPage.includes("student_record_quiz.php") ||
+            currentPage.includes("student_record_exam.php")
+        ) {
+            window.location = "student.php";
+        } else if (currentPage.includes("edit_course.php") ||
+            currentPage.includes("add_course.php")) {
+            window.location = "courses.php";
+
+        } else if (currentPage.includes("edit_subject.php") ||
+            currentPage.includes("view_module.php") ||
+            currentPage.includes("add_subject.php")
+
+        ) {
+            window.location = "subjects.php";
+
+        } else if (currentPage.includes("report_results_test.php") ||
+            currentPage.includes("report_results_quiz.php") ||
+            currentPage.includes("report_results_exam.php")
+
+        ) {
+            window.location = "report.php";
+
         } else {
-            // If not on one of the specified pages, just go back to the previous page
             window.history.back();
         }
     }

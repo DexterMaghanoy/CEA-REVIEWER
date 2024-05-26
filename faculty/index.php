@@ -163,7 +163,7 @@ try {
 
 
                     <div class="card text-bg-light text-black shadow-lg mb-3">
-                        <div class="card-header">Course</div>
+                        <div class="card-header"> Course</div>
                         <div class="card-body">
                             <?php
                             try {
@@ -180,7 +180,7 @@ try {
                                 // Display the program name and its corresponding student count
                                 if ($program) {
                                     echo '<ul class="list-group">';
-                                    echo '<li class="list-group-item">' . "📖 " . $program['program_name'] . ' <span style="font-size: 1.2em; font-weight: bold; color:black;" class="badge badge-primary badge-pill">' . '</span></li>';
+                                    echo '<li class="list-group-item">' . '<img height="35" width="35" src="./GIF/read.gif" alt="">' . " " . $program['program_name'] . ' <span style="font-size: 1.2em; font-weight: bold; color:black;" class="badge badge-primary badge-pill">' . '</span></li>';
                                     echo '</ul>';
                                 } else {
                                     // If no program found for the user's program ID
@@ -224,7 +224,9 @@ try {
                                 }
                                 ?>
                                 <p>
-                                <p>🎓</p> Number of students: <?php echo $studentCount; ?>
+                                <p>
+                                    <img height="35" width="35" src="../img/students.png" alt="">
+                                </p> Number of students: <?php echo $studentCount; ?>
                                 </p>
                             </div>
                         </div>
@@ -251,7 +253,7 @@ try {
                                     if ($courses) {
                                         echo '<ul class="list-group">';
                                         foreach ($courses as $course) {
-                                            echo '<li class="list-group-item">' . "📚 " . $course['course_code'] . ' - ' . $course['course_name'] . '</li>';
+                                            echo '<li class="list-group-item">' . " ". '<img height="35" width="35" src="./GIF/bookshelf.gif" alt="">' . $course['course_code'] . ' - ' . $course['course_name'] . '</li>';
                                         }
                                         echo '</ul>';
                                     } else {
@@ -411,6 +413,7 @@ try {
 
                             foreach ($courses as $course) {
                                 $courseName = $course['course_name'];
+                                //  $courseName = $course['course_code'];
                                 $passedAttempts = $course['passed_attempts'];
                                 $failedAttempts = $course['failed_attempts'];
                                 $totalAttempts = $passedAttempts + $failedAttempts;
@@ -437,8 +440,8 @@ try {
                                     } else {
                                         const labels = <?php echo json_encode($labels); ?>;
                                         const data = <?php echo json_encode($data); ?>;
+                                        const quizType = <?php echo $quiz_type; ?>;
 
-                                        // Debugging: Check the lengths of labels and data
                                         console.log('Labels:', labels);
                                         console.log('Data:', data);
 
@@ -449,13 +452,27 @@ try {
                                             backgroundColors.push('#000000'); // Fallback color
                                         }
 
-                                        const pieData = {
-                                            labels: labels,
-                                            datasets: [{
-                                                data: data,
-                                                backgroundColor: backgroundColors
-                                            }]
-                                        };
+                                        let pieData;
+
+                                        if (quizType !== 3) {
+                                            pieData = {
+                                                labels: labels,
+                                                datasets: [{
+                                                    data: data,
+                                                    backgroundColor: backgroundColors
+                                                }]
+                                            };
+                                        } else {
+                                            pieData = {
+                                                labels: ['EXAM'], // Only one label named "EXAM"
+                                                datasets: [{
+                                                    data: data,
+                                                    backgroundColor: backgroundColors
+                                                }]
+                                            };
+                                        }
+
+
 
                                         const ctx = document.getElementById('myPieChart').getContext('2d');
                                         const myPieChart = new Chart(ctx, {
@@ -470,12 +487,20 @@ try {
                                                     tooltip: {
                                                         callbacks: {
                                                             label: function(context) {
-                                                                var label = context.label || '';
-                                                                if (label) {
-                                                                    label += ': ';
+
+
+                                                                if (quizType !== 3) {
+                                                                    var label = context.label || '';
+                                                                    if (label) {
+                                                                        label += ': ';
+                                                                    }
+                                                                    label += context.formattedValue + '%';
+                                                                    return label;
+                                                                } else {
+                                                                    return context.formattedValue + '%';
                                                                 }
-                                                                label += context.formattedValue + '%';
-                                                                return label;
+
+
                                                             }
                                                         }
                                                     },
@@ -483,11 +508,26 @@ try {
                                                         color: '#ffffff',
                                                         font: {
                                                             weight: 'bold',
-                                                            size: 14
+                                                            size: 600
                                                         },
-                                                        formatter: function(value, context) {
-                                                            return context.chart.data.labels[context.dataIndex] + ': ' + value + ' %';
+
+                                                        label: function(context) {
+
+
+                                                            if (quizType !== 3) {
+                                                                var label = context.label || '';
+                                                                if (label) {
+                                                                    label += ': ';
+                                                                }
+                                                                label += context.formattedValue + '%';
+                                                                return label;
+                                                            } else {
+                                                                return context.formattedValue + '%';
+                                                            }
+
+
                                                         }
+
                                                     }
                                                 }
                                             }
@@ -495,14 +535,7 @@ try {
                                     }
                                 });
                             </script>
-
                         </div>
-
-
-
-
-
-
                     </div>
                 </div>
 

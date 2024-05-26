@@ -137,10 +137,11 @@ if (isset($_POST['update'])) {
         <?php
         include 'sidebar.php';
         ?>
+        <?php
+        include 'back.php';
+        ?>
         <div class="container">
-            <?php
-            include 'back.php';
-            ?>
+
             <div class="text-center mb-1 mt-2">
                 <h1>Edit Student</h1>
             </div>
@@ -164,7 +165,10 @@ if (isset($_POST['update'])) {
                         <!-- Number Input -->
                         <div class="mb-3">
                             <label for="stud_no" class="form-label">Student No.</label>
-                            <input type="text" class="form-control" id="stud_no" name="stud_no" value="<?php echo $stud_no; ?>" required>
+                            <input type="text" class="form-control" id="stud_no" name="stud_no" required autocomplete="off" pattern="[0-9-]*">
+                            <div class="invalid-feedback">
+                                Please enter a valid student number.
+                            </div>
                         </div>
 
                         <!-- First Name Input -->
@@ -186,11 +190,26 @@ if (isset($_POST['update'])) {
                         </div>
 
                         <!-- Password Input -->
+                        <style>
+                            .password-input-container {
+                                position: relative;
+                            }
+
+                            .toggle-password {
+                                position: absolute;
+                                right: 10px;
+                                /* Adjust as needed */
+                                top: 50%;
+                                transform: translateY(-50%);
+                                cursor: pointer;
+                                z-index: 1;
+                            }
+                        </style>
                         <div class="mb-3">
                             <label for="stud_password" class="form-label">Password</label>
                             <div class="password-input-container">
-                                <input type="password" class="form-control" id="stud_password" name="stud_password" pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{12,}" title="Must contain at least one number and one uppercase and lowercase letter, and at least 12 or more characters" value="<?php echo $stud_password; ?>" required>
                                 <span class="toggle-password" onclick="togglePasswordVisibility()"><i class="far fa-eye-slash"></i></span>
+                                <input type="password" class="form-control" id="stud_password" name="stud_password" pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{12,}" title="Must contain at least one number and one uppercase and lowercase letter, and at least 12 or more characters" value="<?php echo $stud_password; ?>" required>
                             </div>
                         </div>
 

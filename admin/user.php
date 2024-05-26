@@ -29,7 +29,7 @@ if (isset($_POST['toggle_status']) && isset($_POST['user_id'])) {
     exit;
 }
 
-$recordsPerPage = 10;
+$recordsPerPage = 7;
 $page = isset($_GET['page']) ? $_GET['page'] : 1;
 $offset = ($page - 1) * $recordsPerPage;
 

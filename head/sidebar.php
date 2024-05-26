@@ -68,9 +68,9 @@ if ($stmt->rowCount() > 0) {
         </li>
 
         <li class="sidebar-item">
-            <a href="course.php" class="sidebar-link">
+            <a href="subjects.php" class="sidebar-link">
                 <i class="lni lni-library"></i>
-                <span>Courses</span>
+                <span>Subjects</span>
             </a>
         </li>
         <li class="sidebar-item">

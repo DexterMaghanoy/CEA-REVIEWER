@@ -117,9 +117,10 @@ if (isset($_SESSION['program_id'])) {
             <?php include 'back.php'; ?>
             <div class="row justify-content-center mt-1">
                 <div class="col-md-">
-                    <div class="text-center mb-1">
+                    
+                <div class="text-center mb-1">
                         <div class="text-center mb-1">
-                            <h1>Record data of:
+                        <h1>Test data:
                                 <?php
                                 // Check if student_id is provided in the URL
                                 if (isset($_GET['student_id'])) {

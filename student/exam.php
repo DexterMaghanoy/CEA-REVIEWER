@@ -172,12 +172,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <style>
     .question-text {
         font-size: 30px;
-        /* Adjust the font size as needed */
         font-weight: bold;
-        /* Optionally make the text bold */
         margin-bottom: 10px;
-        /* Add some space between questions */
+        padding-left: 20px;
+
+
     }
+
     .form-check-input[type="radio"] {
         appearance: none;
         -webkit-appearance: none;
@@ -198,49 +199,63 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         <div class="container">
             <div class="row justify-content-center mt-5">
-                <div class="col-lg-8">
-                    <br><br>
-                    <h1 style="font-size: 35px;" id="quiz-title" class="text-center mb-4">EXAM</h1>
-                    <br><br>
-                    <?php if (!empty($questions)) : ?>
+                    <div class="col-lg-8" style="background-color: #F4D19B; border-radius: 10px; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2); border: 2px solid rgba(0, 0, 0, 0.1);">
+
+                        <br><br>
+                        <h1 style="font-size: 35px;" id="quiz-title" class="text-center mb-4">
+                            <img height="35" src="./icons/exam.gif" alt="" style="border-radius: 50%; border: 2px solid #000;">
 
 
-                        <form  style="font-size: 20px;" id="quiz-form" method="post">
-                            <?php $counter = 0; ?>
-                            <?php foreach ($questions as $key => $question) : ?>
-                                <div class="question-box <?php echo $counter === 0 ? '' : 'd-none'; ?>">
-                                    <div class="question-text"><?php echo $counter + 1 . ". " . htmlspecialchars($question['question_text']); ?></div>
-                                    <?php foreach (['A', 'B', 'C', 'D'] as $option) : ?>
-                                        <?php $optionKey = 'question_' . $option; ?>
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="radio" name="answer_<?php echo $question['question_id']; ?>" id="option<?php echo $option; ?>_<?php echo $question['question_id']; ?>" value="<?php echo htmlspecialchars($question[$optionKey]); ?>">
-                                            <label class="form-check-label" for="option<?php echo $option; ?>_<?php echo $question['question_id']; ?>"><?php echo htmlspecialchars($question[$optionKey]); ?></label>
+                            EXAM
+                        </h1>
+                        <br><br>
+                        <?php if (!empty($questions)) : ?>
+
+
+
+                            <form style="font-size: 20px;" id="quiz-form" method="post">
+                                <?php $counter = 0; ?>
+                                <?php foreach ($questions as $key => $question) : ?>
+                                    <div class="question-box <?php echo $counter === 0 ? '' : 'd-none'; ?>">
+                                        <div class="question-text"><?php echo $counter + 1 . ". " . htmlspecialchars($question['question_text']); ?></div>
+                                        <?php foreach (['A', 'B', 'C', 'D'] as $option) : ?>
+                                            <?php $optionKey = 'question_' . $option; ?>
+                                            <div style="padding-left: 100px;" class="form-check">
+                                                <input class="form-check-input" type="radio" name="answer_<?php echo $question['question_id']; ?>" id="option<?php echo $option; ?>_<?php echo $question['question_id']; ?>" value="<?php echo htmlspecialchars($question[$optionKey]); ?>">
+                                                <label class="form-check-label" for="option<?php echo $option; ?>_<?php echo $question['question_id']; ?>"><?php echo htmlspecialchars($question[$optionKey]); ?></label>
+                                            </div>
+                                        <?php endforeach; ?>
+                                    </div>
+                                    <?php $counter++; ?>
+                                <?php endforeach; ?>
+                                <br><br>
+                                <div class="container" style="background-color: #F4D19B;">
+                                    <div class="row">
+                                        <div class="col text-start">
+                                            <button style="font-size: 20px;" id="back-btn" class="text-start btn btn-primary <?php echo $counter === 0 ? 'd-none' : ''; ?>" type="button">◁ Back</button>
                                         </div>
-                                    <?php endforeach; ?>
+                                        <div class="col text-end">
+                                            <button style="font-size: 20px;" id="submit-btn" type="submit" class="text-end btn btn btn-primary">Submit</button>
+                                            <button style="font-size: 20px;" id="next-btn" class="text-end btn btn-primary <?php echo $counter === count($questions) - 1 ? 'd-none' : ''; ?>" type="button">Next ▷</button>
+                                        </div>
+                                    </div>
                                 </div>
-                                <?php $counter++; ?>
-                            <?php endforeach; ?>
-                            <br><br>
-                            <div class="text-end">
-                                <button id="submit-btn" type="submit" class="btn btn-primary">Submit</button>
-                                <button id="next-btn" class="btn btn-primary" type="button">Next</button>
-                            </div>
-
-
-                        </form>
-                    <?php else : ?>
-                        <p>No questions found.</p>
-                    <?php endif; ?>
-                    <br><br>
+                            </form>
+                        <?php else : ?>
+                            <p>No questions found.</p>
+                        <?php endif; ?>
+                        <br><br>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
 
 
 </body>
 
 </html>
+
+
 
 
 
@@ -253,10 +268,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     });
 </script>
 
-
 <script>
     document.addEventListener("DOMContentLoaded", function() {
         const questions = document.querySelectorAll('.question-box');
+        const backButton = document.getElementById('back-btn');
         const nextButton = document.getElementById('next-btn');
         const submitButton = document.getElementById('submit-btn');
         let currentQuestionIndex = 0;
@@ -268,6 +283,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
 
         function updateButtonVisibility() {
+            backButton.classList.toggle('d-none', currentQuestionIndex === 0);
             nextButton.classList.toggle('d-none', currentQuestionIndex === questions.length - 1);
             submitButton.classList.toggle('d-none', currentQuestionIndex !== questions.length - 1);
         }
@@ -285,24 +301,20 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             submitButton.disabled = !isAnyOptionSelected();
         }
 
-        nextButton.addEventListener('click', function() {
-            currentQuestionIndex++;
+        backButton.addEventListener('click', function() {
+            currentQuestionIndex--;
             showQuestion(currentQuestionIndex);
             updateButtonVisibility();
             updateNextButtonVisibility();
             updateSubmitButtonVisibility();
         });
 
-        // Add an event listener for the form submission
-        submitButton.addEventListener('click', function() {
-            // Check if any option is selected before submitting
-            if (isAnyOptionSelected()) {
-                // Submit the form
-                document.querySelector('form').submit();
-            } else {
-                // Show an alert or message indicating that an option must be selected
-                alert('Please select an option before submitting.');
-            }
+        nextButton.addEventListener('click', function() {
+            currentQuestionIndex++;
+            showQuestion(currentQuestionIndex);
+            updateButtonVisibility();
+            updateNextButtonVisibility();
+            updateSubmitButtonVisibility();
         });
 
         questions.forEach(question => {
@@ -318,6 +330,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         updateSubmitButtonVisibility();
     });
 </script>
+
+
 
 
 

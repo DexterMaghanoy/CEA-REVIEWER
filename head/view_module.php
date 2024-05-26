@@ -1,6 +1,5 @@
 <?php
 session_start();
-
 require '../api/db-connect.php';
 
 if (isset($_SESSION['program_id'])) {
@@ -11,22 +10,42 @@ if (isset($_SESSION['program_id'])) {
 }
 
 $course_id = $_GET['course_id'];
+$search = isset($_GET['search']) ? $_GET['search'] : '';
 
 $recordsPerPage = 10;
-$page = isset($_GET['page']) ? $_GET['page'] : 1;
+$page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 $offset = ($page - 1) * $recordsPerPage;
 
 // Build the SQL query with search functionality
 $sql = "SELECT * FROM tbl_module WHERE course_id = :course_id";
+if (!empty($search)) {
+    $sql .= " AND module_name LIKE :search";
+}
+$sql .= " LIMIT :limit OFFSET :offset";
+
 $result = $conn->prepare($sql);
 $result->bindParam(':course_id', $course_id, PDO::PARAM_INT);
+if (!empty($search)) {
+    $searchTerm = '%' . $search . '%';
+    $result->bindParam(':search', $searchTerm, PDO::PARAM_STR);
+}
+$result->bindParam(':limit', $recordsPerPage, PDO::PARAM_INT);
+$result->bindParam(':offset', $offset, PDO::PARAM_INT);
 $result->execute();
+
+$modules = $result->fetchAll(PDO::FETCH_ASSOC);
 
 // Count total number of records
 $countSql = "SELECT COUNT(*) as total FROM tbl_module WHERE course_id = :course_id";
+if (!empty($search)) {
+    $countSql .= " AND module_name LIKE :search";
+}
 
 $countStmt = $conn->prepare($countSql);
 $countStmt->bindParam(':course_id', $course_id, PDO::PARAM_INT);
+if (!empty($search)) {
+    $countStmt->bindParam(':search', $searchTerm, PDO::PARAM_STR);
+}
 $countStmt->execute();
 $totalCount = $countStmt->fetch(PDO::FETCH_ASSOC)['total'];
 $totalPages = ceil($totalCount / $recordsPerPage);
@@ -67,6 +86,8 @@ if (isset($_POST['moduleId']) && isset($_POST['moduleStatus'])) {
 }
 ?>
 
+
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -84,9 +105,6 @@ if (isset($_POST['moduleId']) && isset($_POST['moduleStatus'])) {
         .modal-lg-custom {
             max-width: 80%;
             /* Adjust the width as needed */
-
-
-
         }
     </style>
 </head>
@@ -95,15 +113,37 @@ if (isset($_POST['moduleId']) && isset($_POST['moduleStatus'])) {
     <div class="wrapper">
         <?php include 'sidebar.php'; ?>
         <div class="container">
-            <?php include 'back.php'; ?>
-            <div class="row justify-content-center mt-5">
+            <div class="row justify-content-center mt-4">
                 <div class="col-md-12">
                     <div class="text-center mb-4">
-                        <h1>Module</h1>
+                        <?php
+                        $courseSql = "SELECT course_name FROM tbl_course WHERE course_id = :course_id";
+                        $courseStmt = $conn->prepare($courseSql);
+                        $courseStmt->bindParam(':course_id', $_GET['course_id'], PDO::PARAM_INT);
+                        $courseStmt->execute();
+                        $SubjectName = $courseStmt->fetch(PDO::FETCH_ASSOC);
+
+                        // Check if course name is fetched successfully
+                        if ($SubjectName) {
+                            $courseName = $SubjectName['course_name'];
+                        } else {
+                            $courseName = "Unknown Course"; // Default value if course name not found
+                        }
+                        ?>
+
+                        <h1>Module: <span style="font-weight: normal;"><?php echo htmlspecialchars($courseName); ?></span></h1>
+
+
                     </div>
 
-                    <table style="background: linear-gradient(to left, rgba(220, 210, 211, 0.3), rgba(200, 240, 241, 0.3));" class="table table-bordered table-custom">
+                    <form action="" method="GET" class="mb-4" id="searchForm">
+                        <div class="input-group">
+                            <input type="text" class="form-control" placeholder="Search by module name" name="search" id="searchInput" value="<?php echo htmlspecialchars($search); ?>">
+                            <button class="btn btn-outline-secondary" type="button" id="clearSearchButton"><i class="lni lni-close"></i></button>
+                        </div>
+                    </form>
 
+                    <table style="background: linear-gradient(to left, rgba(220, 210, 211, 0.3), rgba(200, 240, 241, 0.3));" class="table table-bordered table-custom">
                         <caption>List of Modules</caption>
                         <thead class="table-dark">
                             <tr>
@@ -118,10 +158,16 @@ if (isset($_POST['moduleId']) && isset($_POST['moduleStatus'])) {
 
                             // Build the SQL query with search functionality
                             $sql = "SELECT * FROM tbl_module WHERE course_id = :course_id";
+                            if (!empty($search)) {
+                                $sql .= " AND module_name LIKE :search";
+                            }
                             $result = $conn->prepare($sql);
                             $result->bindParam(':course_id', $course_id, PDO::PARAM_INT);
+                            if (!empty($search)) {
+                                $searchTerm = '%' . $search . '%';
+                                $result->bindParam(':search', $searchTerm, PDO::PARAM_STR);
+                            }
                             $result->execute();
-
                             ?>
 
 
@@ -163,7 +209,7 @@ if (isset($_POST['moduleId']) && isset($_POST['moduleStatus'])) {
                         <ul class="pagination justify-content-center">
                             <?php for ($i = 1; $i <= $totalPages; $i++) : ?>
                                 <li class="page-item <?php echo $i == $page ? 'active' : ''; ?>">
-                                    <a class="page-link" href="?page=<?php echo $i; ?>"><?php echo $i; ?></a>
+                                    <a class="page-link" href="?page=<?php echo $i; ?>&search=<?php echo $search; ?>"><?php echo $i; ?></a>
                                 </li>
                             <?php endfor; ?>
                         </ul>
@@ -172,13 +218,12 @@ if (isset($_POST['moduleId']) && isset($_POST['moduleStatus'])) {
             </div>
         </div>
     </div>
-
     <div class="modal fade" id="moduleModal" tabindex="-1" aria-labelledby="moduleModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-xl">
             <div class="modal-content">
-                <div class="modal-header">
+                <div class="modal-header bg-primary text-light">
                     <h5 class="modal-title" id="moduleModalLabel">Module Details</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <iframe id="moduleIframe" style="width: 100%; height: 75vh;" frameborder="0"></iframe>
@@ -187,19 +232,48 @@ if (isset($_POST['moduleId']) && isset($_POST['moduleStatus'])) {
         </div>
     </div>
 
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe" crossorigin="anonymous"></script>
     <script>
         const viewModuleButtons = document.querySelectorAll('.view-module-btn');
         const moduleIframe = document.getElementById('moduleIframe');
+        const moduleModalLabel = document.getElementById('moduleModalLabel');
 
         viewModuleButtons.forEach(button => {
             button.addEventListener('click', function() {
                 const moduleId = this.getAttribute('data-module-id');
+                const moduleName = this.closest('tr').querySelector('td:nth-child(2)').textContent;
+                moduleModalLabel.textContent = `Module: "${moduleName}"`;
                 moduleIframe.src = `pdf_viewer.php?module_id=${moduleId}`;
+            });
+        });
+
+
+        const searchInput = document.getElementById('searchInput');
+        const moduleRows = document.querySelectorAll('table tbody tr');
+
+        searchInput.addEventListener('input', function() {
+            const searchText = this.value.trim().toLowerCase();
+
+            moduleRows.forEach(function(row) {
+                const moduleName = row.cells[1].textContent.trim().toLowerCase();
+
+                if (moduleName.includes(searchText)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
             });
         });
     </script>
 
+    <script>
+        const hamBurger = document.querySelector(".toggle-btn");
+
+        hamBurger.addEventListener("click", function() {
+            document.querySelector("#sidebar").classList.toggle("expand");
+        });
+    </script>
     <script>
         function toggleModuleStatus(moduleId) {
             const toggleSwitch = document.querySelector(`#toggleSwitch_${moduleId}`);
@@ -233,15 +307,3 @@ if (isset($_POST['moduleId']) && isset($_POST['moduleStatus'])) {
                 });
         }
     </script>
-
-
-</body>
-
-</html>
-<script>
-    const hamBurger = document.querySelector(".toggle-btn");
-
-    hamBurger.addEventListener("click", function() {
-        document.querySelector("#sidebar").classList.toggle("expand");
-    });
-</script>

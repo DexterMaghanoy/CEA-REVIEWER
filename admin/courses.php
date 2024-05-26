@@ -67,7 +67,7 @@ if (isset($_POST['toggle_status']) && isset($_POST['program_id'])) {
                     <div class="text-center">
                         <h1>Courses</h1>
                     </div>
-                    <a class="btn btn-outline-primary btn-sm" href="add_program.php?"><i class="lni lni-plus"></i></a><br><br>
+                    <a class="btn btn-outline-primary btn-sm" href="add_course.php?"><i class="lni lni-plus"></i></a><br><br>
                     <div class="table-responsive">
                         <table style="background: linear-gradient(to left, rgba(220, 210, 211, 0.3), rgba(200, 240, 241, 0.3));" class="table table-bordered table-custom">
 
@@ -86,7 +86,7 @@ if (isset($_POST['toggle_status']) && isset($_POST['program_id'])) {
                                             <td><?php echo $row['program_id']; ?></td>
                                             <td><?php echo $row['program_name']; ?></td>
                                             <td>
-                                                <a class="btn btn-primary btn-sm" href="edit_program.php?program_id=<?php echo $row['program_id']; ?>"><i class="lni lni-pencil"></i></a>
+                                                <a class="btn btn-primary btn-sm" href="edit_course.php?program_id=<?php echo $row['program_id']; ?>"><i class="lni lni-pencil"></i></a>
                                                 <form method="post" style="display: inline;">
                                                     <input type="hidden" name="program_id" value="<?php echo $row['program_id']; ?>">
                                                     <button type="submit" name="toggle_status" class="btn btn-sm <?php echo $row['program_status'] == 1 ? 'btn-success' : 'btn-warning'; ?>">

@@ -133,7 +133,7 @@ $totalPages = ceil($totalCount / $recordsPerPage);
                                             <td><?php echo $row['course_name']; ?></td>
                                             <td><?php echo $row['program_name']; ?></td>
                                             <td>
-                                                <a class="btn btn-info btn-sm" href="edit_course.php?course_id=<?php echo $row['course_id']; ?>"><i class="lni lni-pencil"></i></a>
+                                                <a class="btn btn-info btn-sm" href="edit_subject.php?course_id=<?php echo $row['course_id']; ?>"><i class="lni lni-pencil"></i></a>
                                                 <a class="btn btn-primary btn-sm" href="view_module.php?course_id=<?php echo $row['course_id']; ?>"><i class="lni lni-radio-button"></i></a>
                                             </td>
                                             <td>

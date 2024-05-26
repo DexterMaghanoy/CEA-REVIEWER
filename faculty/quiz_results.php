@@ -82,7 +82,7 @@ if (isset($_SESSION['program_id'])) {
         <div class="container mt-3 mb-3">
             <div class="row justify-content-center mt-2">
                 <div class="text-center mb-2 mt-3">
-                    <h1>Module Test Report</h1>
+                    <h1>Quiz Report</h1>
                 </div>
 
                 <?php include 'report_dropdown.php'; ?>

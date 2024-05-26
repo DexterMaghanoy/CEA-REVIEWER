@@ -16,12 +16,11 @@ if (isset($_POST['save'])) {
     $user_fname = filter_input(INPUT_POST, 'user_fname', FILTER_SANITIZE_STRING);
     $user_mname = filter_input(INPUT_POST, 'user_mname', FILTER_SANITIZE_STRING);
     $user_lname = filter_input(INPUT_POST, 'user_lname', FILTER_SANITIZE_STRING);
-    $user_image = filter_input(INPUT_POST, 'user_image', FILTER_SANITIZE_URL);
     $user_name = filter_input(INPUT_POST, 'user_name', FILTER_SANITIZE_STRING);
     $user_password = filter_input(INPUT_POST, 'user_password', FILTER_SANITIZE_STRING);
     $user_status = 1;
 
-    if (empty($program_id) || empty($type_id) || empty($user_fname) || empty($user_mname) || empty($user_lname) || empty($user_image) ||  empty($user_name) || empty($user_password)) {
+    if (empty($program_id) || empty($type_id) || empty($user_fname) || empty($user_mname) || empty($user_lname) ||  empty($user_name) || empty($user_password)) {
         echo '<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>';
         echo '<script src="https://cdn.jsdelivr.net/npm/sweetalert2@10.16.6/dist/sweetalert2.min.js"></script>';
         echo '<link href="https://cdn.jsdelivr.net/npm/sweetalert2@10.16.6/dist/sweetalert2.min.css" rel="stylesheet">';
@@ -32,13 +31,13 @@ if (isset($_POST['save'])) {
                     text: "Please input all fields.",
                     icon: "error"
                 }).then(() => {
-                    window.location.href = "faculty.php";
+                    window.location.href = "user.php";
                 });
             });
         </script>';
     } else {
-        $sql = "INSERT INTO `tbl_user`(`type_id`, `program_id`, `user_fname`, `user_mname`, `user_lname`, `user_image`, `user_name`, `user_password`, `user_status`) 
-        VALUES (:type_id,:program_id,:user_fname,:user_mname,:user_lname,:user_image,:user_name,:user_password,:user_status)";
+        $sql = "INSERT INTO `tbl_user`(`type_id`, `program_id`, `user_fname`, `user_mname`, `user_lname`, `user_name`, `user_password`, `user_status`) 
+        VALUES (:type_id,:program_id,:user_fname,:user_mname,:user_lname,:user_name,:user_password,:user_status)";
 
         $stmt = $conn->prepare($sql);
         $stmt->bindParam(":type_id", $type_id);
@@ -46,7 +45,6 @@ if (isset($_POST['save'])) {
         $stmt->bindParam(":user_fname", $user_fname);
         $stmt->bindParam(":user_mname", $user_mname);
         $stmt->bindParam(":user_lname", $user_lname);
-        $stmt->bindParam(":user_image", $user_image);
         $stmt->bindParam(":user_name", $user_name);
         $stmt->bindParam(":user_password", $user_password);
         $stmt->bindParam(":user_status", $user_status);
@@ -112,7 +110,7 @@ if (isset($_POST['save'])) {
             <div class="container">
                 <div class="row justify-content-center">
                     <div class="col-md-5">
-                        <form action="add_faculty.php" method="post">
+                        <form action="add_faculty.php?" method="post">
                             <div class="row">
                                 <!-- Program Select -->
                                 <div class="col-md-6 mb-3">
@@ -126,7 +124,7 @@ if (isset($_POST['save'])) {
                                         $programs = $stmtProgram->fetchAll(PDO::FETCH_ASSOC);
 
                                         foreach ($programs as $program) {
-                                            echo "<option value='" . $program['program_id'] . "'>" . $program['program_name'] . "</option>";
+                                            echo "<option value='" . htmlspecialchars($program['program_id']) . "'>" . htmlspecialchars($program['program_name']) . "</option>";
                                         }
                                         ?>
                                     </select>
@@ -144,7 +142,7 @@ if (isset($_POST['save'])) {
                                         $types = $stmtType->fetchAll(PDO::FETCH_ASSOC);
 
                                         foreach ($types as $type) {
-                                            echo "<option value='" . $type['type_id'] . "'>" . $type['type_name'] . "</option>";
+                                            echo "<option value='" . htmlspecialchars($type['type_id']) . "'>" . htmlspecialchars($type['type_name']) . "</option>";
                                         }
                                         ?>
                                     </select>
@@ -153,42 +151,58 @@ if (isset($_POST['save'])) {
                             <!-- First Name Input -->
                             <div class="mb-3">
                                 <label for="user_fname" class="form-label">First Name</label>
-                                <input type="text" class="form-control" id="user_fname" name="user_fname" pattern="[A-Za-z]+" title="Please enter only alphabetic characters" required>
+                                <input type="text" class="form-control" id="user_fname" name="user_fname" pattern="[A-Za-z]+" title="Please enter only alphabetic characters" value="<?php echo htmlspecialchars($_POST['user_fname'] ?? '', ENT_QUOTES); ?>" required>
                             </div>
 
                             <!-- Middle Name Input -->
                             <div class="mb-3">
                                 <label for="user_mname" class="form-label">Middle Name</label>
-                                <input type="text" class="form-control" id="user_mname" name="user_mname" pattern="[A-Za-z]+" title="Please enter only alphabetic characters" required>
+                                <input type="text" class="form-control" id="user_mname" name="user_mname" pattern="[A-Za-z]+" title="Please enter only alphabetic characters" value="<?php echo htmlspecialchars($_POST['user_mname'] ?? '', ENT_QUOTES); ?>" required>
                             </div>
 
                             <!-- Last Name Input -->
                             <div class="mb-3">
                                 <label for="user_lname" class="form-label">Last Name</label>
-                                <input type="text" class="form-control" id="user_lname" name="user_lname" pattern="[A-Za-z]+" title="Please enter only alphabetic characters" required>
+                                <input type="text" class="form-control" id="user_lname" name="user_lname" pattern="[A-Za-z]+" title="Please enter only alphabetic characters" value="<?php echo htmlspecialchars($_POST['user_lname'] ?? '', ENT_QUOTES); ?>" required>
                             </div>
+
 
                             <!-- User Image Input -->
-                            <div class="mb-3">
+                            <!-- <div class="mb-3">
                                 <label for="user_image" class="form-label">Image</label>
-                                <input class="form-control" type="file" id="user_image" name="user_image" required>
-                            </div>
+                                <input class="form-control" type="file" id="user_image" name="user_image"       >
+                            </div> -->
 
+                            <style>
+                                .password-input-container {
+                                    position: relative;
+                                }
+
+                                .toggle-password {
+                                    position: absolute;
+                                    right: 10px;
+                                    /* Adjust as needed */
+                                    top: 50%;
+                                    transform: translateY(-50%);
+                                    cursor: pointer;
+                                    z-index: 1;
+                                }
+                            </style>
                             <!-- Username Input -->
                             <div class="mb-3">
                                 <label for="user_name" class="form-label">Username</label>
-                                <input type="text" class="form-control" id="user_name" name="user_name" required>
+                                <input type="text" class="form-control" id="user_name" pattern="[\w.-]+@[a-zA-Z.-]+\.[a-zA-Z]{2,}" title="Please enter a valid email address" name="user_name" value="<?php echo htmlspecialchars($_POST['user_name'] ?? '', ENT_QUOTES); ?>" required>
                             </div>
+
 
                             <!-- Password Input -->
                             <div class="mb-3">
                                 <label for="user_password" class="form-label">Password</label>
                                 <div class="password-input-container">
                                     <input type="password" class="form-control" id="user_password" name="user_password" pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{12,}" title="Must contain at least one number and one uppercase and lowercase letter, and at least 12 or more characters" required>
-                                    <span class="toggle-password"><i class="far fa-eye-slash" id="togglePasswordIcon" onclick="togglePasswordVisibility()"></i></span>
+                                    <span class="toggle-password" onclick="togglePasswordVisibility()"><i class="far fa-eye-slash" id="togglePasswordIcon"></i></span>
                                 </div>
                             </div>
-
                             <!-- Hidden Employee ID and Submit Button -->
                             <input type="submit" class="btn btn-success mt-2" value="Save" name="save">
                         </form>

@@ -12,7 +12,7 @@ $allStudentbyProgram = $totalStudentsDataByProgram['total_students'];
 $passRates = [];
 foreach ($uniqueCourses as $course) {
     $totalAttempts = $course['failed_attempts'] + $course['passed_attempts'];
-    $passRates[$course['course_code']] = ($totalAttempts > 0) ? ((($course['passed_attempts'] / $totalAttempts) / $allStudentbyProgram) /  $totalStudents) * 100 : 0;
+    $passRates[$course['course_code']] = ($totalAttempts > 0) ? ((($course['passed_attempts'] / $totalAttempts) / $allStudentbyProgram) ) * 100 : 0;
 }
 ?>
 

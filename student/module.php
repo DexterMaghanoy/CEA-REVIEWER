@@ -502,8 +502,19 @@ if (isset($_SESSION['program_id'])) {
     <div class="modal fade" id="moduleModal" tabindex="-1" aria-labelledby="moduleModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-xl"> <!-- Adjust modal size as needed -->
             <div class="modal-content">
+                <style>
+                    .modal-header {
+                        background-color: #007bff;
+                        /* Professional blue color */
+                        color: #fff;
+                        /* White text for contrast */
+                        padding: 15px;
+                        /* Add padding for better spacing */
+                    }
+                </style>
+
                 <div class="modal-header">
-                    <h5 class="modal-title" id="moduleModalLabel"></h5>
+                    <h5 class="modal-title" id="moduleModalLabel">Module: <?php echo $row['module_name']; ?></h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">

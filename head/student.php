@@ -88,12 +88,12 @@ $totalPages = ceil($totalCount / $recordsPerPage);
         <?php
         include 'sidebar.php';
         ?>
-            <?php
-            include 'back.php';
-            ?>
+        <?php
+        include 'back.php';
+        ?>
 
         <div class="container">
-        
+
             <div class="row justify-content-center">
                 <div class="col-md-12">
                     <div class="text-center mt-3">
@@ -110,9 +110,9 @@ $totalPages = ceil($totalCount / $recordsPerPage);
                             <button class="btn btn-primary" type="submit">Search</button>
                         </div>
                     </form>
-                    <div class="table-responsive">
-                        <table class="table table-bordered border-secondary">
-                            <caption>List of Student</caption>
+                    <table style="background: linear-gradient(to left, rgba(220, 210, 211, 0.3), rgba(200, 240, 241, 0.3)); table-layout: auto; width: 100%;" class="table table-bordered table-custom">
+
+                            <caption>List of Student</caption>  
                             <thead class="table-dark">
                                 <tr>
                                     <th scope="col">Student No.</th>
@@ -157,20 +157,20 @@ $totalPages = ceil($totalCount / $recordsPerPage);
                             </tbody>
                         </table>
 
-                    </div>
-                    <!-- Pagination -->
-                    <nav aria-label="Page navigation">
-                        <ul class="pagination justify-content-center">
-                            <?php for ($i = 1; $i <= $totalPages; $i++) : ?>
-                                <li class="page-item <?php echo $i == $page ? 'active' : ''; ?>">
-                                    <a class="page-link" href="?page=<?php echo $i; ?>&search=<?php echo $search; ?>"><?php echo $i; ?></a>
-                                </li>
-                            <?php endfor; ?>
-                        </ul>
-                    </nav>
                 </div>
+                <!-- Pagination -->
+                <nav aria-label="Page navigation">
+                    <ul class="pagination justify-content-center">
+                        <?php for ($i = 1; $i <= $totalPages; $i++) : ?>
+                            <li class="page-item <?php echo $i == $page ? 'active' : ''; ?>">
+                                <a class="page-link" href="?page=<?php echo $i; ?>&search=<?php echo $search; ?>"><?php echo $i; ?></a>
+                            </li>
+                        <?php endfor; ?>
+                    </ul>
+                </nav>
             </div>
         </div>
+    </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe" crossorigin="anonymous"></script>
 </body>

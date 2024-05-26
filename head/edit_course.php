@@ -40,10 +40,10 @@ if (isset($_POST['update'])) {
                         $(document).ready(function(){
                             Swal.fire({
                                 title: "Success!",
-                                text: "Course updated successfully.",
+                                text: "Subject updated successfully.",
                                 icon: "success"
                             }).then(() => {
-                                window.location.href = "course.php";
+                                window.location.href = "subjects.php";
                             });
                         });
                     </script>';
@@ -52,10 +52,10 @@ if (isset($_POST['update'])) {
                 $(document).ready(function(){
                     Swal.fire({
                         title: "Failed!",
-                        text: "Failed to update course.",
+                        text: "Failed to update Subject.",
                         icon: "error"
                     }).then(() => {
-                        window.location.href = "course.php";
+                        window.location.href = "subjects.php";
                     });
                 });
                 </script>';
@@ -90,7 +90,7 @@ if (isset($_GET['course_id'])) {
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Edit Course</title>
+    <title>Edit Subject</title>
     <link href="https://cdn.lineicons.com/4.0/lineicons.css" rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
@@ -100,52 +100,69 @@ if (isset($_GET['course_id'])) {
 
 <body>
     <div class="wrapper">
-    <?php include 'sidebar.php'; ?>
-        <div class="main py-3">
-            
-            <div class="text-center mb-4">
-                <h1>Edit Course</h1>
+        <?php include 'sidebar.php'; ?>
+
+
+        <div class="container">
+
+            <div class="text-center mt-4 mb-4">
+                <?php
+                $courseSql = "SELECT course_name FROM tbl_course WHERE course_id = :course_id";
+                $courseStmt = $conn->prepare($courseSql);
+                $courseStmt->bindParam(':course_id', $_GET['course_id'], PDO::PARAM_INT);
+                $courseStmt->execute();
+                $SubjectName = $courseStmt->fetch(PDO::FETCH_ASSOC);
+
+                // Check if course name is fetched successfully
+                if ($SubjectName) {
+                    $courseName = $SubjectName['course_name'];
+                } else {
+                    $courseName = "Unknown Course"; // Default value if course name not found
+                }
+                ?>
+
+                <h1>Edit Subject: <span style="font-weight: normal;"><?php echo htmlspecialchars($courseName); ?></span></h1>
+
+
             </div>
-            <div class="container">
-                <div class="row justify-content-center">
-                    <div class="col-md-5">
-                        <form action="edit_course.php" method="post">
-                            <!-- Faculty Select -->
-                            <div class="mb-3">
-                                <label for="user_id" class="form-label">Faculty</label>
-                                <select class="form-select" id="user_id" name="user_id">
-                                    <?php
-                                    $sqlUser = "SELECT user_id, user_fname, user_lname, user_mname FROM tbl_user WHERE program_id = :program_id AND type_id = 3";
-                                    $stmtUser = $conn->prepare($sqlUser);
-                                    $stmtUser->bindParam(":program_id", $_SESSION['program_id']);
-                                    $stmtUser->execute();
-                                    $users = $stmtUser->fetchAll(PDO::FETCH_ASSOC);
+            <div class="row justify-content-center">
+                <div class="col-md-5">
+                    <form action="edit_course.php" method="post">
+                        <!-- Faculty Select -->
+                        <div class="mb-3">
+                            <label for="user_id" class="form-label">Faculty</label>
+                            <select class="form-select" id="user_id" name="user_id">
+                                <?php
+                                $sqlUser = "SELECT user_id, user_fname, user_lname, user_mname FROM tbl_user WHERE program_id = :program_id AND type_id = 3";
+                                $stmtUser = $conn->prepare($sqlUser);
+                                $stmtUser->bindParam(":program_id", $_SESSION['program_id']);
+                                $stmtUser->execute();
+                                $users = $stmtUser->fetchAll(PDO::FETCH_ASSOC);
 
-                                    foreach ($users as $user) {
-                                        $selected = ($user_id == $user['user_id']) ? "selected" : "";
-                                        echo "<option value='" . $user['user_id'] . "' $selected>" . $user['user_lname'] . ', ' . $user['user_fname'] . ' ' . $user['user_mname'] . "</option>";
-                                    }
-                                    ?>
-                                </select>
-                            </div>
+                                foreach ($users as $user) {
+                                    $selected = ($user_id == $user['user_id']) ? "selected" : "";
+                                    echo "<option value='" . $user['user_id'] . "' $selected>" . $user['user_lname'] . ', ' . $user['user_fname'] . ' ' . $user['user_mname'] . "</option>";
+                                }
+                                ?>
+                            </select>
+                        </div>
 
-                            <!-- Course Code Input -->
-                            <div class="mb-3">
-                                <label for="course_code" class="form-label">Course Code</label>
-                                <input type="text" class="form-control" id="course_code" name="course_code" value="<?php echo $course_code; ?>" required>
-                            </div>
+                        <!-- Course Code Input -->
+                        <div class="mb-3">
+                            <label for="course_code" class="form-label">Course Code</label>
+                            <input type="text" class="form-control" id="course_code" name="course_code" value="<?php echo $course_code; ?>" required>
+                        </div>
 
-                            <!-- Course Name Input -->
-                            <div class="mb-3">
-                                <label for="course_name" class="form-label">Course Name</label>
-                                <input type="text" class="form-control" id="course_name" name="course_name" value="<?php echo $course_name; ?>" required>
-                            </div>
+                        <!-- Course Name Input -->
+                        <div class="mb-3">
+                            <label for="course_name" class="form-label">Course Name</label>
+                            <input type="text" class="form-control" id="course_name" name="course_name" value="<?php echo $course_name; ?>" required>
+                        </div>
 
-                            <!-- Hidden Course ID and Submit Button -->
-                            <input type="hidden" name="course_id" value="<?php echo $course_id; ?>">
-                            <input type="submit" class="btn btn-success mt-2" value="Update" name="update">
-                        </form>
-                    </div>
+                        <!-- Hidden Course ID and Submit Button -->
+                        <input type="hidden" name="course_id" value="<?php echo $course_id; ?>">
+                        <input type="submit" class="btn btn-success mt-2" value="Update" name="update">
+                    </form>
                 </div>
             </div>
         </div>

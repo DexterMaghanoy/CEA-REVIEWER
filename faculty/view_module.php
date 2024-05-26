@@ -113,7 +113,7 @@ if (isset($_POST['moduleId']) && isset($_POST['moduleStatus'])) {
     <div class="wrapper">
         <?php include 'sidebar.php'; ?>
         <div class="container">
-            <div class="row justify-content-center mt-3">
+            <div class="row justify-content-center mt-4">
                 <div class="col-md-12">
                     <div class="text-center mb-4">
                         <?php

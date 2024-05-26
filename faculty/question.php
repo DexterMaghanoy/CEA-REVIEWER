@@ -64,8 +64,8 @@ $totalPages = ceil($totalCount / $recordsPerPage);
 
 
         <div class="container">
-            <div class="row justify-content-center mt-5">
-                <div class="col-md-10">
+            <div class="row justify-content-center mt-4">
+                <div class="col-md-12">
                     <div class="text-center mb-2">
                         <h1>Question: <?php
                                         $sql_module_name = "SELECT module_name FROM tbl_module WHERE module_id = :module_id"; // Fixed variable name
@@ -83,19 +83,22 @@ $totalPages = ceil($totalCount / $recordsPerPage);
                         <a class="btn btn-outline-primary btn-sm" href="import_question.php?program_id=<?php echo $program_id ?>&course_id=<?php echo $course_id ?>&module_id=<?php echo $module_id ?>"><i class="lni lni-upload"></i> Import Question</a>
                     </div>
 
-                    <table class="table table-bordered border-secondary" style="table-layout: auto; width: 100%;">
+                    <table style="background: linear-gradient(to left, rgba(220, 210, 211, 0.3), rgba(200, 240, 241, 0.3)); table-layout: auto; width: 100%;" class="table table-bordered table-custom">
+
+
                         <caption>List of Question</caption>
                         <thead>
-                            <tr>
+                            <tr class="bg-dark text-light">
                                 <th scope="col">Question</th>
                                 <th scope="col">Option A</th>
                                 <th scope="col">Option B</th>
                                 <th scope="col">Option C</th>
                                 <th scope="col">Option D</th>
                                 <th scope="col">Answer</th>
-                                <th scope="col" style="width: 100px" ;>Actions</th>
+                                <th scope="col" style="width: 100px">Actions</th>
                             </tr>
                         </thead>
+
                         <tbody>
                             <?php if ($result->rowCount() > 0) : ?>
                                 <?php while ($row = $result->fetch(PDO::FETCH_ASSOC)) : ?>
@@ -114,11 +117,12 @@ $totalPages = ceil($totalCount / $recordsPerPage);
                                 <?php endwhile; ?>
                             <?php else : ?>
                                 <tr>
-                                    <td colspan="4" class="text-center">No questions found for module.</td>
+                                    <td colspan="7" class="text-center">No questions found for module.</td>
                                 </tr>
                             <?php endif; ?>
                         </tbody>
                     </table>
+
                 </div>
                 <!-- Pagination -->
                 <nav aria-label="Page navigation">
