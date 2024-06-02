@@ -126,57 +126,72 @@ if (isset($_GET['stud_id'])) {
         <?php
         include 'sidebar.php';
         ?>
-            <div class="container">
+        <div class="container">
             <?php
-        include 'back.php';
-        ?>
+            include 'back.php';
+            ?>
             <div class="text-center mb-1 mt-2">
                 <h1>Edit Student</h1>
             </div>
-                <div class="row justify-content-center">
-                    <div class="col-md-5">
-                        <form action="edit_student.php" method="post">
-                            <!-- Number Input -->
-                            <div class="mb-3">
-                                <label for="stud_no" class="form-label">Student No.</label>
-                                <input type="text" class="form-control" id="stud_no" name="stud_no" value="<?php echo $stud_no; ?>" required>
-                            </div>
+            <div class="row justify-content-center">
+                <div class="col-md-5">
+                    <form action="edit_student.php" method="post">
+                        <!-- Number Input -->
+                        <div class="mb-3">
+                            <label for="stud_no" class="form-label">Student No.</label>
+                            <input type="text" class="form-control" id="stud_no" name="stud_no" value="<?php echo $stud_no; ?>" required>
+                        </div>
 
-                            <!-- First Name Input -->
-                            <div class="mb-3">
-                                <label for="stud_fname" class="form-label">First Name</label>
-                                <input type="text" class="form-control" id="stud_fname" name="stud_fname" value="<?php echo $stud_fname; ?>" pattern="[A-Za-z]+" title="Please enter only alphabetic characters" required>
-                            </div>
+                        <!-- First Name Input -->
+                        <div class="mb-3">
+                            <label for="stud_fname" class="form-label">First Name</label>
+                            <input type="text" class="form-control" id="stud_fname" name="stud_fname" value="<?php echo $stud_fname; ?>" pattern="^(?!.*[<>?;$\\\/.]).*$" title="Please enter only alphabetic characters" required>
+                        </div>
 
-                            <!-- Middle Name Input -->
-                            <div class="mb-3">
-                                <label for="stud_mname" class="form-label">Middle Name</label>
-                                <input type="text" class="form-control" id="stud_mname" name="stud_mname" value="<?php echo $stud_mname; ?>" pattern="[A-Za-z]+" title="Please enter only alphabetic characters" required>
-                            </div>
+                        <!-- Middle Name Input -->
+                        <div class="mb-3">
+                            <label for="stud_mname" class="form-label">Middle Name</label>
+                            <input type="text" class="form-control" id="stud_mname" name="stud_mname" value="<?php echo $stud_mname; ?>" pattern="^(?!.*[<>?;$\\\/.]).*$" title="Please enter only alphabetic characters" required>
+                        </div>
 
-                            <!-- Last Name Input -->
-                            <div class="mb-3">
-                                <label for="stud_lname" class="form-label">Last Name</label>
-                                <input type="text" class="form-control" id="stud_lname" name="stud_lname" value="<?php echo $stud_lname; ?>" pattern="[A-Za-z]+" title="Please enter only alphabetic characters" required>
-                            </div>
+                        <!-- Last Name Input -->
+                        <div class="mb-3">
+                            <label for="stud_lname" class="form-label">Last Name</label>
+                            <input type="text" class="form-control" id="stud_lname" name="stud_lname" value="<?php echo $stud_lname; ?>" pattern="^(?!.*[<>?;$\\\/.]).*$" title="Please enter only alphabetic characters" required>
+                        </div>
 
-                            <!-- Password Input -->
-                            <div class="mb-3">
-                                <label for="stud_password" class="form-label">Password</label>
-                                <div class="password-input-container">
-                                    <input type="password" class="form-control" id="stud_password" name="stud_password" pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{12,}" title="Must contain at least one number and one uppercase and lowercase letter, and at least 12 or more characters" value="<?php echo $stud_password; ?>" required>
-                                    <span class="toggle-password" onclick="togglePasswordVisibility()"><i class="far fa-eye-slash"></i></span>
-                                </div>
+                        <style>
+                            .password-input-container {
+                                position: relative;
+                            }
+
+                            .toggle-password {
+                                position: absolute;
+                                right: 10px;
+                                /* Adjust as needed */
+                                top: 50%;
+                                transform: translateY(-50%);
+                                cursor: pointer;
+                                z-index: 1;
+                            }
+                        </style>
+                        <!-- Password Input -->
+                        <div class="mb-3">
+                            <label for="stud_password" class="form-label">Password</label>
+                            <div class="password-input-container">
+                                <input type="password" class="form-control" id="stud_password" name="stud_password" pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{12,}" title="Must contain at least one number and one uppercase and lowercase letter, and at least 12 or more characters" value="<?php echo $stud_password; ?>" required>
+                                <span class="toggle-password" onclick="togglePasswordVisibility()"><i class="far fa-eye-slash"></i></span>
                             </div>
-                            <!-- Hidden Student ID and Submit Button -->
-                            <input type="hidden" name="stud_id" value="<?php echo $stud_id; ?>">
-                            <input type="submit" class="btn btn-success mt-2" value="Update" name="update">
-                        </form>
-                    </div>
+                        </div>
+                        <!-- Hidden Student ID and Submit Button -->
+                        <input type="hidden" name="stud_id" value="<?php echo $stud_id; ?>">
+                        <input type="submit" class="btn btn-success mt-2" value="Update" name="update">
+                    </form>
                 </div>
             </div>
         </div>
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe" crossorigin="anonymous"></script>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe" crossorigin="anonymous"></script>
 </body>
 <script>
     const hamBurger = document.querySelector(".toggle-btn");

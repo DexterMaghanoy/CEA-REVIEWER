@@ -24,14 +24,14 @@ if (isset($_GET['course_id'])) {
     $course_id = $_GET['course_id'];
 
     // Prepare SQL query to fetch questions related to the course with course_status = 1 and module_status = 1
-    $sql = "SELECT q.*, m.module_id 
+    $sql = "SELECT q.* 
             FROM tbl_question q 
             INNER JOIN tbl_course c ON q.course_id = c.course_id 
             INNER JOIN tbl_module m ON q.module_id = m.module_id 
             WHERE q.course_id = :course_id 
             AND c.program_id = :program_id 
             AND c.course_status = 1
-            AND m.module_status = 1 LIMIT 15";
+            AND m.module_status = 1 limit 15";
 
     // Prepare and execute the SQL query
     $stmt = $conn->prepare($sql);
@@ -46,10 +46,18 @@ if (isset($_GET['course_id'])) {
     shuffle($questions);
 }
 
+
+
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    // Processing form submission
     if (isset($_SESSION['stud_id'])) {
         $stud_id = $_SESSION['stud_id'];
-        $quiz_type = 2; // Setting quiz_type to 2
+        // Fetch the module_id of the first question
+        $sqlModuleId = "SELECT module_id FROM tbl_question LIMIT 1";
+        $stmtModuleId = $conn->prepare($sqlModuleId);
+        $stmtModuleId->execute();
+        $rowModuleId = $stmtModuleId->fetch(PDO::FETCH_ASSOC);
+        $module_id = $rowModuleId['module_id'];
 
         // Retrieve submitted answers
         $answers = [];
@@ -59,73 +67,100 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $answers[$question_id] = htmlspecialchars($value); // Sanitize input
             }
         }
-
-        // Check if this is the first attempt for this specific combination
-        $sqlMaxAttempt = "SELECT COALESCE(MAX(attempt_id), 0) AS max_attempt 
-                          FROM tbl_quiz_answers 
-                          WHERE course_id = :course_id 
-                          AND student_id = :student_id 
-                          AND quiz_type = :quiz_type";
-        $stmtMaxAttempt = $conn->prepare($sqlMaxAttempt);
-        $stmtMaxAttempt->bindParam(":course_id", $course_id, PDO::PARAM_INT);
-        $stmtMaxAttempt->bindParam(":student_id", $stud_id, PDO::PARAM_INT);
-        $stmtMaxAttempt->bindParam(":quiz_type", $quiz_type, PDO::PARAM_INT);
-        $stmtMaxAttempt->execute();
-        $max_attempt_row = $stmtMaxAttempt->fetch(PDO::FETCH_ASSOC);
-        $new_attempt_id = $max_attempt_row['max_attempt'] + 1; // Increment the maximum attempt_id by 1
-
         // Calculate the score
         $score = 0;
-        $total_questions = count($answers);
+        $total_questions = count($answers); // Get the total number of questions attempted
+        // Loop through each question and process the answers
         foreach ($answers as $question_id => $answer) {
-            // Fetch the correct answer and module_id for the question
-            $sqlQuestionDetails = "SELECT question_answer, module_id FROM tbl_question WHERE question_id = :question_id";
-            $stmtQuestionDetails = $conn->prepare($sqlQuestionDetails);
-            $stmtQuestionDetails->bindParam(":question_id", $question_id, PDO::PARAM_INT);
-            $stmtQuestionDetails->execute();
-            $questionDetails = $stmtQuestionDetails->fetch(PDO::FETCH_ASSOC);
-            $correct_answer = $questionDetails['question_answer'];
-            $module_id = $questionDetails['module_id'];
+            // Fetch the correct answer for the question
+            $sqlCorrectAnswer = "SELECT question_answer FROM tbl_question WHERE question_id = :question_id";
+            $stmtCorrectAnswer = $conn->prepare($sqlCorrectAnswer);
+            $stmtCorrectAnswer->bindParam(":question_id", $question_id, PDO::PARAM_INT);
+            $stmtCorrectAnswer->execute();
+            $correct_answer = $stmtCorrectAnswer->fetchColumn();
 
+            // Compare the answer with the correct answer to calculate the score
             if ($answer === $correct_answer) {
                 $score++;
             }
 
+            // Fetch the module_id from tbl_question based on question_id
+            $sqlFetchModuleId = "SELECT module_id FROM tbl_question WHERE question_id = :question_id";
+            $stmtFetchModuleId = $conn->prepare($sqlFetchModuleId);
+            $stmtFetchModuleId->bindParam(":question_id", $question_id, PDO::PARAM_INT);
+            $stmtFetchModuleId->execute();
+            $row = $stmtFetchModuleId->fetch(PDO::FETCH_ASSOC);
+            $module_id = $row['module_id'];
+
+            // Determine the new attempt_id
+            $sqlMaxAttempt = "SELECT COALESCE(MAX(attempt_id), 0) AS max_attempt FROM tbl_quiz_answers WHERE module_id = :module_id AND student_id = :student_id AND question_id = :question_id";
+            $stmtMaxAttempt = $conn->prepare($sqlMaxAttempt);
+            $stmtMaxAttempt->bindParam(":module_id", $module_id, PDO::PARAM_INT);
+            $stmtMaxAttempt->bindParam(":student_id", $stud_id, PDO::PARAM_INT);
+            $stmtMaxAttempt->bindParam(":question_id", $question_id, PDO::PARAM_INT);
+            $stmtMaxAttempt->execute();
+            $max_attempt_row = $stmtMaxAttempt->fetch(PDO::FETCH_ASSOC);
+            $new_attempt_id = $max_attempt_row['max_attempt'] + 1; // Increment the maximum attempt_id by 1
+
+            $quiz_type = 2; // Setting quiz_type to 2
+
             // Insert the answer into tbl_quiz_answers
-            $sqlInsertAnswer = "INSERT INTO tbl_quiz_answers (course_id, module_id, student_id, question_id, chosen_answer, quiz_type, attempt_id, answer_status) 
-                                VALUES (:course_id, :module_id, :student_id, :question_id, :chosen_answer, :quiz_type, :attempt_id, :answer_status)";
+            $sqlInsertAnswer = "INSERT INTO tbl_quiz_answers (course_id, module_id, student_id, question_id, chosen_answer, quiz_type, attempt_id, answer_status) VALUES (:course_id, :module_id, :student_id, :question_id, :chosen_answer, :quiz_type, :attempt_id, :answer_status)";
             $stmtInsertAnswer = $conn->prepare($sqlInsertAnswer);
             $stmtInsertAnswer->bindParam(":course_id", $course_id, PDO::PARAM_INT);
             $stmtInsertAnswer->bindParam(":module_id", $module_id, PDO::PARAM_INT);
             $stmtInsertAnswer->bindParam(":student_id", $stud_id, PDO::PARAM_INT);
             $stmtInsertAnswer->bindParam(":question_id", $question_id, PDO::PARAM_INT);
             $stmtInsertAnswer->bindParam(":chosen_answer", $answer, PDO::PARAM_STR);
-            $stmtInsertAnswer->bindParam(":quiz_type", $quiz_type, PDO::PARAM_INT);
-            $stmtInsertAnswer->bindParam(":attempt_id", $new_attempt_id, PDO::PARAM_INT); // Use the new attempt_id for all answers
+            $stmtInsertAnswer->bindParam(":attempt_id", $new_attempt_id, PDO::PARAM_INT); // Using the new attempt_id
+
+            // Check if the chosen answer is correct
             $answer_status = ($answer === $correct_answer) ? 1 : 0;
-            $stmtInsertAnswer->bindParam(":answer_status", $answer_status, PDO::PARAM_INT);
+            $stmtInsertAnswer->bindParam(":answer_status", $answer_status, PDO::PARAM_INT); // Bind answer status
+            $stmtInsertAnswer->bindParam(":quiz_type", $quiz_type, PDO::PARAM_INT); // Bind quiz_type
 
             $stmtInsertAnswer->execute();
-        }
 
+
+
+
+
+
+
+
+
+            $quiz_type = 2;
+            // Insert the answer into tbl_quiz_answers with the new attempt_id
+            $sqlInsertAnswer = "INSERT INTO tbl_quiz_answers (module_id, student_id, question_id, chosen_answer, attempt_id, quiz_type, course_id) VALUES (:module_id, :student_id, :question_id, :chosen_answer, :attempt_id, :quiz_type, :course_id)";
+            $stmtInsertAnswer = $conn->prepare($sqlInsertAnswer);
+            $stmtInsertAnswer->bindParam(":course_id", $course_id, PDO::PARAM_INT);
+            $stmtInsertAnswer->bindParam(":module_id", $module_id, PDO::PARAM_INT);
+            $stmtInsertAnswer->bindParam(":student_id", $stud_id, PDO::PARAM_INT);
+            $stmtInsertAnswer->bindParam(":question_id", $question_id, PDO::PARAM_INT);
+            $stmtInsertAnswer->bindParam(":chosen_answer", $answer, PDO::PARAM_STR);
+            $stmtInsertAnswer->bindParam(":attempt_id", $new_attempt_id, PDO::PARAM_INT);
+            $stmtInsertAnswer->bindParam(":quiz_type", $quiz_type, PDO::PARAM_INT);
+        }
         // Insert the result into tbl_result
+        // Check if the student passed the quiz (for example, if score is above 70%)
         $passingScore = 0.5;
         $passStatus = ($score / $total_questions) >= $passingScore ? 1 : 0;
 
-        $sqlInsertResult = "INSERT INTO tbl_result (course_id, program_id, module_id, stud_id, result_score, total_questions, quiz_type, result_status, attempt_id) 
-                            VALUES (:course_id, :program_id, :module_id, :stud_id, :result_score, :total_questions, :quiz_type, :result_status, :attempt_id)";
-        $stmtInsertResult = $conn->prepare($sqlInsertResult);
-        $stmtInsertResult->bindParam(":course_id", $course_id, PDO::PARAM_INT);
-        $stmtInsertResult->bindParam(":program_id", $program_id, PDO::PARAM_INT);
-        $stmtInsertResult->bindParam(":module_id", $module_id, PDO::PARAM_INT);
-        $stmtInsertResult->bindParam(":stud_id", $stud_id, PDO::PARAM_INT);
-        $stmtInsertResult->bindParam(":result_score", $score, PDO::PARAM_INT);
-        $stmtInsertResult->bindParam(":total_questions", $total_questions, PDO::PARAM_INT);
-        $stmtInsertResult->bindParam(":quiz_type", $quiz_type, PDO::PARAM_INT);
-        $stmtInsertResult->bindParam(":result_status", $passStatus, PDO::PARAM_INT);
-        $stmtInsertResult->bindParam(":attempt_id", $new_attempt_id, PDO::PARAM_INT); // Use the new attempt_id
+        // Insert the result into tbl_result including result_status
+        $sql = "INSERT INTO tbl_result (course_id, program_id, module_id, stud_id, result_score, total_questions, quiz_type, result_status) 
+        VALUES (:course_id, :program_id, :module_id, :stud_id, :result_score, :total_questions, :quiz_type, :result_status)";
+        $stmt = $conn->prepare($sql);
+        $stmt->bindParam(":course_id", $course_id, PDO::PARAM_INT);
+        $stmt->bindParam(":program_id", $program_id, PDO::PARAM_INT); // Add this line to bind program_id
+        $stmt->bindParam(":module_id", $module_id, PDO::PARAM_INT);
+        $stmt->bindParam(":stud_id", $stud_id, PDO::PARAM_INT);
+        $stmt->bindParam(":result_score", $score, PDO::PARAM_INT);
+        $stmt->bindParam(":total_questions", $total_questions, PDO::PARAM_INT); // Pass the total questions attempted
+        $stmt->bindParam(":quiz_type", $quiz_type, PDO::PARAM_INT);
+        $stmt->bindParam(":result_status", $passStatus, PDO::PARAM_INT); // Bind result_status
 
-        $stmtInsertResult->execute();
+        // Execute the statement to insert the result
+        $stmt->execute();
     }
 
     // Redirect to index page after submission
@@ -153,7 +188,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 }
 ?>
-
 
 
 <!DOCTYPE html>

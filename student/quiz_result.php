@@ -119,7 +119,7 @@ if (isset($_SESSION['stud_id']) && isset($_GET['course_id'])) {
 
                                     </tr>
                                 </thead>
-                                
+
                                 <tbody>
                                     <?php if ($result->rowCount() > 0) : ?>
                                         <?php foreach ($results as $row) : ?>
@@ -138,7 +138,7 @@ if (isset($_SESSION['stud_id']) && isset($_GET['course_id'])) {
                                                     <?php
                                                     $formattedDate = date("M d, Y", strtotime($row['date_created']));
                                                     ?>
-                                                   <?php echo $search; ?><?php echo $formattedDate; ?>
+                                                    <?php echo $search; ?><?php echo $formattedDate; ?>
                                                 </td>
                                             </tr>
                                         <?php endforeach; ?>

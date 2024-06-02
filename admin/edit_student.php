@@ -165,29 +165,36 @@ if (isset($_POST['update'])) {
                         <!-- Number Input -->
                         <div class="mb-3">
                             <label for="stud_no" class="form-label">Student No.</label>
-                            <input type="text" class="form-control" id="stud_no" name="stud_no" required autocomplete="off" pattern="[0-9-]*">
+                            <input type="text" class="form-control" id="stud_no" value="<?php echo $stud_no; ?>" name="stud_no" required autocomplete="off" pattern="[0-9-]*">
                             <div class="invalid-feedback">
                                 Please enter a valid student number.
                             </div>
                         </div>
+                        <script>
+                            // Prevent script injection in input fields
+                            document.getElementById('stud_no').addEventListener('input', function() {
+                                this.value = this.value.replace(/[^0-9-]/g, '');
+                            });
+                        </script>
 
                         <!-- First Name Input -->
                         <div class="mb-3">
                             <label for="stud_fname" class="form-label">First Name</label>
-                            <input type="text" class="form-control" id="stud_fname" name="stud_fname" value="<?php echo $stud_fname; ?>" pattern="[A-Za-z]+" title="Please enter only alphabetic characters" required>
+                            <input type="text" class="form-control" id="stud_fname" name="stud_fname" value="<?php echo $stud_fname; ?>" pattern="[A-Za-z ]+" title="Please enter only alphabetic characters" required>
                         </div>
 
                         <!-- Middle Name Input -->
                         <div class="mb-3">
                             <label for="stud_mname" class="form-label">Middle Name</label>
-                            <input type="text" class="form-control" id="stud_mname" name="stud_mname" value="<?php echo $stud_mname; ?>" pattern="[A-Za-z]+" title="Please enter only alphabetic characters" required>
+                            <input type="text" class="form-control" id="stud_mname" name="stud_mname" value="<?php echo $stud_mname; ?>" pattern="[A-Za-z ]+" title="Please enter only alphabetic characters" required>
                         </div>
 
                         <!-- Last Name Input -->
                         <div class="mb-3">
                             <label for="stud_lname" class="form-label">Last Name</label>
-                            <input type="text" class="form-control" id="stud_lname" name="stud_lname" value="<?php echo $stud_lname; ?>" pattern="[A-Za-z]+" title="Please enter only alphabetic characters" required>
+                            <input type="text" class="form-control" id="stud_lname" name="stud_lname" value="<?php echo $stud_lname; ?>" pattern="[A-Za-z ]+" title="Please enter only alphabetic characters" required>
                         </div>
+
 
                         <!-- Password Input -->
                         <style>
@@ -209,9 +216,32 @@ if (isset($_POST['update'])) {
                             <label for="stud_password" class="form-label">Password</label>
                             <div class="password-input-container">
                                 <span class="toggle-password" onclick="togglePasswordVisibility()"><i class="far fa-eye-slash"></i></span>
-                                <input type="password" class="form-control" id="stud_password" name="stud_password" pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{12,}" title="Must contain at least one number and one uppercase and lowercase letter, and at least 12 or more characters" value="<?php echo $stud_password; ?>" required>
+                                <input type="password" class="form-control" value="<?php echo htmlspecialchars($stud_password); ?>" id="stud_password" name="stud_password" pattern="^(?!.*[.<>\.])(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{12,}$" title="Must contain at least one number and one uppercase and lowercase letter, and at least 12 or more characters, without spaces" required>
+
                             </div>
                         </div>
+
+
+                        <script>
+                            function validatePasswordInput() {
+                                var passwordInput = document.getElementById("stud_password");
+                                var passwordValue = passwordInput.value;
+
+                                // Remove spaces
+                                passwordValue = passwordValue.replace(/\s/g, '');
+
+                                // Remove special characters
+                                passwordValue = passwordValue.replace(/[<>\/]/g, '');
+
+                                // Update the input value
+                                passwordInput.value = passwordValue;
+                            }
+
+                            // Add an event listener to the input field to validate input on change
+                            document.getElementById("stud_password").addEventListener("input", validatePasswordInput);
+                        </script>
+
+
 
                         <!-- Hidden Student ID and Submit Button -->
                         <input type="hidden" name="stud_id" value="<?php echo $stud_id; ?>">

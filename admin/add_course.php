@@ -47,7 +47,6 @@ if (isset($_POST['save'])) {
             });
             </script>';
         } else {
-            // Insert new program
             $sql = "INSERT INTO `tbl_program`(`program_name`, `program_status`) VALUES (:program_name, :program_status)";
             $stmt = $conn->prepare($sql);
             $stmt->bindParam(":program_name", $program_name);
@@ -61,10 +60,10 @@ if (isset($_POST['save'])) {
                     $(document).ready(function(){
                         Swal.fire({
                             title: "Success!",
-                            text: "Program added successfully.",
+                            text: "Course added successfully.",
                             icon: "success"
                         }).then(() => {
-                            window.location.href = "program.php";
+                            window.location.href = "courses.php";
                         });
                     });
                 </script>';
@@ -73,10 +72,10 @@ if (isset($_POST['save'])) {
                     $(document).ready(function(){
                         Swal.fire({
                             title: "Failed!",
-                            text: "Failed to add program.",
+                            text: "Failed to add Course.",
                             icon: "error"
                         }).then(() => {
-                            window.location.href = "program.php";
+                            window.location.href = "courses.php";
                         });
                     });
                     </script>';
@@ -115,11 +114,11 @@ if (isset($_POST['save'])) {
             <div class="container">
                 <div class="row justify-content-center">
                     <div class="col-md-5">
-                        <form action="add_program.php" method="post">
+                        <form action="add_course.php" method="post">
                             <!-- Program Name Input -->
                             <div class="mb-3">
                                 <label for="program_name" class="form-label">Course Name</label>
-                                <input type="text" class="form-control" id="program_name" name="program_name"required>
+                                <input type="text" class="form-control" id="program_name" name="program_name" pattern="[A-Za-z0-9\s]+" title="Invalid Input" required>
                             </div>
                             <input type="submit" class="btn btn-success mt-2" value="Save" name="save">
                         </form>

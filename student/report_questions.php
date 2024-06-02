@@ -125,19 +125,37 @@ if (isset($_SESSION['program_id'], $_SESSION['stud_id'])) {
                         function drawChart() {
                             const chartData = <?php echo $chartDataJson; ?>;
                             var data = new google.visualization.DataTable();
-                            data.addColumn('string', 'Course');
+                            data.addColumn('string', 'Subject');
                             data.addColumn('number', 'Pass Rate');
+                            data.addColumn({
+                                type: 'string',
+                                role: 'style' // Add a style role column
+                            });
                             data.addColumn({
                                 type: 'string',
                                 role: 'annotation'
                             });
 
                             chartData.forEach(function(course) {
-                                data.addRow([course.course_code, course.pass_rate, course.pass_rate.toFixed(2) + '%']);
+                                var strengthWeakness;
+                                var passRateString;
+
+                                if (course.pass_rate === 0 || !course.pass_rate) {
+                                    strengthWeakness = 'No record';
+                                    passRateString = '0%';
+                                } else {
+                                    strengthWeakness = course.pass_rate >= 50 ? 'Good' : 'Weak';
+                                    passRateString = course.pass_rate.toFixed(2) + '%';
+                                }
+
+                                var annotation = passRateString + ' ' + strengthWeakness + ' ';
+                                var color = strengthWeakness === 'Good' ? 'green' : (strengthWeakness === 'Weak' ? 'red' : 'gray'); // Determine color based on strength, weakness, or no record
+
+                                data.addRow([course.course_name, course.pass_rate, color, annotation]);
                             });
 
                             var options = {
-                                title: 'Pass Rates by Course',
+                                title: 'Pass Rates by Subject',
                                 chartArea: {
                                     width: '50%'
                                 },
@@ -147,7 +165,7 @@ if (isset($_SESSION['program_id'], $_SESSION['stud_id'])) {
                                     maxValue: 100
                                 },
                                 vAxis: {
-                                    title: 'Course'
+                                    title: 'Subject'
                                 },
                                 bars: 'horizontal',
                                 legend: {
@@ -159,6 +177,9 @@ if (isset($_SESSION['program_id'], $_SESSION['stud_id'])) {
                             chart.draw(data, options);
                         }
                     </script>
+
+
+
 
                 </div>
                 <div class="col-sm">

@@ -43,7 +43,10 @@ foreach ($uniqueCourses as $course) {
                 }
                 echo $hideTestCard; ?> class="card subject-<?php echo ($index % 3) + 1; ?> mb-1" style="background: linear-gradient(to left, rgba(220, 210, 211, 0.3), rgba(200, 240, 241, 0.3));">
             <div class="card-body" style="padding: 0.5rem;">
-                <h5 class="card-title" style="font-size: 1rem;"><?php echo '<img height="25" width="35" src="../GIF/book-write.gif"> ' . $course['course_code'] . ' -  ' . $course['course_name']; ?></h5>
+                <h5 class="card-title" style="font-size: 1rem;">
+                    <?php echo '<img height="25" width="35" src="../GIF/book-write.gif" class="rounded-circle"> ' . $course['course_code'] . ' -  ' . $course['course_name']; ?>
+                </h5>
+
                 <p style="font-size: 0.8rem; margin-bottom: 0;">Student who answered: <?php echo $answeredStudents . " / " . $allStudentbyProgram; ?></p>
                 <p style="font-size: 0.8rem; margin-bottom: 0;">Module Passed: <?php echo $course['passed_attempts']; ?></p>
                 <p style="font-size: 0.8rem; margin-bottom: 0;">Attempts: <?php echo $course['failed_attempts'] + $course['passed_attempts']; ?></p>
@@ -126,5 +129,3 @@ foreach ($uniqueCourses as $course) {
         chart.draw(data, options);
     }
 </script>
-
-<div id="myChartQuiz"></div>

@@ -44,7 +44,7 @@ if (isset($_POST['save'])) {
             $(document).ready(function(){
                 Swal.fire({
                     title: "Failed!",
-                    text: "Course Already Exists!",
+                    text: "Subject Already Exists!",
                     icon: "error"
                 });
             });
@@ -54,12 +54,18 @@ if (isset($_POST['save'])) {
             $sql = "INSERT INTO `tbl_course`(`program_id`, `user_id`, `course_code`, `course_name`, `course_status`)
              VALUES (:program_id,:user_id,:course_code,:course_name,:course_status)";
             $stmt = $conn->prepare($sql);
+            $program_id = filter_var($program_id, FILTER_SANITIZE_NUMBER_INT);
+            $user_id = filter_var($user_id, FILTER_SANITIZE_NUMBER_INT);
+            $course_code = htmlspecialchars(filter_var($course_code, FILTER_SANITIZE_STRING));
+            $course_name = htmlspecialchars(filter_var($course_name, FILTER_SANITIZE_STRING));
+            $course_status = htmlspecialchars(filter_var($course_status, FILTER_SANITIZE_STRING));
+
+            // Bind sanitized parameters to statement
             $stmt->bindParam(":program_id", $program_id);
             $stmt->bindParam(":user_id", $user_id);
             $stmt->bindParam(":course_code", $course_code);
             $stmt->bindParam(":course_name", $course_name);
             $stmt->bindParam(":course_status", $course_status);
-
             if ($stmt->execute()) {
                 echo '<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>';
                 echo '<script src="https://cdn.jsdelivr.net/npm/sweetalert2@10.16.6/dist/sweetalert2.min.js"></script>';
@@ -71,7 +77,7 @@ if (isset($_POST['save'])) {
                             text: "Course added successfully.",
                             icon: "success"
                         }).then(() => {
-                            window.location.href = "courses.php";
+                            window.location.href = "subjects.php";
                         });
                     });
                 </script>';
@@ -83,7 +89,7 @@ if (isset($_POST['save'])) {
                             text: "Failed to add course.",
                             icon: "error"
                         }).then(() => {
-                            window.location.href = "courses.php";
+                            window.location.href = "subjects.php";
                         });
                     });
                     </script>';
@@ -125,16 +131,12 @@ $facultyMembers = $stmtFaculty->fetchAll(PDO::FETCH_ASSOC);
 
         <div class="container">
             <div class="text-center mb-4 mt-5">
-                <h1>Add Course</h1>
+                <h1>Add Subject</h1>
             </div>
             <div class="container">
                 <div class="row justify-content-center">
                     <div class="col-md-5">
                         <form action="add_subject.php" method="post">
-
-
-
-
                             <script>
                                 function validateForm() {
                                     var programId = document.getElementById("program_id").value;
@@ -166,8 +168,6 @@ $facultyMembers = $stmtFaculty->fetchAll(PDO::FETCH_ASSOC);
                                     ?>
                                 </select>
                             </div>
-
-                            <!-- Faculty Select -->
                             <div class="mb-3">
                                 <label for="user_id" class="form-label">Faculty</label>
                                 <select class="form-select" id="user_id" name="user_id" required>
@@ -180,8 +180,6 @@ $facultyMembers = $stmtFaculty->fetchAll(PDO::FETCH_ASSOC);
                                     ?>
                                 </select>
                             </div>
-
-
                             <script>
                                 document.getElementById('program_id').addEventListener('change', function() {
                                     var programId = this.value;
@@ -207,37 +205,14 @@ $facultyMembers = $stmtFaculty->fetchAll(PDO::FETCH_ASSOC);
                                     xhr.send();
                                 });
                             </script>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-                            <!-- Course Code Input -->
                             <div class="mb-3">
                                 <label for="course_code" class="form-label">Course Code</label>
-                                <input type="text" class="form-control" id="course_code" name="course_code" required>
+                                <input type="text" class="form-control" id="course_code" name="course_code" pattern="[A-Za-z0-9\s]+" title="Invalid Input" required>
                             </div>
-
-                            <!-- Course Name Input -->
                             <div class="mb-3">
                                 <label for="course_name" class="form-label">Course Name</label>
-                                <input type="text" class="form-control" id="course_name" name="course_name" required>
+                                <input type="text" class="form-control" id="course_name" name="course_name" pattern="[A-Za-z0-9\s]+" title="Invalid Input" required>
                             </div>
-
-                            <!-- Submit Button -->
                             <input type="submit" class="btn btn-success mt-2" value="Save" name="save">
                         </form>
                     </div>

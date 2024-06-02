@@ -57,6 +57,9 @@ if (isset($_POST['save'])) {
             // Execute the query
             if ($stmt->execute()) {
                 // Handle successful query execution
+                // Set session variables
+
+
                 echo '
                     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
                     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10.16.6/dist/sweetalert2.min.js"></script>
@@ -68,7 +71,7 @@ if (isset($_POST['save'])) {
                                 text: "Question added successfully.",
                                 icon: "success"
                             }).then(() => {
-                                window.location.href = "question.php";
+                                window.location.href = "question.php?program_id=' . $_SESSION['program_id'] . '&course_id=' . $_SESSION['course_id'] . '&module_id=' . $_SESSION['module_id'] . '";
                             });
                         });
                     </script>';
@@ -85,7 +88,7 @@ if (isset($_POST['save'])) {
                                 text: "Failed to add question.",
                                 icon: "error"
                             }).then(() => {
-                                window.location.href = "question.php";
+                                window.location.href = "question.php?program_id=' . $_SESSION['program_id'] . '&course_id=' . $_SESSION['course_id'] . '&module_id=' . $_SESSION['module_id'] . '";
                             });
                         });
                     </script>';

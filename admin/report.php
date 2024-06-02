@@ -183,14 +183,13 @@ unset($course);
                         }
                         echo $hideAllGraph;
                         ?> style="border: 1px solid lightblue;
-                                    padding: 10px;
-                                    box-sizing: border-box;
-                                    border-radius: 15px; 
-                                    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-                                    height: 450px;
-                " id="myChartAll" class="col-sm"></div>
+                        padding: 10px;
+                        box-sizing: border-box;
+                        border-radius: 15px; 
+                        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+                        height: 100vhl;" id="myChartAll" class="col-sm"></div>
 
-            
+
                 <div class="col-sm">
                     <?php if (!empty($courses)) : ?>
                         <?php

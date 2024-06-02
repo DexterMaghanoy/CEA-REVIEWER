@@ -116,49 +116,53 @@ if (isset($_POST['save'])) {
 <body>
     <div class="wrapper">
         <?php include 'sidebar.php'; ?>
+        <?php
+        include 'back.php';
+        ?>
+
+        <div class="container">
             <div class="text-center mb-4">
                 <h1>Add Question</h1>
             </div>
-            <div class="container">
-                <div class="row justify-content-center">
-                    <div class="col-md-5">
-                        <form action="add_question.php" method="post">
-                            <!-- Question Text Input -->
-                            <div class="mb-3">
-                                <label for="question_text" class="form-label">Question</label>
-                                <textarea class="form-control" id="question_text" name="question_text" rows="3" required></textarea>
+            <div class="row justify-content-center">
+                <div class="col-md-5">
+                    <form action="add_question.php" method="post">
+                        <!-- Question Text Input -->
+                        <div class="mb-3">
+                            <label for="question_text" class="form-label">Question</label>
+                            <textarea class="form-control" id="question_text" name="question_text" rows="3" required></textarea>
+                        </div>
+                        <!-- Option Inputs -->
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="question_A" class="form-label">Option A</label>
+                                <input type="text" class="form-control" id="question_A" name="question_A" required>
                             </div>
-                            <!-- Option Inputs -->
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <label for="question_A" class="form-label">Option A</label>
-                                    <input type="text" class="form-control" id="question_A" name="question_A" required>
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label for="question_B" class="form-label">Option B</label>
-                                    <input type="text" class="form-control" id="question_B" name="question_B" required>
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label for="question_C" class="form-label">Option C</label>
-                                    <input type="text" class="form-control" id="question_C" name="question_C" required>
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label for="question_D" class="form-label">Option D</label>
-                                    <input type="text" class="form-control" id="question_D" name="question_D" required>
-                                </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="question_B" class="form-label">Option B</label>
+                                <input type="text" class="form-control" id="question_B" name="question_B" required>
                             </div>
-                            <!-- Answer Input -->
-                            <div class="mb-3">
-                                <label for="question_answer" class="form-label">Correct Answer</label>
-                                <input type="text" class="form-control" id="question_answer" name="question_answer" required>
+                            <div class="col-md-6 mb-3">
+                                <label for="question_C" class="form-label">Option C</label>
+                                <input type="text" class="form-control" id="question_C" name="question_C" required>
                             </div>
-                            <!-- Hidden Course ID and Submit Button -->
-                            <input type="hidden" name="course_id" value="<?php echo $_SESSION['course_id']; ?>">
-                            <button type="submit" class="btn btn-primary" name="save">Save</button>
-                        </form>
-                    </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="question_D" class="form-label">Option D</label>
+                                <input type="text" class="form-control" id="question_D" name="question_D" required>
+                            </div>
+                        </div>
+                        <!-- Answer Input -->
+                        <div class="mb-3">
+                            <label for="question_answer" class="form-label">Correct Answer</label>
+                            <input type="text" class="form-control" id="question_answer" name="question_answer" required>
+                        </div>
+                        <!-- Hidden Course ID and Submit Button -->
+                        <input type="hidden" name="course_id" value="<?php echo $_SESSION['course_id']; ?>">
+                        <button type="submit" class="btn btn-primary" name="save">Save</button>
+                    </form>
                 </div>
             </div>
+        </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe" crossorigin="anonymous"></script>
 </body>

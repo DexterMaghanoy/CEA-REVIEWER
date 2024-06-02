@@ -17,11 +17,14 @@ $offset = ($page - 1) * 10;
 $resultsPerPage = 10;
 if ($user_id) {
     // Modified SQL query to include condition for quiz_type = 3
-    $sql = "SELECT r.stud_id, s.stud_fname, s.stud_mname, s.stud_lname, r.created_at, r.result_score, r.total_questions, r.quiz_type, COUNT(*) AS attempts
-    FROM tbl_result r
-    INNER JOIN tbl_student s ON r.stud_id = s.stud_id
-    WHERE r.result_status = 1 AND r.quiz_type = 3
-    GROUP BY r.stud_id LIMIT $resultsPerPage OFFSET $offset";
+    $sql = "SELECT r.stud_id, s.stud_fname, s.stud_mname, s.stud_lname, r.created_at, r.result_score, r.total_questions, r.quiz_type, COUNT(*) AS attempts,
+    (SELECT COUNT(*) FROM tbl_result WHERE stud_id = r.stud_id AND quiz_type = 3 AND result_status = 1) / COUNT(*) * 100 AS success_rate
+FROM tbl_result r
+INNER JOIN tbl_student s ON r.stud_id = s.stud_id
+WHERE r.quiz_type = 3
+GROUP BY r.stud_id 
+ORDER BY success_rate DESC
+LIMIT $resultsPerPage OFFSET $offset ";
 
     // Prepare and execute the SQL query
     $stmt = $conn->prepare($sql);
@@ -38,7 +41,7 @@ if ($user_id) {
 }
 
 // Fetch all courses regardless of the program
-$sql = "SELECT * FROM tbl_course";
+$sql = "SELECT * FROM tbl_course where course_status = 1";
 $result = $conn->prepare($sql);
 $result->execute();
 $courses = $result->fetchAll(PDO::FETCH_ASSOC);
@@ -46,11 +49,19 @@ $courses = $result->fetchAll(PDO::FETCH_ASSOC);
 // Process data for graph
 $graphData = [];
 foreach ($results as $row) {
+    // Calculate pass rate based on attempts
     $passRate = ($row['attempts'] > 0) ? (100 / $row['attempts']) : 0;
+
+    // Set success rate to 0 if result_status is 0
+    if ($row['success_rate'] == 0) {
+        $passRate = 0;
+    }
+
+    // Add data to graphData array
     $graphData[] = [
         'Student Name' => $row['stud_fname'] . ' ' . $row['stud_lname'],
         'Score' => $passRate,
-        'Tooltip' => number_format($passRate, 2) . '%'
+        'Tooltip' => number_format($passRate, 2) . '%' // Format tooltip
     ];
 }
 
@@ -90,56 +101,59 @@ foreach ($results as $row) {
                 <div class="col-sm">
                     <div id="myChart" style="border: 1px solid lightblue; padding: 10px; box-sizing: border-box; border-radius: 15px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); width:100%; max-width:600px; height:500px;"></div>
 
+
+
+
+
                     <script>
-    google.charts.load('current', {
-        'packages': ['corechart']
-    });
-    google.charts.setOnLoadCallback(drawChart);
+                        google.charts.load('current', {
+                            'packages': ['corechart']
+                        });
+                        google.charts.setOnLoadCallback(drawChart);
 
-    function drawChart() {
-        const data = new google.visualization.DataTable();
-        data.addColumn('string', 'Student Name');
-        data.addColumn('number', 'Score');
-        data.addColumn({
-            type: 'string',
-            role: 'tooltip',
-            'p': {
-                'html': true
-            }
-        });
+                        function drawChart() {
+                            const data = new google.visualization.DataTable();
+                            data.addColumn('string', 'Student Name');
+                            data.addColumn('number', 'Success Rate');
 
-        <?php foreach ($graphData as $row) : ?>
-            data.addRow([
-                '<?php echo htmlspecialchars($row['Student Name']); ?>',
-                <?php echo $row['Score']; ?>,
-                '<?php echo htmlspecialchars($row['Tooltip']); ?>'
-            ]);
-        <?php endforeach; ?>
+                            <?php foreach ($graphData as $row) : ?>
 
-        const options = {
-            title: 'Student Performance by Module',
-            hAxis: {
-                title: 'Pass Rate',
-                minValue: 0,
-                maxValue: 100
-            },
-            vAxis: {
-                title: 'Student Name'
-            },
-            chartArea: {
-                width: '50%',
-                height: '70%'
-            }
-        };
 
-        const chart = new google.visualization.BarChart(document.getElementById('myChart'));
-        chart.draw(data, options);
-    }
-</script>
+
+
+                                data.addRow([
+                                    '<?php echo htmlspecialchars($row['Student Name']); ?>',
+                                    <?php
+                                    echo $row['Score']; ?> // Ensure to use 'Score' instead of 'Success Rate'
+                                ]);
+                            <?php endforeach; ?>
+
+                            const options = {
+                                title: 'Student Performance by Module',
+                                hAxis: {
+                                    title: 'Success Rate',
+                                    minValue: 0,
+                                    maxValue: 100
+                                },
+                                vAxis: {
+                                    title: 'Student Name'
+                                },
+                                chartArea: {
+                                    width: '50%',
+                                    height: '70%'
+                                }
+                            };
+
+                            const chart = new google.visualization.BarChart(document.getElementById('myChart'));
+                            chart.draw(data, options);
+                        }
+                    </script>
+
 
                 </div>
 
                 <div class="col-sm">
+                    <!-- Table of Student Performance -->
                     <!-- Table of Student Performance -->
                     <table class="table table-bordered table-custom">
                         <caption>List of Student Performance</caption>
@@ -148,8 +162,7 @@ foreach ($results as $row) {
                                 <th scope="col">Student Name</th>
                                 <th scope="col">Date</th>
                                 <th scope="col">Attempts</th>
-                                <th scope="col">Rate</th>
-                                
+                                <th scope="col">Success Rate</th> <!-- Changed 'Rate' to 'Success Rate' for clarity -->
                             </tr>
                         </thead>
                         <tbody>
@@ -159,16 +172,42 @@ foreach ($results as $row) {
                                 </tr>
                             <?php else : ?>
                                 <?php foreach ($results as $row) : ?>
+                                    <!-- Wrap the row with the link -->
                                     <tr style="text-align: center;">
-                                        <td><?php echo htmlspecialchars($row['stud_fname'] . ' ' . $row['stud_mname'] . ' ' . $row['stud_lname']); ?></td>
+
+                                        <td>
+                                            <a href="student_record_exam.php?student_id=<?php echo $row['stud_id']; ?>">
+
+                                                <?php echo htmlspecialchars($row['stud_fname'] . ' ' . $row['stud_mname'] . ' ' . $row['stud_lname']); ?>
+                                            </a>
+
+                                        </td>
                                         <td><?php echo date("M d, Y", strtotime($row['created_at'])); ?></td>
                                         <td><?php echo htmlspecialchars($row['attempts']); ?></td>
-                                        <td><?php echo number_format(100/$row['attempts'], 2); ?></td>
+                                        <td>
+                                            <?php
+                                            $sqlForResultStatusOne = "SELECT COUNT(*) AS success_count FROM tbl_result WHERE stud_id = :stud_id AND quiz_type = 3 AND result_status = 1";
+                                            $stmtForResultStatusOne = $conn->prepare($sqlForResultStatusOne);
+                                            $stmtForResultStatusOne->bindParam(':stud_id', $row['stud_id']);
+                                            $stmtForResultStatusOne->execute();
+                                            $resultForResultStatusOne = $stmtForResultStatusOne->fetch(PDO::FETCH_ASSOC);
+                                            if ($resultForResultStatusOne['success_count'] > 0) {
+                                                $successRate = ($resultForResultStatusOne['success_count'] / $row['attempts']) * 100;
+                                                echo number_format($successRate, 2) . '%';
+                                            } else {
+                                                echo '0.0%';
+                                            }
+                                            ?>
+                                        </td>
+
                                     </tr>
                                 <?php endforeach; ?>
                             <?php endif; ?>
+
                         </tbody>
                     </table>
+
+
 
                     <!-- Pagination -->
                     <nav aria-label="Page navigation">
@@ -207,3 +246,12 @@ foreach ($results as $row) {
 </body>
 
 </html>
+
+
+<script>
+    const hamBurger = document.querySelector(".toggle-btn");
+
+    hamBurger.addEventListener("click", function() {
+        document.querySelector("#sidebar").classList.toggle("expand");
+    });
+</script>

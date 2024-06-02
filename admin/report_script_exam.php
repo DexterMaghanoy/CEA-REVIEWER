@@ -49,7 +49,8 @@
             $totalStudentsData = $stmtTotalStudents->fetch(PDO::FETCH_ASSOC);
             $totalStudents = $totalStudentsData['total_students'];
 
-            echo '<img height="25" width="35" src="../GIF/questions-and-answers.gif">';
+            echo '<img height="25" width="35" src="../GIF/questions-and-answers.gif" class="rounded-circle">';
+
             echo ' EXAM';
             ?>
             <p>Students who answered: <?php echo $answeredStudents . " / " . $totalStudents; ?></p>
@@ -79,7 +80,7 @@
     function drawChart() {
         // Fetching data from PHP
         const courseData = <?php echo json_encode($courses); ?>;
-        const chartData = [
+        let chartData = [
             ['Course', 'Pass Rate', {
                 role: 'style'
             }, {
@@ -88,9 +89,14 @@
         ];
 
         <?php
-        $SubjectRate = (($answeredModulePassedStudents / $answeredModuleAttemptsStudents) * 100) / $totalStudents;
-
-        echo "chartData.push(['Overall', $SubjectRate, getRandomColor(), 'Subject Rate: " . number_format($SubjectRate, 2) . "%']);";
+        // Calculate pass rate and set default values if necessary
+        if ($answeredModuleAttemptsStudents > 0) {
+            $SubjectRate = (($answeredModulePassedStudents / $answeredModuleAttemptsStudents) * 100) / $totalStudents;
+            echo "chartData.push(['Overall', $SubjectRate, getRandomColor(), 'Exam Rate: " . number_format($SubjectRate, 2) . "%']);";
+        } else {
+            // If no data available, set default values
+            echo "chartData.push(['Overall', 0, getRandomColor(), 'No data available']);";
+        }
         ?>
 
         const options = {

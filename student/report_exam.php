@@ -144,9 +144,12 @@ if ($results) {
 
                 </div>
                 <div class="col-sm">
-                    <div class="col-sm">
-                        <div class="card" style="background: linear-gradient(to left, rgba(220, 210, 211, 0.3), rgba(200, 240, 241, 0.3));">
-                            <div class="card-body">
+                    <div class="card" style="background: linear-gradient(to left, rgba(220, 210, 211, 0.3), rgba(200, 240, 241, 0.3));">
+
+
+                            <div style="color: black;" class="card-body">
+                        <a style="color: black;" href="student_exam_result.php">
+
                                 <h5 class="card-title">EXAM</h5>
                                 <?php
                                 $query = "SELECT 
@@ -166,11 +169,57 @@ if ($results) {
                                 if ($result && $result['total_attempts'] > 0) {
                                     echo "<p class='card-text'>Attempts: " . $result['total_attempts'] . "</p>";
                                     if ($result['max_status'] == 0) {
-                                        echo "<p class='card-text'>Score: N/A</p>";
+
+                                        $Currentquery = "SELECT 
+                                        COUNT(*) AS total_attempts, 
+                                        SUM(result_status = 1) AS passed_attempts,
+                                        SUM(result_score) AS total_score,
+                                        SUM(total_questions) AS total_questions,
+                                        MAX(result_status) AS max_status
+                                  FROM tbl_result 
+                                  WHERE stud_id = :stud_id AND quiz_type = 3 and attempt_id = :attempt_id";
+                                        $Currentstmt = $conn->prepare($Currentquery);
+                                        $Currentstmt->bindParam(':stud_id', $_SESSION['stud_id'], PDO::PARAM_INT);
+                                        $Currentstmt->bindParam(':attempt_id', $result['total_attempts']);
+                                        $Currentstmt->execute();
+                                        $Currentresult = $Currentstmt->fetch(PDO::FETCH_ASSOC);
+
+
+                                        echo "<p class='card-text'>Score: " . $result['total_score'] . "/" . $Currentresult['total_questions'] . "</p>";
                                         echo "<p class='card-text'>Result: N/A</p>";
                                     } else {
-                                        echo "<p class='card-text'>Score: " . $result['total_score'] . "/" . $result['total_questions'] . "</p>";
-                                        echo "<p class='card-text'>Result: " . ($result['passed_attempts'] > 0 ? "Passed" : "Failed") . "</p>";
+
+                                        $Currentquery = "SELECT 
+                                        COUNT(*) AS total_attempts, 
+                                        SUM(result_status = 1) AS passed_attempts,
+                                        SUM(result_score) AS total_score,
+                                        SUM(total_questions) AS total_questions,
+                                        MAX(result_status) AS max_status
+                                  FROM tbl_result 
+                                  WHERE stud_id = :stud_id AND quiz_type = 3 and attempt_id = :attempt_id";
+                                        $Currentstmt = $conn->prepare($Currentquery);
+                                        $Currentstmt->bindParam(':stud_id', $_SESSION['stud_id'], PDO::PARAM_INT);
+                                        $Currentstmt->bindParam(':attempt_id', $result['total_attempts']);
+                                        $Currentstmt->execute();
+                                        $Currentresult = $Currentstmt->fetch(PDO::FETCH_ASSOC);
+
+
+                                        // Calculate the percentage
+                                        $percentage = ($Currentresult['total_score'] / $Currentresult['total_questions']) * 100;
+
+                                        // Determine the color based on the percentage
+                                        if ($percentage >= 50) {
+                                            // Green color for pass
+                                            $colorClass = 'text-success';
+                                        } else {
+                                            // Red color for fail
+                                            $colorClass = 'text-danger';
+                                        }
+
+                                        // Output the score with conditional styling
+                                        echo "<p class='card-text'><span style='color: black;'>Score:</span> <strong class='" . $colorClass . "'>" . $Currentresult['total_score'] . "/" . $Currentresult['total_questions'] . "</strong></p>";
+
+                                        echo "<p class='card-text'>Result: <span style='color: " . ($Currentresult['passed_attempts'] > 0 ? "green" : "red") . ";'><strong>" . ($Currentresult['passed_attempts'] > 0 ? "Passed" : "Failed") . "</strong></span></p>";
                                     }
                                 } else {
                                     echo "<p class='card-text'>Attempts: No Record</p>";
@@ -178,12 +227,20 @@ if ($results) {
                                     echo "<p class='card-text'>Result: No Record</p>";
                                 }
                                 ?>
+                        </a>
 
                             </div>
-                        </div>
+
+
+                    </div>
+                    <div class="col-sm">
+
                     </div>
 
+
                 </div>
+
+
             </div>
         </div>
     </div>
@@ -199,7 +256,6 @@ if ($results) {
             mainContent.classList.toggle("expand");
         });
     </script>
-
     <script>
         google.charts.load('current', {
             'packages': ['corechart']
@@ -218,6 +274,10 @@ if ($results) {
                     'html': true
                 }
             });
+            data.addColumn({
+                type: 'string',
+                role: 'style'
+            });
 
             // Fetch data from the server using PHP
             <?php
@@ -229,10 +289,11 @@ if ($results) {
             // Check if data is fetched successfully
             if ($result && $result['total_attempts'] > 0) {
                 $passRate = $result['total_attempts'] != 0 ? number_format(100 * $result['passed_attempts'] / $result['total_attempts'], 2) : 0;
-                echo "data.addRow(['" . $_SESSION['stud_fname'] . " " . $_SESSION['stud_lname'] . "', " . $passRate . ", 'Pass Rate: " . $passRate . "%']);";
+                $color = $passRate >= 50 ? 'green' : 'red';
+                echo "data.addRow(['" . $_SESSION['stud_fname'] . " " . $_SESSION['stud_lname'] . "', " . $passRate . ", 'Pass Rate: " . $passRate . "%', '" . $color . "']);";
             } else {
                 // Handle if no data is available
-                echo "data.addRow(['Student', 0, 'No exam data available.']);";
+                echo "data.addRow(['Student', 0, 'No exam data available.', 'red']);";
             }
             ?>
 

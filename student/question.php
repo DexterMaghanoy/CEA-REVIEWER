@@ -15,15 +15,12 @@ if (isset($_SESSION['program_id'])) {
     $result->execute();
 
     // Fetch the result and store it in a variable to use later
-
     $courses = $result->fetchAll(PDO::FETCH_ASSOC);
 } else {
     // Redirect to login page if session data is not set
     header("Location: ../index.php");
-
     exit();
 }
-
 
 function sanitizeInput($input)
 {
@@ -79,21 +76,33 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $answers[$question_id] = sanitizeInput($value);
             }
         }
+
         // Calculate the score
         $score = 0;
         $total_questions = count($answers); // Get the total number of questions attempted
+
+        // Inside the POST submission block
+
+        $quiz_type = 1;
+
+        // Fetch the maximum attempt_id for the given combination
+        $sqlMaxAttempt = "SELECT COALESCE(MAX(attempt_id), 0) AS max_attempt 
+FROM tbl_quiz_answers 
+WHERE course_id = :course_id 
+AND student_id = :student_id 
+AND quiz_type = :quiz_type 
+AND module_id = :module_id";
+        $stmtMaxAttempt = $conn->prepare($sqlMaxAttempt);
+        $stmtMaxAttempt->bindParam(":course_id", $course_id, PDO::PARAM_INT);
+        $stmtMaxAttempt->bindParam(":student_id", $stud_id, PDO::PARAM_INT);
+        $stmtMaxAttempt->bindParam(":quiz_type", $quiz_type, PDO::PARAM_INT);
+        $stmtMaxAttempt->bindParam(":module_id", $module_id, PDO::PARAM_INT);
+        $stmtMaxAttempt->execute();
+        $max_attempt_row = $stmtMaxAttempt->fetch(PDO::FETCH_ASSOC);
+        $new_attempt_id = $max_attempt_row['max_attempt'] + 1; // Increment the maximum attempt_id by 1
+
         // Loop through each question and process the answers
         foreach ($answers as $question_id => $answer) {
-            // Fetch the maximum attempt_id for the current combination
-            $sqlMaxAttempt = "SELECT COALESCE(MAX(attempt_id), 0) AS max_attempt FROM tbl_quiz_answers WHERE module_id = :module_id AND student_id = :student_id AND question_id = :question_id";
-            $stmtMaxAttempt = $conn->prepare($sqlMaxAttempt);
-            $stmtMaxAttempt->bindParam(":module_id", $module_id, PDO::PARAM_INT);
-            $stmtMaxAttempt->bindParam(":student_id", $stud_id, PDO::PARAM_INT);
-            $stmtMaxAttempt->bindParam(":question_id", $question_id, PDO::PARAM_INT);
-            $stmtMaxAttempt->execute();
-            $max_attempt_row = $stmtMaxAttempt->fetch(PDO::FETCH_ASSOC);
-            $new_attempt_id = $max_attempt_row['max_attempt'] + 1; // Increment the maximum attempt_id by 1
-
             // Fetch the correct answer for the question
             $sqlCorrectAnswer = "SELECT question_answer FROM tbl_question WHERE question_id = :question_id";
             $stmtCorrectAnswer = $conn->prepare($sqlCorrectAnswer);
@@ -106,29 +115,31 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $score++;
             }
 
-
-            $quiz_type = 1;
             // Insert the answer into tbl_quiz_answers with the new attempt_id
-            $sqlInsertAnswer = "INSERT INTO tbl_quiz_answers (module_id, student_id, question_id, chosen_answer, attempt_id, quiz_type, course_id) VALUES (:module_id, :student_id, :question_id, :chosen_answer, :attempt_id, :quiz_type, :course_id)";
+            $sqlInsertAnswer = "INSERT INTO tbl_quiz_answers 
+      (module_id, student_id, question_id, chosen_answer, attempt_id, quiz_type, course_id, answer_status) 
+      VALUES 
+      (:module_id, :student_id, :question_id, :chosen_answer, :attempt_id, :quiz_type, :course_id, :answer_status)";
             $stmtInsertAnswer = $conn->prepare($sqlInsertAnswer);
             $stmtInsertAnswer->bindParam(":module_id", $module_id, PDO::PARAM_INT);
             $stmtInsertAnswer->bindParam(":student_id", $stud_id, PDO::PARAM_INT);
             $stmtInsertAnswer->bindParam(":question_id", $question_id, PDO::PARAM_INT);
             $stmtInsertAnswer->bindParam(":chosen_answer", $answer, PDO::PARAM_STR);
-            $stmtInsertAnswer->bindParam(":attempt_id", $new_attempt_id, PDO::PARAM_INT);
-            $stmtInsertAnswer->bindParam(":quiz_type", $quiz_type, PDO::PARAM_INT);
+            $stmtInsertAnswer->bindParam(":attempt_id", $new_attempt_id, PDO::PARAM_INT); // Use the newly calculated attempt_id
             $stmtInsertAnswer->bindParam(":quiz_type", $quiz_type, PDO::PARAM_INT);
             $stmtInsertAnswer->bindParam(":course_id", $course_id, PDO::PARAM_INT);
+            $answer_status = ($answer === $correct_answer) ? 1 : 0;
+            $stmtInsertAnswer->bindParam(":answer_status", $answer_status, PDO::PARAM_INT); // Bind answer status
 
             if (!$stmtInsertAnswer->execute()) {
                 handleDatabaseError("Failed to insert quiz answer into the database.");
             }
         }
-        $quiz_type = 1;
+
         $passingScore = 0.5;
         $passStatus = ($score / $total_questions) >= $passingScore ? 1 : 0;
-        $sql = "INSERT INTO tbl_result (module_id, stud_id, result_score, total_questions, quiz_type, course_id, program_id, result_status) 
-                 VALUES (:module_id, :stud_id, :result_score, :total_questions, :quiz_type, :course_id, :program_id, :result_status)";
+        $sql = "INSERT INTO tbl_result (module_id, stud_id, result_score, total_questions, quiz_type, course_id, program_id, result_status, attempt_id) 
+                VALUES (:module_id, :stud_id, :result_score, :total_questions, :quiz_type, :course_id, :program_id, :result_status, :attempt_id)";
         $stmt = $conn->prepare($sql);
         $stmt->bindParam(":module_id", $module_id, PDO::PARAM_INT);
         $stmt->bindParam(":stud_id", $stud_id, PDO::PARAM_INT);
@@ -138,6 +149,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $stmt->bindParam(":course_id", $course_id, PDO::PARAM_INT);
         $stmt->bindParam(":program_id", $program_id, PDO::PARAM_INT); // Bind program_id
         $stmt->bindParam(":result_status", $passStatus, PDO::PARAM_INT); // Bind result_status
+        $stmt->bindParam(":attempt_id", $new_attempt_id, PDO::PARAM_INT); // Bind result_status
 
         if (!$stmt->execute()) {
             handleDatabaseError("Failed to insert result into the database.");
@@ -162,8 +174,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         handleDatabaseError("Student ID is not set in session.");
     }
 }
-
 ?>
+
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -182,13 +195,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <link rel="stylesheet" href="style.css" type="text/css">
     <style>
         .question-text {
-            font-size: 30px;
+            font-size: 20px;
+            /* Adjust the font size as needed */
             font-weight: bold;
+            /* Optionally make the text bold */
             margin-bottom: 10px;
-            padding-left: 20px;
-
-
-
+            /* Add some space between questions */
 
         }
 
@@ -202,6 +214,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             border-radius: 50%;
             outline: none;
             margin-right: 5px;
+            /* Adjust the margin as needed */
         }
     </style>
 </head>
@@ -215,17 +228,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         <div class="container">
             <div class="row justify-content-center mt-5">
-
                 <div class="col-lg-8" style="background-color: #A1EEBD; border-radius: 10px; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2); border: 2px solid rgba(0, 0, 0, 0.1);">
-
-
                     <br> <br>
                     <center>
-
                         <h1 class="mb-4" style="font-size: 30px;">
                             <img height="35" src="./icons/test.gif" alt="" style="border-radius: 50%; border: 2px solid #000;">
-
-
                             Questions: <?php
                                         $sql = "SELECT m.module_name
             FROM tbl_module AS m
@@ -242,7 +249,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                             $Module = "Unknown";
                                         }
                                         ?> <span><?php echo "'" . $Module . "'"; ?> </span>
-
                         </h1>
                     </center>
                     <br> <br>
@@ -254,11 +260,20 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                             <?php foreach ($result as $key => $question) : ?>
                                 <div class="question-box <?php echo $counter === 0 ? '' : 'd-none'; ?>">
                                     <div class="question-text"><?php echo $counter + 1 . ". " . sanitizeInput($question['question_text']); ?></div>
-                                    <?php foreach (['A', 'B', 'C', 'D'] as $option) : ?>
-                                        <?php $optionKey = 'question_' . $option; ?>
+                                    <?php
+                                    // Prepare the options and shuffle them
+                                    $options = [
+                                        'A' => sanitizeInput($question['question_A']),
+                                        'B' => sanitizeInput($question['question_B']),
+                                        'C' => sanitizeInput($question['question_C']),
+                                        'D' => sanitizeInput($question['question_D']),
+                                    ];
+                                    shuffle($options);
+                                    ?>
+                                    <?php foreach ($options as $option) : ?>
                                         <div style="padding-left: 100px;" class="form-check">
-                                            <input class="form-check-input" type="radio" name="answer_<?php echo $question['question_id']; ?>" id="option<?php echo $option; ?>_<?php echo $question['question_id']; ?>" value="<?php echo sanitizeInput($question[$optionKey]); ?>">
-                                            <label class="form-check-label" for="option<?php echo $option; ?>_<?php echo $question['question_id']; ?>"><?php echo sanitizeInput($question[$optionKey]); ?></label>
+                                            <input class="form-check-input" type="radio" name="answer_<?php echo $question['question_id']; ?>" id="option_<?php echo $option; ?>_<?php echo $question['question_id']; ?>" value="<?php echo $option; ?>">
+                                            <label class="form-check-label" for="option_<?php echo $option; ?>_<?php echo $question['question_id']; ?>"><?php echo $option; ?></label>
                                         </div>
                                     <?php endforeach; ?>
                                 </div>

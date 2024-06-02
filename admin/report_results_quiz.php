@@ -33,10 +33,10 @@ if ($module_id) {
 
 // Retrieve modules for the specified course
 if ($course_id) {
-    $stmt = $conn->prepare("SELECT * FROM tbl_module WHERE course_id = :course_id");
+    $stmt = $conn->prepare("SELECT * FROM tbl_module WHERE course_id = :course_id and module_status = 1");
     $stmt->bindParam(':course_id', $course_id, PDO::PARAM_INT);
 } else {
-    $stmt = $conn->prepare("SELECT * FROM tbl_module");
+    $stmt = $conn->prepare("SELECT * FROM tbl_module where module_status = 1");
 }
 $stmt->execute();
 $modules = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -50,7 +50,7 @@ if ($user_id) {
             INNER JOIN tbl_student s ON r.stud_id = s.stud_id
             INNER JOIN tbl_module m ON r.module_id = m.module_id
             INNER JOIN tbl_course c ON m.course_id = c.course_id
-            WHERE result_status = 1";
+            WHERE result_status = 1 and quiz_type =2";
 
     // Add conditions to filter by course ID and module ID if they are provided
     if ($course_id) {
@@ -69,7 +69,7 @@ if ($user_id) {
                    INNER JOIN tbl_student s ON r.stud_id = s.stud_id
                    INNER JOIN tbl_module m ON r.module_id = m.module_id
                    INNER JOIN tbl_course c ON m.course_id = c.course_id
-                   WHERE result_status = 1";
+                   WHERE result_status = 1  and quiz_type =2";
 
     // Add conditions to count query
     if ($course_id) {
@@ -162,10 +162,11 @@ $courses = $result->fetchAll(PDO::FETCH_ASSOC);
 
 
                         <?php
-                        if (!isset($_GET['quiz_type']) || $_GET['quiz_type'] != 3 || empty($_GET['quiz_type'])) {
-                            echo "<h1>" . "Subject: " . htmlspecialchars($course_name, ENT_QUOTES, 'UTF-8') . "</h1>";
-                            $moduleName = !empty($results) ? $results[0]['module_name'] : $module_name;
-                        }
+
+                        echo "<h1>" . htmlspecialchars($course_name, ENT_QUOTES, 'UTF-8') . "</h1>";
+                        $moduleName = !empty($results) ? $results[0]['module_name'] : $module_name;
+                        // echo "<h1>Module: " . htmlspecialchars($moduleName, ENT_QUOTES, 'UTF-8') . "</h1>";
+
                         ?>
 
 
@@ -175,8 +176,6 @@ $courses = $result->fetchAll(PDO::FETCH_ASSOC);
             </div>
 
             <div class="row">
-
-
 
                 <div class="col-sm">
                     <div id="myChart" style="border: 1px solid lightblue; /* Adds a light blue border for emphasis */
@@ -208,10 +207,9 @@ $courses = $result->fetchAll(PDO::FETCH_ASSOC);
                                 <?php
                                 // Retrieve module_id from URL parameter if available
                                 $module_id = isset($_GET['module_id']) ? $_GET['module_id'] : null;
-
-                                // Fetch attempts from tbl_result
-                                $stmtAttempts = $conn->prepare("SELECT COUNT(*) AS attempts FROM tbl_result WHERE stud_id = :stud_id  AND quiz_type = 2");
+                                $stmtAttempts = $conn->prepare("SELECT COUNT(*) AS attempts FROM tbl_result WHERE stud_id = :stud_id AND module_id = :module_id AND quiz_type = 2");
                                 $stmtAttempts->bindValue(':stud_id', $row['stud_id']);
+                                $stmtAttempts->bindValue(':module_id', $module_id);
                                 if (!$stmtAttempts->execute()) {
                                     echo "Error executing query: " . implode(" ", $stmtAttempts->errorInfo());
                                 } else {
@@ -220,6 +218,8 @@ $courses = $result->fetchAll(PDO::FETCH_ASSOC);
                                     $passRate = ($attempts != 0) ? number_format(100 / $attempts, 2) : 0; // Calculate pass rate with 2 decimal places
                                     echo $passRate;
                                 }
+
+
                                 ?>
 
                                 data.addRow([
@@ -252,22 +252,19 @@ $courses = $result->fetchAll(PDO::FETCH_ASSOC);
                     </script>
 
                 </div>
-
-
                 <div class="col-sm">
+                    <form id="searchForm" class="mb-3">
+                        <div class="input-group">
+                            <input type="text" id="searchInput" class="form-control" name="search" placeholder="Search..." value="<?php echo ""; ?>">
+                            <button class="btn btn-primary" type="submit">Search</button>
+                        </div>
+                    </form>
 
-
-
-                    <?php
-                    include 'module_dropdown.php';
-                    ?>
-                  
                     <table style="background: linear-gradient(to left, rgba(220, 210, 211, 0.3), rgba(200, 240, 241, 0.3));" class="table table-bordered table-custom">
                         <caption>List of Student Performance</caption>
                         <thead class="table-dark">
                             <tr style="text-align: center;">
                                 <th scope="col">Student Name</th>
-                                <th scope="col">Module Name</th>
                                 <th scope="col">Date</th>
                                 <th scope="col">Attempts</th>
                                 <th scope="col">Rate</th>
@@ -281,8 +278,12 @@ $courses = $result->fetchAll(PDO::FETCH_ASSOC);
                             <?php else : ?>
                                 <?php foreach ($results as $row) : ?>
                                     <tr style="text-align: center;">
-                                        <td><?php echo htmlspecialchars($row['stud_fname'] . ' ' . $row['stud_mname'] . ' ' . $row['stud_lname']); ?></td>
-                                        <td><?php echo htmlspecialchars($row['module_name']); ?></td>
+                                        <td>
+                                            <a href="student_record_quiz.php?student_id=<?php echo $row['stud_id']; ?>">
+                                                <?php echo htmlspecialchars($row['stud_fname'] . ' ' . $row['stud_mname'] . ' ' . $row['stud_lname']); ?>
+
+                                            </a>
+                                        </td>
                                         <td><?php echo date("M d, Y", strtotime($row['created_at'])); ?></td>
                                         <td>
                                             <?php
@@ -290,8 +291,9 @@ $courses = $result->fetchAll(PDO::FETCH_ASSOC);
                                             $module_id = isset($_GET['module_id']) ? $_GET['module_id'] : null;
 
                                             // Fetch attempts from tbl_result
-                                            $stmtAttempts = $conn->prepare("SELECT COUNT(*) AS attempts FROM tbl_result WHERE stud_id = :stud_id AND quiz_type = 2");
+                                            $stmtAttempts = $conn->prepare("SELECT COUNT(*) AS attempts FROM tbl_result WHERE stud_id = :stud_id AND module_id = :module_id AND quiz_type = 2");
                                             $stmtAttempts->bindValue(':stud_id', $row['stud_id']);
+                                            $stmtAttempts->bindValue(':module_id', $module_id);
                                             if (!$stmtAttempts->execute()) {
                                                 echo "Error executing query: " . implode(" ", $stmtAttempts->errorInfo());
                                             } else {
@@ -307,8 +309,9 @@ $courses = $result->fetchAll(PDO::FETCH_ASSOC);
                                             $module_id = isset($_GET['module_id']) ? $_GET['module_id'] : null;
 
                                             // Fetch attempts from tbl_result
-                                            $stmtAttempts = $conn->prepare("SELECT COUNT(*) AS attempts FROM tbl_result WHERE stud_id = :stud_id  AND quiz_type = 2");
+                                            $stmtAttempts = $conn->prepare("SELECT COUNT(*) AS attempts FROM tbl_result WHERE stud_id = :stud_id AND module_id = :module_id AND quiz_type = 2");
                                             $stmtAttempts->bindValue(':stud_id', $row['stud_id']);
+                                            $stmtAttempts->bindValue(':module_id', $module_id);
                                             if (!$stmtAttempts->execute()) {
                                                 echo "Error executing query: " . implode(" ", $stmtAttempts->errorInfo());
                                             } else {

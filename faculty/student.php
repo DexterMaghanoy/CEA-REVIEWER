@@ -158,7 +158,7 @@ $totalPages = ceil($totalCount / $recordsPerPage);
                                             <td><?php echo $row['program_name']; ?></td>
                                             <td><?php echo $row['stud_lname'] . ', ' . $row['stud_fname'] . ' ' . $row['stud_mname']; ?></td>
                                             <td>
-                                                <a href="student_record_test.php?student_id=<?php echo $row['stud_id']; ?>" class="btn btn-info">View Record</a>
+                                                <a href="student_record_test.php?student_id=<?php echo $row['stud_id']; ?>" class="btn btn-info">View</a>
                                             </td>
                                         </tr>
                                     <?php endwhile; ?>

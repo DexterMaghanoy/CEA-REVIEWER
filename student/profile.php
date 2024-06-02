@@ -12,7 +12,7 @@ if (isset($_SESSION['program_id'])) {
     $sql = "SELECT * FROM tbl_course WHERE program_id = :program_id";
     $result = $conn->prepare($sql);
     $result->bindParam(':program_id', $program_id, PDO::PARAM_INT);
-    
+
     $result->execute();
 
     // Fetch the result and store it in a variable to use later
@@ -23,7 +23,6 @@ if (isset($_SESSION['program_id'])) {
     exit();
 }
 
-$user_id = $_SESSION['stud_id'];
 
 // Use JOIN to get user_type and course_name from related tables
 $user_id = $_SESSION['stud_id'];
@@ -57,7 +56,24 @@ if ($stmt->rowCount() > 0) {
     header("Location: ../login.php");
     exit();
 }
-    
+
+
+
+
+$sql = "SELECT stud_password FROM tbl_student WHERE stud_id = :stud_id";
+$passStmt = $conn->prepare($sql);
+$passStmt->bindParam(':stud_id', $user_id, PDO::PARAM_INT);
+$passStmt->execute();
+
+// Fetch the result
+$userPass = $passStmt->fetch(PDO::FETCH_ASSOC);
+
+if ($user) {
+    $userPassword = $userPass['stud_password'];
+} else {
+    echo "User not found";
+}
+
 ?>
 
 <!DOCTYPE html>
@@ -77,10 +93,10 @@ if ($stmt->rowCount() > 0) {
 </head>
 
 <style>
-  .card {
-    border: none;
-    box-shadow: 10px 20px 30px rgba(0, 0, 0, 0.1);
-  }
+    .card {
+        border: none;
+        box-shadow: 10px 20px 30px rgba(0, 0, 0, 0.1);
+    }
 </style>
 
 <body>
@@ -91,173 +107,218 @@ if ($stmt->rowCount() > 0) {
         ?>
         <div class="container">
             <br>
-                <div class="text-center">
-                    <h1>Profile</h1>
-                </div>
-                <br>
-                <div class="row d-flex justify-content-center align-items-center">
-                    <div class="col col-lg-6 mb-4 mb-lg-0">
-                        <div class="card mb-3" style="border-radius: .5rem;">
-                            <div class="row g-0">
-                                <div class="col-md-4 gradient-custom text-center text-white" style="border-top-left-radius: .5rem; border-bottom-left-radius: .5rem;">
-                                    <img src="../img/student.png" alt="Avatar" class="rounded-circle img-fluid my-5" style="width: 100px;">
-                                    <h5><?php echo $user['stud_fname'] . ' ' . $user['stud_lname'] ?></h5>
-                                </div>
-                                <div class="col-md-8">
-                                    <div class="card-body p-4">
-                                        <h6>Information</h6>
-                                        <hr class="mt-0 mb-4">
-                                        <div class="row pt-1">
-                                            <div class="col-6 mb-3">
-                                                <h6>Program</h6>
-                                                <p class="text-muted"><?php echo $user['program_name']; ?></p>
-                                            </div>
-                                            <div class="col-6 mb-3">
-                                                <h6>Fullname</h6>
-                                                <p class="text-muted"><?php echo $user['stud_lname'] . ', ' . $user['stud_fname'] . ' ' . $user['stud_mname']; ?></p>
+            <div class="text-center">
+                <h1>Profile</h1>
+            </div>
+            <br>
+            <div class="row d-flex justify-content-center align-items-center">
+                <div class="col col-lg-6 mb-4 mb-lg-0">
+                    <div class="card mb-3" style="border-radius: .5rem;">
+                        <div class="row g-0">
+                            <div class="col-md-4 gradient-custom text-center text-white" style="border-top-left-radius: .5rem; border-bottom-left-radius: .5rem;">
+                                <img src="../img/student.png" alt="Avatar" class="rounded-circle img-fluid my-5" style="width: 100px;">
+                                <h5><?php echo $user['stud_fname'] . ' ' . $user['stud_lname'] ?></h5>
+                                <p><?php echo "Student" ?></p>
+
+                            </div>
+                            <div class="col-md-8">
+                                <div class="card-body p-4">
+                                    <h6>Information</h6>
+                                    <hr class="mt-0 mb-4">
+                                    <div class="row pt-1">
+                                        <div class="col-6 mb-3">
+                                            <h6>Program</h6>
+                                            <p class="text-muted"><?php echo $user['program_name']; ?></p>
+                                        </div>
+                                        <div class="col-6 mb-3">
+                                            <h6>Fullname</h6>
+                                            <p class="text-muted"><?php echo $user['stud_lname'] . ', ' . $user['stud_fname'] . ' ' . $user['stud_mname']; ?></p>
+                                        </div>
+                                    </div>
+                                    <h6>Account</h6>
+                                    <hr class="mt-0 mb-4">
+                                    <div class="row pt-1">
+                                        <div class="col-6 mb-3">
+                                            <h6>Username</h6>
+                                            <p class="text-muted"><?php echo $user['stud_no']; ?></p>
+                                            <button class="btn btn-success mt-3" data-bs-toggle="modal" data-bs-target="#changePasswordModal">Change Password</button>
+                                        </div>
+
+
+                                        <div style="margin-top: -60px; padding-left: 90px" class="modal fade" id="changePasswordModal" tabindex="-1" aria-labelledby="changePasswordModalLabel" aria-hidden="true">
+                                            <div class="modal-dialog modal-dialog-centered">
+                                                <div class="modal-content">
+                                                    <div class="modal-header bg-info text-white">
+                                                        <h5 class="modal-title" id="changePasswordModalLabel">Change Password</h5>
+                                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        <form id="changePasswordForm" novalidate>
+                                                            <div class="mb-3">
+                                                                <label for="currentPassword" class="form-label">Current Password</label>
+                                                                <input type="password" class="form-control" id="currentPassword" name="currentPassword" required>
+                                                                <div class="invalid-feedback">Current password is required.</div>
+                                                                <div id="currentError" class="text-danger mt-1"></div>
+                                                            </div>
+                                                            <div class="mb-3">
+                                                                <label for="newPassword" class="form-label">New Password</label>
+                                                                <div class="input-group">
+                                                                    <input type="password" class="form-control" id="newPassword" name="newPassword" required>
+                                                                    <button class="btn btn-outline-secondary" type="button" id="toggleNewPassword">
+                                                                        <i class="fa fa-eye" aria-hidden="true"></i>
+                                                                    </button>
+                                                                </div>
+                                                                <div id="pass1Error" class="text-danger mt-1"></div>
+                                                                <div class="form-text">Your password must be at least 8 characters long, contain upper and lower case letters, and include a number or special character.</div>
+                                                            </div>
+                                                            <div class="mb-3">
+                                                                <label for="confirmPassword" class="form-label">Confirm Password</label>
+                                                                <div class="input-group">
+                                                                    <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" required>
+                                                                    <button class="btn btn-outline-secondary" type="button" id="toggleConfirmPassword">
+                                                                        <i class="fa fa-eye" aria-hidden="true"></i>
+                                                                    </button>
+                                                                </div>
+                                                                <div id="pass2Error" class="text-danger mt-1"></div>
+                                                            </div>
+                                                            <button type="submit" class="btn btn-success w-100">Change Password</button>
+                                                        </form>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
-                                        <h6>Account</h6>
-                                        <hr class="mt-0 mb-4">
-                                        <div class="row pt-1">
-                                            <div class="col-6 mb-3">
-                                                <h6>Username</h6>
-                                                <p class="text-muted"><?php echo $user['stud_no']; ?></p>
-                                                <button class="btn btn-success mt-3" data-bs-toggle="modal" data-bs-target="#changePasswordModal">Change Password</button>
-                                        </div>
-                                        <div class="modal fade" id="changePasswordModal" tabindex="-1" aria-labelledby="changePasswordModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="changePasswordModalLabel">Change Password</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <form id="changePasswordForm">
-                    <div class="mb-3">
-                        <label for="currentPassword" class="form-label">Current Password</label>
-                        <input type="password" class="form-control" id="currentPassword" name="currentPassword" required>
-                    </div>
-                    <div class="mb-3">
-    <label for="newPassword" class="form-label">New Password</label>
-    <div class="input-group">
-        <input type="password" class="form-control" id="newPassword" name="newPassword" required>
-        <button class="btn btn-outline-secondary" type="button" id="toggleNewPassword">
-            <i class="fa fa-eye" aria-hidden="true"></i>
-        </button>
-    </div>
-    <div id="pass1Error" class="text-danger"></div>
-</div>
-<div class="mb-3">
-    <label for="confirmPassword" class="form-label">Confirm Password</label>
-    <div class="input-group">
-        <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" required>
-        <button class="btn btn-outline-secondary" type="button" id="toggleConfirmPassword">
-            <i class="fa fa-eye" aria-hidden="true"></i>
-        </button>
-    </div>
-    <div id="pass2Error" class="text-danger"></div>
-</div>
 
-                    <button type="submit" class="btn btn-success">Change Password</button>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
+                                        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+                                        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10.16.6/dist/sweetalert2.min.js"></script>
+                                        <link href="https://cdn.jsdelivr.net/npm/sweetalert2@10.16.6/dist/sweetalert2.min.css" rel="stylesheet">
+                                        <style>
+                                            .my-custom-popup {
+                                                position: center;
+                                                top: -10%;
+                                                /* Adjust as needed */
+                                                left: 2.5%;
+                                                /* Adjust as needed */
+                                            }
+                                        </style>
+                                        <script>
+                                            var userCurrentPassword = "<?php echo $userPassword; ?>";
+                                            document.getElementById('changePasswordForm').addEventListener('submit', function(event) {
+                                                event.preventDefault(); // Prevent default form submission
 
-<script>
-    document.getElementById('changePasswordForm').addEventListener('submit', function(event) {
-        event.preventDefault(); // Prevent default form submission
-        
-        var isValid = validatePassword();
-        if (isValid) {
-            // Serialize form data
-            var formData = new FormData(this);
-            
-            // Make AJAX request
-            var xhr = new XMLHttpRequest();
-            xhr.open('POST', 'changepass.php', true);
-            xhr.onload = function () {
-                if (xhr.status === 200) {
-                    // Password updated successfully
-                    alert(xhr.responseText);
-                    // Clear form fields
-                    document.getElementById('changePasswordForm').reset();
-                    // Optionally, you can close the modal here
-                    $('#changePasswordModal').modal('hide');
-                } else {
-                    // Error updating password
-                    alert('Error updating password.');
-                }
-            };
-            xhr.send(formData);
-        }
-    });
+                                                var isValid = validatePassword();
+                                                if (isValid) {
+                                                    var formData = new FormData(this);
 
-    document.getElementById('toggleNewPassword').addEventListener('click', function() {
-    var newPasswordInput = document.getElementById('newPassword');
-    if (newPasswordInput.type === 'password') {
-        newPasswordInput.type = 'text';
-    } else {
-        newPasswordInput.type = 'password';
-    }
-});
+                                                    // Make AJAX request
+                                                    var xhr = new XMLHttpRequest();
+                                                    xhr.open('POST', 'changepass.php', true);
+                                                    xhr.onload = function() {
+                                                        function handlePasswordChangeResponse(xhr) {
+                                                            if (xhr.status === 200) {
+                                                                // Password updated successfully
+                                                                Swal.fire({
+                                                                    title: "Success!",
+                                                                    text: "Password changed successfully.",
+                                                                    icon: "success",
+                                                                    customClass: {
+                                                                        popup: 'my-custom-popup'
+                                                                    }
+                                                                }).then(() => {
+                                                                    // Clear form fields
+                                                                    document.getElementById('changePasswordForm').reset();
+                                                                    // Close the modal
+                                                                    var modal = bootstrap.Modal.getInstance(document.getElementById('changePasswordModal'));
+                                                                    modal.hide();
+                                                                    window.location.href = 'profile.php';
+                                                                });
+                                                            } else {
+                                                                // Error updating password
+                                                                Swal.fire({
+                                                                    title: "Error!",
+                                                                    text: "There was an error updating your password. Please try again.",
+                                                                    icon: "error",
+                                                                    customClass: {
+                                                                        popup: 'my-custom-popup'
+                                                                    }
+                                                                });
+                                                            }
+                                                        }
+                                                        // Call the nested function to handle the response
+                                                        handlePasswordChangeResponse(xhr);
+                                                    };
 
-document.getElementById('toggleConfirmPassword').addEventListener('click', function() {
-    var confirmPasswordInput = document.getElementById('confirmPassword');
-    if (confirmPasswordInput.type === 'password') {
-        confirmPasswordInput.type = 'text';
-    } else {
-        confirmPasswordInput.type = 'password';
-    }
-});
+                                                    xhr.send(formData);
+                                                }
+                                            });
 
-function validatePassword() {
-        var pass1 = document.getElementById("newPassword").value;
-        var pass2 = document.getElementById("confirmPassword").value;
-        var pass1Error = document.getElementById("pass1Error");
-        var pass2Error = document.getElementById("pass2Error");
-        var isValid = true;
+                                            document.getElementById('toggleNewPassword').addEventListener('click', function() {
+                                                var newPasswordInput = document.getElementById('newPassword');
+                                                if (newPasswordInput.type === 'password') {
+                                                    newPasswordInput.type = 'text';
+                                                } else {
+                                                    newPasswordInput.type = 'password';
+                                                }
+                                            });
 
-        // Reset error messages
-        pass1Error.innerHTML = "";
-        pass2Error.innerHTML = "";
+                                            document.getElementById('toggleConfirmPassword').addEventListener('click', function() {
+                                                var confirmPasswordInput = document.getElementById('confirmPassword');
+                                                if (confirmPasswordInput.type === 'password') {
+                                                    confirmPasswordInput.type = 'text';
+                                                } else {
+                                                    confirmPasswordInput.type = 'password';
+                                                }
+                                            });
 
-        // Password length validation
-        if (pass1.length < 8) {
-            pass1Error.innerHTML = "Password must be at least 8 characters long";
-            isValid = false;
-        }
+                                            function validatePassword() {
+                                                var currentPasswordInput = document.getElementById("currentPassword").value;
+                                                var currentError = document.getElementById("currentError");
 
-        // Password complexity validation
-        var uppercaseRegex = /[A-Z]/;
-        var lowercaseRegex = /[a-z]/;
-        var specialCharRegex = /[!@#$%^&*(),.?":{}|<>]/;
-        var numberRegex = /[0-9]/;
+                                                var pass1 = document.getElementById("newPassword").value;
+                                                var pass2 = document.getElementById("confirmPassword").value;
+                                                var pass1Error = document.getElementById("pass1Error");
+                                                var pass2Error = document.getElementById("pass2Error");
+                                                var isValid = true;
 
-        if (!uppercaseRegex.test(pass1) || !lowercaseRegex.test(pass1) || !specialCharRegex.test(pass1) || !numberRegex.test(pass1)) {
-            pass1Error.innerHTML = "Password must contain at least one uppercase letter, one lowercase letter, one special character, and one number";
-            isValid = false;
-        }
 
-        // Matching passwords validation
-        if (pass1 !== pass2) {
-            pass2Error.innerHTML = "Passwords do not match";
-            isValid = false;
-        }
+                                                // Reset error messages
+                                                pass1Error.innerHTML = "";
+                                                pass2Error.innerHTML = "";
+                                                currentError.innerHTML = "";
 
-        return isValid;
-    }
+                                                // Password length validation
+                                                if (pass1.length < 8) {
+                                                    pass1Error.innerHTML = "Password must be at least 8 characters long";
+                                                    isValid = false;
+                                                }
 
-</script>
-                         </div>
-                                   </div>
+                                                // Password complexity validation
+                                                var uppercaseRegex = /[A-Z]/;
+                                                var lowercaseRegex = /[a-z]/;
+                                                var specialCharRegex = /[!@#$%^&*(),.?":{}|<>]/;
+                                                var numberRegex = /[0-9]/;
+
+                                                if (!uppercaseRegex.test(pass1) || !lowercaseRegex.test(pass1) || !specialCharRegex.test(pass1) || !numberRegex.test(pass1)) {
+                                                    pass1Error.innerHTML = "Password must contain at least one uppercase letter, one lowercase letter, one special character, and one number";
+                                                    isValid = false;
+                                                }
+                                                if (pass1 !== pass2) {
+                                                    pass2Error.innerHTML = "Passwords do not match";
+                                                    isValid = false;
+                                                } else if (userCurrentPassword != currentPasswordInput) {
+
+                                                    currentError.innerHTML = "Current Password didn't match";
+                                                    isValid = false;
+                                                }
+                                                return isValid;
+                                            }
+                                        </script>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
+            </div>
 
         </div>
 

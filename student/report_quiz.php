@@ -109,13 +109,7 @@ if (isset($_SESSION['program_id'], $_SESSION['stud_id'])) {
 
                         function drawChart() {
                             const courseData = <?php echo json_encode($courses); ?>;
-                            var chartData = [
-                                ['Course', 'Pass Rate', {
-                                    role: 'style'
-                                }]
-                            ];
-
-                            var coursePassRates = {};
+                            var chartData = [];
 
                             courseData.forEach(function(course) {
                                 var passRate = 0;
@@ -124,30 +118,34 @@ if (isset($_SESSION['program_id'], $_SESSION['stud_id'])) {
                                     passRate = 100 * course.passed_attempts / (course.passed_attempts + course.failed_attempts);
                                 }
 
-                                if (!coursePassRates[course.course_id]) {
-                                    coursePassRates[course.course_id] = [];
+                                var strengthWeakness;
+                                var passRateString;
+
+                                if (passRate === 0 || !passRate) {
+                                    strengthWeakness = 'No record';
+                                    passRateString = '0%';
+                                } else {
+                                    strengthWeakness = passRate >= 50 ? 'Good' : 'Weak';
+                                    passRateString = passRate.toFixed(2) + '%';
                                 }
 
-                                coursePassRates[course.course_id].push(passRate);
+                                var annotation = passRateString + ' ' + strengthWeakness + ' ';
+
+                                chartData.push([course.course_name, passRate, strengthWeakness === 'Good' ? 'green' : (strengthWeakness === 'Weak' ? 'red' : 'gray'), annotation]);
                             });
 
-                            for (var courseId in coursePassRates) {
-                                var course = courseData.find(c => c.course_id == courseId);
-                                var courseCode = course ? course.course_code : '';
-                                var averagePassRate = coursePassRates[courseId].reduce(function(a, b) {
-                                    return a + b;
-                                }, 0) / coursePassRates[courseId].length;
-
-                                chartData.push([courseCode, averagePassRate, getRandomColor()]);
-                            }
-                            var overallAveragePassRate = chartData.reduce(function(sum, row, index) {
-                                if (index === 0) return sum;
-                                return sum + row[1];
-                            }, 0) / (chartData.length - 1);
-
-                            // chartData.push(['Overall', overallAveragePassRate, getRandomColor()]);
-
-                            const data = google.visualization.arrayToDataTable(chartData);
+                            var data = new google.visualization.DataTable();
+                            data.addColumn('string', 'Subject');
+                            data.addColumn('number', 'Pass Rate');
+                            data.addColumn({
+                                type: 'string',
+                                role: 'style'
+                            });
+                            data.addColumn({
+                                type: 'string',
+                                role: 'annotation'
+                            });
+                            data.addRows(chartData);
 
                             const options = {
                                 title: 'Pass Rates by Subject',
@@ -178,16 +176,8 @@ if (isset($_SESSION['program_id'], $_SESSION['stud_id'])) {
                             const chart = new google.visualization.BarChart(document.getElementById('myChart'));
                             chart.draw(data, options);
                         }
-
-                        function getRandomColor() {
-                            var letters = '0123456789ABCDEF';
-                            var color = '#';
-                            for (var i = 0; i < 6; i++) {
-                                color += letters[Math.floor(Math.random() * 16)];
-                            }
-                            return color;
-                        }
                     </script>
+
 
 
                 </div>

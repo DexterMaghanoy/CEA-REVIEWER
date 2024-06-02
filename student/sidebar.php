@@ -70,33 +70,33 @@ require '../api/db-connect.php';
             </h6>
         </div>
     </div>
-    <ul class="sidebar-nav">
+    <ul title="Dashboard"  class="sidebar-nav">
         <li class="sidebar-item">
             <a href="dashboard.php" class="sidebar-link">
                 <i class="lni lni-dashboard"></i>
                 <span>Dashboard</span>
             </a>
         </li>
-        <li class="sidebar-item">
+        <li title="Profile"  class="sidebar-item">
             <a href="profile.php" class="sidebar-link">
                 <i class="lni lni-user"></i>
                 <span>Profile</span>
             </a>
         </li>
-        <li class="sidebar-item">
+        <li  title="Subjects" class="sidebar-item">
             <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse" data-bs-target="#auth" aria-expanded="false" aria-controls="auth">
                 <i class="lni lni-agenda"></i>
-                <span>Course</span>
+                <span>Subjects</span>
             </a>
             <?php
-            $displayedCourseIDs = []; 
+            $displayedCourseIDs = [];
             if (!empty($courses)) :
             ?>
                 <ul id="auth" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
                     <?php foreach ($courses as $row) :
-                 
+
                         if (!in_array($row['course_id'], $displayedCourseIDs)) :
-                            $displayedCourseIDs[] = $row['course_id']; 
+                            $displayedCourseIDs[] = $row['course_id'];
                     ?>
                             <li class="sidebar-item">
                                 <a href="module.php?course_id=<?php echo htmlspecialchars($row['course_id']); ?>" class="sidebar-link"><?php echo htmlspecialchars($row['course_name']); ?></a>
@@ -106,18 +106,34 @@ require '../api/db-connect.php';
                 </ul>
             <?php endif; ?>
         </li>
-
         <?php
         try {
             // Prepare SQL query to count distinct subjects
+            $sql = "SELECT COUNT(DISTINCT c.course_id) AS total_courses
+            FROM tbl_course c
+            WHERE c.program_id = :program_id";
+
+            // Define parameters for the query
+            $params = [
+                ':program_id' => 1 // Example program_id, replace with your logic
+            ];
+
+            // Execute query
+            $stmt = $conn->prepare($sql);
+            $stmt->execute($params);
+
+            // Fetch the total number of courses
+            $totalCourses = $stmt->fetchColumn();
+
+            // Prepare SQL query to count distinct subjects with result_status = 1
             $sql = "SELECT COUNT(DISTINCT r.course_id) AS exam_count
-                FROM tbl_result r
-                JOIN tbl_module m ON r.module_id = m.module_id
-                JOIN tbl_course c ON r.course_id = c.course_id
-                WHERE r.stud_id = :stud_id
-                AND c.program_id = :program_id
-                AND r.quiz_type = 2
-                AND r.result_status = 1";
+            FROM tbl_result r
+            JOIN tbl_module m ON r.module_id = m.module_id
+            JOIN tbl_course c ON r.course_id = c.course_id
+            WHERE r.stud_id = :stud_id
+            AND c.program_id = :program_id
+            AND r.quiz_type = 2
+            AND r.result_status = 1";
 
             // Define parameters for the query
             $params = [
@@ -129,44 +145,87 @@ require '../api/db-connect.php';
             $stmt = $conn->prepare($sql);
             $stmt->execute($params);
 
-            // Fetch the result
+            // Fetch the count of courses with result_status = 1
             $examCount = $stmt->fetchColumn();
+
+            // Check if all courses have result_status = 1
+            $allCoursesCompleted = ($examCount == $totalCourses);
         } catch (PDOException $e) {
             echo "Error: " . $e->getMessage();
         }
         ?>
-
-        <li class="sidebar-item">
-            <?php if ($examCount >= 1) : ?>
-                <a href="exam.php" class="sidebar-link">
+        <li title="Exam"  class="sidebar-item">
+            <?php if ($allCoursesCompleted) : ?>
+                <a class="sidebar-link" style="color: green;" onclick="showAlertProceed();">
                     <i class="lni lni-pencil-alt"></i>
                     <span>Exam</span>
                 </a>
+
             <?php else : ?>
-                <a href="#" class="sidebar-link" onclick="showAlert()">
+                <a class="sidebar-link" style="color: red; cursor: pointer;" onclick="showAlert();">
                     <i class="lni lni-pencil-alt"></i>
                     <span>Exam</span>
                 </a>
             <?php endif; ?>
         </li>
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10.16.6/dist/sweetalert2.min.js"></script>
+        <link href="https://cdn.jsdelivr.net/npm/sweetalert2@10.16.6/dist/sweetalert2.min.css" rel="stylesheet">
+
 
         <script>
-            function showAlert() {
-                alert("Exam Unavailable");
+            function showAlertProceed() {
+                $(document).ready(function() {
+                    Swal.fire({
+                        title: "Prepare for the Exam",
+                        text: "Best of luck with your exam! Remember to choose the best answers.",
+                        icon: "info"
+                    }).then(() => {
+                        window.location.href = "exam.php";
+                    });
+                });
             }
         </script>
 
-        <li class="sidebar-item">
+
+        <script>
+            function showAlert() {
+                $(document).ready(function() {
+                    Swal.fire({
+                        title: "Incomplete Requirements",
+                        text: "Please complete all quizzes before attempting the exam.",
+                        icon: "error"
+                    }).then(() => {
+                        window.location.href = "dashboard.php";
+                    });
+                });
+            }
+        </script>
+
+
+
+
+        <li title="Report" class="sidebar-item">
             <a href="report_questions.php" class="sidebar-link">
                 <i class="lni lni-popup"></i>
                 <span>Report</span>
             </a>
         </li>
     </ul>
-    <div class="sidebar-footer">
+    <div title="Logout" class="sidebar-footer">
         <a href="../logout.php" class="sidebar-link">
             <i class="lni lni-exit"></i>
             <span>Logout</span>
         </a>
     </div>
 </aside>
+
+
+<script>
+    // Disable right-click context menu
+    document.addEventListener('contextmenu', function(event) {
+        event.preventDefault();
+    });
+</script>
+
+

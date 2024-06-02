@@ -49,8 +49,7 @@ if ($user_id) {
             FROM tbl_result r
             INNER JOIN tbl_student s ON r.stud_id = s.stud_id
             INNER JOIN tbl_module m ON r.module_id = m.module_id
-            INNER JOIN tbl_course c ON m.course_id = c.course_id
-            WHERE result_status = 1";
+            INNER JOIN tbl_course c ON m.course_id = c.course_id";
 
     // Add conditions to filter by course ID and module ID if they are provided
     if ($course_id) {
@@ -68,8 +67,7 @@ if ($user_id) {
                    FROM tbl_result r
                    INNER JOIN tbl_student s ON r.stud_id = s.stud_id
                    INNER JOIN tbl_module m ON r.module_id = m.module_id
-                   INNER JOIN tbl_course c ON m.course_id = c.course_id
-                   WHERE result_status = 1";
+                   INNER JOIN tbl_course c ON m.course_id = c.course_id";
 
     // Add conditions to count query
     if ($course_id) {
@@ -289,7 +287,14 @@ $courses = $result->fetchAll(PDO::FETCH_ASSOC);
                             <?php else : ?>
                                 <?php foreach ($results as $row) : ?>
                                     <tr style="text-align: center;">
-                                        <td><?php echo htmlspecialchars($row['stud_fname'] . ' ' . $row['stud_mname'] . ' ' . $row['stud_lname']); ?></td>
+                                        <td>
+                                            <?php $module_id = isset($_GET['module_id']) ? $_GET['module_id'] : null; ?>
+                                            <a href="student_record_test.php?student_id=<?php echo $row['stud_id']; ?>&module_id=<?php echo $module_id; ?>">
+                                                <?php echo htmlspecialchars($row['stud_fname'] . ' ' . $row['stud_mname'] . ' ' . $row['stud_lname']); ?>
+                                            </a>
+                                        </td>
+
+
                                         <td><?php echo htmlspecialchars($row['module_name']); ?></td>
                                         <td><?php echo date("M d, Y", strtotime($row['created_at'])); ?></td>
                                         <td>

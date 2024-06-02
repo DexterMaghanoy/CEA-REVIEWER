@@ -14,7 +14,7 @@ try {
     $user_stmt = $conn->prepare("SELECT s.*, p.program_name
             FROM tbl_student s
             INNER JOIN tbl_program p ON s.program_id = p.program_id
-            WHERE s.stud_id = :stud_id");
+            WHERE s.stud_id = :stud_id and s.stud_status = 1 and p.program_status =1");
     $user_stmt->bindParam(':stud_id', $user_id, PDO::PARAM_INT);
     $user_stmt->execute();
     if ($user_stmt->rowCount() > 0) {
@@ -105,20 +105,41 @@ try {
     }
 </style>
 
+<style>
+    .aligned-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .aligned-row h1 {
+        text-align: center;
+        margin: 0;
+        /* Reset margin */
+    }
+
+    /* Style for back.php content */
+    .back-content {
+        margin-right: auto;
+    }
+</style>
+
 <body>
     <div class="wrapper">
         <?php include 'sidebar.php'; ?>
+
         <div class="container">
+
             <div class="row">
-                <div class="col-lg-1"></div>
+
+                <div class="col-lg-1">
+                </div>
 
                 <div class="col-lg">
-                    <div class="text-center mt-3 mb-3">
 
-                        <h1>Dashboard</h1>
+                    <h1 class="mt-4 mb-4" style="text-align: center;">Student Dashboard</h1>
 
 
-                    </div>
                     <div class="row justify-content-center">
                         <?php
                         if (!empty($enrolled_courses)) {
@@ -129,7 +150,7 @@ try {
                         ?>
                                 <div class="col-md-4">
                                     <a href="module.php?course_id=<?php echo $course['course_id']; ?>" class="card-link text-decoration-none">
-                                        <div class="card bg-light text-dark rounded-3 shadow <?php echo $background_class; ?>" style="height: 220px; width: 330px;">
+                                        <div class="card bg-light text-dark rounded-3 shadow <?php echo $background_class; ?>" style="height: 220px; width: 320px;">
                                             <div class="card-body d-flex flex-column justify-content-between">
                                                 <h5 class="card-title text-white"><?php echo $course['course_code'] . ': ' . $course['course_name']; ?></h5>
                                                 <div>
@@ -138,11 +159,25 @@ try {
 
                                                         <?php
 
-                                                        $stmtTotalModules = $conn->prepare("SELECT COUNT(module_id) AS total_modules FROM tbl_module WHERE course_id = :course_id");
+                                                        $stmtTotalModules = $conn->prepare("SELECT COUNT(module_id) AS total_modules FROM tbl_module WHERE course_id = :course_id and module_status = 1");
                                                         $stmtTotalModules->bindValue(':course_id', $course['course_id'], PDO::PARAM_INT);
                                                         $stmtTotalModules->execute();
                                                         $totalModuleData = $stmtTotalModules->fetch(PDO::FETCH_ASSOC);
                                                         $totalModules = $totalModuleData['total_modules'];
+
+                                                        $stmtTotalModulesWithQuestions = $conn->prepare("
+                                                        SELECT COUNT(*) AS total_modules_q 
+                                                        FROM (
+                                                            SELECT module_id 
+                                                            FROM tbl_question 
+                                                            WHERE module_id IN (SELECT module_id FROM tbl_module WHERE course_id = :course_id AND module_status = 1)
+                                                            GROUP BY module_id
+                                                        ) AS subquery
+                                                    ");
+                                                        $stmtTotalModulesWithQuestions->bindValue(':course_id', $course['course_id'], PDO::PARAM_INT);
+                                                        $stmtTotalModulesWithQuestions->execute();
+                                                        $stmtTotalModulesWithQ = $stmtTotalModulesWithQuestions->fetch(PDO::FETCH_ASSOC);
+                                                        $totalModulesQ = $stmtTotalModulesWithQ['total_modules_q'];
 
 
                                                         $stmtPassedModules = $conn->prepare("SELECT COUNT(module_id) AS passed_modules FROM tbl_result WHERE course_id = :course_id AND stud_id = :stud_id AND result_status = 1 AND quiz_type = 1");
@@ -164,16 +199,22 @@ try {
 
                                                         if ($PassedQuiz == 0 || $PassedQuiz == null) {
                                                             $displayQuizStatus = '
-                                                            <img src="./icons/warning-mark.gif" alt="Warning" width="25" height="25">';
+                                                            <img src="./icons/warning-mark.gif" alt="Warning" width="20" height="20">';
                                                         } elseif ($PassedQuiz == 1) {
                                                             $displayQuizStatus = '<img src="./icons/check-mark.gif" alt="Warning" width="20" height="20">';
                                                         } else {
                                                             $displayQuizStatus = $PassedQuiz; // Fallback in case there are other values
                                                         }
 
+                                                        if ($PassedModules == $totalModulesQ) {
+                                                            $displayQuestionStatus = '<img src="./icons/check-mark.gif" alt="Warning" width="20" height="20">';
+                                                        } else {
+                                                            $displayQuestionStatus = '<img src="./icons/warning-mark.gif" alt="Warning" width="20" height="20">';
+                                                        }
+
 
                                                         ?>
-                                                        <strong>Completed Test:</strong> <?php echo $PassedModules ?> / <?php echo $totalModules ?> <br>
+                                                        <strong>Completed Test:</strong> <?php echo $PassedModules ?>/<?php echo $totalModulesQ  ?> <?php echo $displayQuestionStatus ?><br>
                                                         <strong>Quiz Status:</strong> <?php echo  $displayQuizStatus ?> <br>
 
                                                     </p>

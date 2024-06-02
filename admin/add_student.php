@@ -12,7 +12,7 @@ $session_program_id = $_SESSION['program_id'];
 
 // Fetch available programs from the database
 try {
-    $programs_sql = "SELECT `program_id`, `program_name` FROM `tbl_program`";
+    $programs_sql = "SELECT `program_id`, `program_name` FROM `tbl_program` where program_status =1";
     $programs_stmt = $conn->prepare($programs_sql);
     $programs_stmt->execute();
     $programs = $programs_stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -27,7 +27,7 @@ if (isset($_POST['save'])) {
     $stud_fname = $_POST['stud_fname'];
     $stud_mname = $_POST['stud_mname'];
     $stud_lname = $_POST['stud_lname'];
-    $stud_password = $_POST['stud_password'];
+    $stud_password = $_POST['stud_lname'];
     $stud_status = 1;
 
     if (empty($stud_no) || empty($stud_fname) || empty($stud_mname) || empty($stud_lname) || empty($stud_password) || empty($program_id)) {
@@ -172,23 +172,41 @@ if (isset($_POST['save'])) {
                             });
                         </script>
 
+
                         <!-- First Name Input -->
                         <div class="mb-3">
                             <label for="stud_fname" class="form-label">First Name</label>
-                            <input type="text" class="form-control" id="stud_fname" name="stud_fname" pattern="[A-Za-z]+" title="Please enter only alphabetic characters" required autocomplete="off">
+                            <input type="text" class="form-control" id="stud_fname" name="stud_fname" pattern="^(?!.*[<>?;$\\\/.]).*$" title="Please enter only alphabetic characters and spaces, and exclude <, >, /, ?, $, ;" required autocomplete="off">
                         </div>
 
                         <!-- Middle Name Input -->
                         <div class="mb-3">
                             <label for="stud_mname" class="form-label">Middle Name</label>
-                            <input type="text" class="form-control" id="stud_mname" name="stud_mname" pattern="[A-Za-z]+" title="Please enter only alphabetic characters" required autocomplete="off">
+                            <input type="text" class="form-control" id="stud_mname" name="stud_mname" pattern="^(?!.*[<>?;$\\\/.]).*$" title="Please enter only alphabetic characters and spaces, and exclude <, >, /, ?, $, ;" required autocomplete="off">
                         </div>
+
 
                         <!-- Last Name Input -->
                         <div class="mb-3">
                             <label for="stud_lname" class="form-label">Last Name</label>
-                            <input type="text" class="form-control" id="stud_lname" name="stud_lname" pattern="[A-Za-z]+" title="Please enter only alphabetic characters" required autocomplete="off">
+                            <input type="text" class="form-control" id="stud_lname" name="stud_lname" pattern="^(?!.*[<>?;$\\\/.]).*$" title="Please enter only alphabetic characters and exclude numbers, <, >, /, ?, $, ;" required autocomplete="off">
                         </div>
+
+                        <style>
+                            .password-input-container {
+                                position: relative;
+                            }
+
+                            .toggle-password {
+                                position: absolute;
+                                right: 10px;
+                                /* Adjust as needed */
+                                top: 50%;
+                                transform: translateY(-50%);
+                                cursor: pointer;
+                                z-index: 1;
+                            }
+                        </style>
 
                         <style>
                             .password-input-container {
@@ -210,10 +228,25 @@ if (isset($_POST['save'])) {
                         <div class="mb-3">
                             <label for="stud_password" class="form-label">Password</label>
                             <div class="password-input-container">
-                                <input type="password" class="form-control" id="stud_password" name="stud_password" pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{12,}" title="Must contain at least one number and one uppercase and lowercase letter, and at least 12 or more characters" required autocomplete="off">
+                                <input type="password" class="form-control" id="stud_password" name="stud_password" pattern="^(?!.*[<>?;$\\\/]).*$" title="Must contain at least one number and one uppercase and lowercase letter, and at least 12 or more characters. Characters <, >, ?, ;, $, \, / are not allowed." required autocomplete="new-password" disabled>
                                 <span class="toggle-password" onclick="togglePasswordVisibility()"><i class="far fa-eye-slash"></i></span>
                             </div>
                         </div>
+
+                        <script>
+                            // Function to synchronize last name with password
+                            function syncLastNameWithPassword() {
+                                var lastNameInput = document.getElementById('stud_lname');
+                                var passwordInput = document.getElementById('stud_password');
+
+                                // Set the value of the password input field to the value of the last name input field
+                                passwordInput.value = lastNameInput.value;
+                            }
+
+                            // Add event listener to the last name input field
+                            document.getElementById('stud_lname').addEventListener('input', syncLastNameWithPassword);
+                        </script>
+
 
                         <!-- Hidden Employee ID and Submit Button -->
                         <input type="submit" class="btn btn-success mt-2" value="Save" name="save">

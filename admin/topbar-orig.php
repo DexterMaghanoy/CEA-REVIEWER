@@ -167,10 +167,10 @@ $selectedYear = isset($_GET['year']) ? htmlspecialchars($_GET['year']) : '';
     var selectedYear = document.getElementById('yearPicker').value;
 
     if (programId && quizType && selectedYear) {
-      var url = 'http://localhost/cea-reviewer/admin/report.php?program_id=' + programId + '&quiz_type=' + quizType + '&created_at=' + selectedYear;
+      var url = 'https://cea-phinma-coc-reviewer.online/admin/report.php?program_id=' + programId + '&quiz_type=' + quizType + '&created_at=' + selectedYear;
       window.location.href = url;
     } else if (selectedYear) {
-      var url = 'http://localhost/cea-reviewer/admin/report.php?created_at=' + selectedYear;
+      var url = 'https://cea-phinma-coc-reviewer.online/admin/report.php?created_at=' + selectedYear;
       if (programId) url += '&program_id=' + programId;
       if (quizType) url += '&quiz_type=' + quizType;
       window.location.href = url;
@@ -236,10 +236,10 @@ $selectedYear = isset($_GET['year']) ? htmlspecialchars($_GET['year']) : '';
     localStorage.setItem('selectedYear', selectedYear);
 
     if (programId && quizType && selectedYear) {
-      var url = 'http://localhost/cea-reviewer/admin/report.php?program_id=' + programId + '&quiz_type=' + quizType + '&created_at=' + selectedYear;
+      var url = 'https://cea-phinma-coc-reviewer.online/admin/report.php?program_id=' + programId + '&quiz_type=' + quizType + '&created_at=' + selectedYear;
       window.location.href = url;
     } else if (selectedYear) {
-      var url = 'http://localhost/cea-reviewer/admin/report.php?created_at=' + selectedYear;
+      var url = 'https://cea-phinma-coc-reviewer.online/admin/report.php?created_at=' + selectedYear;
       if (programId) url += '&program_id=' + programId;
       if (quizType) url += '&quiz_type=' + quizType;
       window.location.href = url;
@@ -290,10 +290,10 @@ $selectedYear = isset($_GET['year']) ? htmlspecialchars($_GET['year']) : '';
     localStorage.setItem('selectedYear', selectedYear);
 
     if (programId && quizType && selectedYear) {
-      var url = 'http://localhost/cea-reviewer/admin/report.php?program_id=' + programId + '&quiz_type=' + quizType + '&created_at=' + selectedYear;
+      var url = 'https://cea-phinma-coc-reviewer.online/admin/report.php?program_id=' + programId + '&quiz_type=' + quizType + '&created_at=' + selectedYear;
       window.location.href = url;
     } else if (selectedYear) {
-      var url = 'http://localhost/cea-reviewer/admin/report.php?created_at=' + selectedYear;
+      var url = 'https://cea-phinma-coc-reviewer.online/admin/report.php?created_at=' + selectedYear;
       if (programId) url += '&program_id=' + programId;
       if (quizType) url += '&quiz_type=' + quizType;
       window.location.href = url;

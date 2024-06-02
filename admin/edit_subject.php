@@ -121,7 +121,7 @@ if (isset($_GET['course_id'])) {
             <div class="container">
                 <div class="row justify-content-center">
                     <div class="col-md-5">
-                        <form action="edit_course.php" method="post">
+                        <form action="edit_subject.php" method="post">
                             <!-- Program Select -->
                             <div class="mb-3">
                                 <label for="program_id" class="form-label">Program</label>
@@ -165,13 +165,13 @@ if (isset($_GET['course_id'])) {
                             <!-- Course Code Input -->
                             <div class="mb-3">
                                 <label for="course_code" class="form-label">Course Code</label>
-                                <input type="text" class="form-control" id="course_code" name="course_code" value="<?php echo $course_code; ?>" required>
+                                <input type="text" class="form-control" id="course_code" name="course_code" value="<?php echo $course_code; ?>" pattern="[A-Za-z0-9\s]+" title="Invalid Input" required>
                             </div>
 
                             <!-- Course Name Input -->
                             <div class="mb-3">
                                 <label for="course_name" class="form-label">Course Name</label>
-                                <input type="text" class="form-control" id="course_name" name="course_name" value="<?php echo $course_name; ?>" required>
+                                <input type="text" class="form-control" id="course_name" name="course_name" value="<?php echo $course_name; ?>" pattern="[A-Za-z0-9\s]+" title="Invalid Input" required>
                             </div>
 
                             <!-- Hidden Course ID and Submit Button -->

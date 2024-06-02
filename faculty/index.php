@@ -140,7 +140,7 @@ try {
 
             <div class="col-md-12 card custom-card mb-2">
                 <div class="card-body">
-                    <h1>Dashboard</h1>
+                    <h1>Faculty Dashboard</h1>
                 </div>
             </div>
 

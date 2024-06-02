@@ -29,7 +29,7 @@ if (isset($_POST['toggle_status']) && isset($_POST['course_id'])) {
     exit;
 }
 
-$recordsPerPage = 10; // Update to display 10 records per page
+$recordsPerPage = 7; // Update to display 10 records per page
 
 $page = isset($_GET['page']) ? $_GET['page'] : 1;
 $offset = ($page - 1) * $recordsPerPage;
@@ -72,6 +72,11 @@ if (!empty($search)) {
 $countStmt->execute();
 $totalCount = $countStmt->fetch(PDO::FETCH_ASSOC)['total'];
 $totalPages = ceil($totalCount / $recordsPerPage);
+
+// Fetch all courses to populate the dropdown
+$stmt = $conn->prepare("SELECT program_id, program_name FROM tbl_program");
+$stmt->execute();
+$courses = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -100,26 +105,71 @@ $totalPages = ceil($totalCount / $recordsPerPage);
             <div class="row justify-content-center">
                 <div class="col-md-12">
                     <div class="text-center mt-3">
-                        <h1>Subjects</h1>
+                        <h1>Subjects: <?php echo isset($_GET['search']) ? $_GET['search'] : ''; ?></h1>
+
                     </div>
                     <a class="btn btn-outline-primary btn-sm" href="add_subject.php"><i class="lni lni-plus"></i></a><br><br>
                     <!-- Search bar -->
-                    <form action="" method="GET" class="mb-3">
-                        <div class="input-group">
-                            <input type="text" class="form-control" name="search" placeholder="Search...">
-                            <button class="btn btn-primary" type="submit">Search</button>
+                    <div class="row">
+                        <div class="col">
+                            <!-- Course ID Dropdown -->
+
+
+
+
+                            <!-- Course ID Dropdown -->
+                            <div class="mb-3">
+                                <select class="form-select" id="program_id" name="program_id" required>
+                                    <option value="" <?php echo (isset($_GET['search']) && $_GET['search'] === '') ? 'selected' : ''; ?>>
+                                        <?php echo isset($_GET['search']) ? $_GET['search'] : 'Select Program'; ?>
+                                    </option>
+
+                                    <?php foreach ($courses as $course) : ?>
+                                        <option value="<?= htmlspecialchars($course['program_id']); ?>" data-program-name="<?= htmlspecialchars($course['program_name']); ?>">
+                                            <?= htmlspecialchars($course['program_name']); ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+
+                            <script>
+                                document.addEventListener('DOMContentLoaded', function() {
+                                    document.getElementById('program_id').addEventListener('change', function() {
+                                        var selectedProgram = this.options[this.selectedIndex];
+                                        var programName = selectedProgram.getAttribute('data-program-name');
+                                        if (programName) {
+                                            window.location.href = 'subjects.php?search=' + encodeURIComponent(programName);
+                                        }
+                                    });
+                                });
+                            </script>
+
+
+
+
                         </div>
-                    </form>
+                        <div class="col">
+                            <form action="" method="GET" class="mb-3">
+                                <div class="input-group">
+                                    <input type="text" class="form-control" name="search" placeholder="Search...">
+                                    <button class="btn btn-primary" type="submit">Search</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
                     <div class="table-responsive">
                         <table style="background: linear-gradient(to left, rgba(220, 210, 211, 0.3), rgba(200, 240, 241, 0.3));" class="table table-bordered table-custom">
 
                             <caption>List of Course</caption>
                             <thead class="table-dark">
                                 <tr>
-                                    <th scope="col">Assigned</th>
                                     <th scope="col">Code</th>
+
                                     <th scope="col">Subject</th>
-                                    <th scope="col">Program</th>
+                                    <th scope="col">Teacher</th>
+
+                                    <th scope="col">Course</th>
                                     <th scope="col">Action</th>
                                     <th scope="col">Status</th>
                                 </tr>
@@ -128,9 +178,9 @@ $totalPages = ceil($totalCount / $recordsPerPage);
                                 <?php if ($result->rowCount() > 0) : ?>
                                     <?php while ($row = $result->fetch(PDO::FETCH_ASSOC)) : ?>
                                         <tr>
-                                            <td><?php echo $row['user_lname'] . ', ' . $row['user_fname'] ?></td>
                                             <td><?php echo $row['course_code']; ?></td>
                                             <td><?php echo $row['course_name']; ?></td>
+                                            <td><?php echo $row['user_lname'] . ', ' . $row['user_fname'] ?></td>
                                             <td><?php echo $row['program_name']; ?></td>
                                             <td>
                                                 <a class="btn btn-info btn-sm" href="edit_subject.php?course_id=<?php echo $row['course_id']; ?>"><i class="lni lni-pencil"></i></a>

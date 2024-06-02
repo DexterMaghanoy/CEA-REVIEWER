@@ -136,12 +136,15 @@ if (isset($_POST['moduleId']) && isset($_POST['moduleStatus'])) {
 
                     </div>
 
+                    <a class="btn btn-primary btn-sm" href="add_module.php?course_id=<?php echo $course_id; ?>"><i class="lni lni-plus"></i></a><br><br>
+
                     <form action="" method="GET" class="mb-4" id="searchForm">
                         <div class="input-group">
                             <input type="text" class="form-control" placeholder="Search by module name" name="search" id="searchInput" value="<?php echo htmlspecialchars($search); ?>">
                             <button class="btn btn-outline-secondary" type="button" id="clearSearchButton"><i class="lni lni-close"></i></button>
                         </div>
                     </form>
+
 
                     <table style="background: linear-gradient(to left, rgba(220, 210, 211, 0.3), rgba(200, 240, 241, 0.3));" class="table table-bordered table-custom">
                         <caption>List of Modules</caption>

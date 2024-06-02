@@ -165,14 +165,6 @@ if (isset($_POST['save'])) {
                                 <label for="user_lname" class="form-label">Last Name</label>
                                 <input type="text" class="form-control" id="user_lname" name="user_lname" pattern="[A-Za-z]+" title="Please enter only alphabetic characters" value="<?php echo htmlspecialchars($_POST['user_lname'] ?? '', ENT_QUOTES); ?>" required>
                             </div>
-
-
-                            <!-- User Image Input -->
-                            <!-- <div class="mb-3">
-                                <label for="user_image" class="form-label">Image</label>
-                                <input class="form-control" type="file" id="user_image" name="user_image"       >
-                            </div> -->
-
                             <style>
                                 .password-input-container {
                                     position: relative;
@@ -193,8 +185,6 @@ if (isset($_POST['save'])) {
                                 <label for="user_name" class="form-label">Username</label>
                                 <input type="text" class="form-control" id="user_name" pattern="[\w.-]+@[a-zA-Z.-]+\.[a-zA-Z]{2,}" title="Please enter a valid email address" name="user_name" value="<?php echo htmlspecialchars($_POST['user_name'] ?? '', ENT_QUOTES); ?>" required>
                             </div>
-
-
                             <!-- Password Input -->
                             <div class="mb-3">
                                 <label for="user_password" class="form-label">Password</label>

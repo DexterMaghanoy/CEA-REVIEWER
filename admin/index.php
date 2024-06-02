@@ -76,19 +76,12 @@ try {
             justify-content: center;
             align-items: center;
             flex-direction: column;
-
             background: linear-gradient(to left, rgba(255, 255, 255, 0.3), rgba(255, 251, 240, 0.3));
-
-
-
         }
 
         .card-header {
-
             /* background: linear-gradient(to left, rgba(95, 170, 252, 0.5), rgba(175, 210, 255, 0.5)); */
             background: linear-gradient(to bottom, rgba(238, 197, 145, 0.5), rgba(218, 164, 87, 0.5));
-
-
         }
 
         .card-title {
@@ -141,7 +134,7 @@ try {
             <a href="index.php" class="text-black text-decoration-none">
                 <div class="col-md-12 card custom-card mb-2">
                     <div class="card-body">
-                        <h1>Dashboard</h1>
+                        <h1>Admin Dashboard</h1>
                     </div>
                 </div>
             </a>
@@ -216,8 +209,6 @@ try {
                                 <p>
                                 <p>
                                     <img height="35" width="35" src="../img/students.png" alt="Program Image" style="margin-left: 10px;">
-
-
                                 </p> Number of students: <?php echo $studentCount; ?></p>
                             </div>
 
@@ -542,7 +533,7 @@ try {
                                     $failedAttempts = $course['failed_attempts'];
                                     $totalAttempts = $passedAttempts + $failedAttempts;
                                     // Calculate the pass rate as a percentage of the total attempts and total courses
-                                    $passRate = ($totalAttempts > 0) ? ((($passedAttempts / $totalAttempts) * 100) / $studentCountByProgram / $totalCourses) : 0;
+                                    $passRate = ($totalAttempts > 0) ? ((($passedAttempts / $totalAttempts) * 100) / $studentCountByProgram) : 0;
                                     $labels[] = $courseName;
                                     $data[] = $passRate;
                                 } elseif ($quiz_type == 2) {
@@ -551,7 +542,7 @@ try {
                                     $failedAttempts = $course['failed_attempts'];
                                     $totalAttempts = $passedAttempts + $failedAttempts;
                                     // Calculate the pass rate as a percentage of the total attempts and total courses
-                                    $passRate = ($totalAttempts > 0) ? ((($passedAttempts / $totalAttempts) * 100) / $studentCountByProgram / $totalCourses) : 0;
+                                    $passRate = ($totalAttempts > 0) ? ((($passedAttempts / $totalAttempts) * 100) / $studentCountByProgram) : 0;
                                     $labels[] = $courseName;
                                     $data[] = $passRate;
                                 } elseif ($quiz_type == 3) {
@@ -575,53 +566,76 @@ try {
                             <div id="noDataMessage" style="display: none; margin-top: 45px;">No data to display.</div>
                             <canvas id="myPieChart"></canvas>
 
+                            <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
                             <script>
                                 document.addEventListener('DOMContentLoaded', function() {
                                     // Check if there's no data to display
                                     if (<?php echo $noData ? 'true' : 'false'; ?>) {
                                         document.getElementById('noDataMessage').style.display = 'block';
                                     } else {
-                                        const pieData = {
-                                            labels: <?php echo json_encode($labels); ?>,
-                                            datasets: [{
-                                                data: <?php echo json_encode($data); ?>,
-                                                backgroundColor: ['#007bff', '#6c757d', '#17a2b8', '#28a745', '#ffc107', '#dc3545', '#6610f2']
-                                            }]
-                                        };
+                                        const labels = <?php echo json_encode($labels); ?>;
+                                        const data = <?php echo json_encode($data); ?>;
+                                        const quizType = <?php echo $quiz_type; ?>;
+
+                                        console.log('Labels:', labels);
+                                        console.log('Data:', data);
+
+                                        const backgroundColors = ['#007bff', '#6c757d', '#17a2b8', '#28a745', '#ffc107', '#dc3545', '#6610f2'];
+
+                                        // Ensure the background color array matches the data length
+                                        while (backgroundColors.length < data.length) {
+                                            backgroundColors.push('#000000'); // Fallback color
+                                        }
+
+                                        let pieData;
+
+                                        if (quizType !== 3) {
+                                            pieData = {
+                                                labels: labels,
+                                                datasets: [{
+                                                    data: data,
+                                                    backgroundColor: backgroundColors
+                                                }]
+                                            };
+                                        } else {
+                                            pieData = {
+                                                labels: ['EXAM'], // Only one label named "EXAM"
+                                                datasets: [{
+                                                    data: data,
+                                                    backgroundColor: backgroundColors
+                                                }]
+                                            };
+                                        }
+
+
+
                                         const ctx = document.getElementById('myPieChart').getContext('2d');
                                         const myPieChart = new Chart(ctx, {
                                             type: 'pie',
                                             data: pieData,
                                             options: {
-                                                responsive: false,
-                                                layout: {
-                                                    padding: {
-                                                        top: 30,
-                                                        bottom: 10,
-                                                        left: 20, // Increase padding on the left to move the chart right
-                                                        right: 0 // Adjust this value as needed
-                                                    }
-                                                },
+                                                responsive: true,
                                                 plugins: {
                                                     legend: {
-                                                        position: 'bottom',
-                                                        labels: {
-                                                            margin: 20, // Padding between legend items
-                                                            boxWidth: 50, // Size of the colored box
-                                                            font: {
-                                                                size: 13
-                                                            }
-                                                        }
+                                                        position: 'left',
                                                     },
                                                     tooltip: {
                                                         callbacks: {
                                                             label: function(context) {
-                                                                var label = context.label || '';
-                                                                if (label) {
-                                                                    label += ': ';
+
+
+                                                                if (quizType !== 3) {
+                                                                    var label = context.label || '';
+                                                                    if (label) {
+                                                                        label += ': ';
+                                                                    }
+                                                                    label += context.formattedValue + '%';
+                                                                    return label;
+                                                                } else {
+                                                                    return context.formattedValue + '%';
                                                                 }
-                                                                label += context.formattedValue + '%';
-                                                                return label;
+
+
                                                             }
                                                         }
                                                     },
@@ -629,14 +643,28 @@ try {
                                                         color: '#ffffff',
                                                         font: {
                                                             weight: 'bold',
-                                                            size: '14'
+                                                            size: 600
                                                         },
-                                                        formatter: function(value, context) {
-                                                            return context.chart.data.labels[context.dataIndex] + ': ' + value + ' %';
+
+                                                        label: function(context) {
+
+
+                                                            if (quizType !== 3) {
+                                                                var label = context.label || '';
+                                                                if (label) {
+                                                                    label += ': ';
+                                                                }
+                                                                label += context.formattedValue + '%';
+                                                                return label;
+                                                            } else {
+                                                                return context.formattedValue + '%';
+                                                            }
+
+
                                                         }
+
                                                     }
                                                 }
-
                                             }
                                         });
                                     }

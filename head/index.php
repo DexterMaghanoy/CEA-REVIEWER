@@ -139,7 +139,7 @@ try {
 
             <div class="col-md-12 card custom-card mb-2">
                 <div class="card-body">
-                    <h1>Dashboard</h1>
+                    <h1>Program Dashboard</h1>
                 </div>
             </div>
 
@@ -187,24 +187,6 @@ try {
                         </div>
 
                     </a>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
                     <a href="student.php" class="text-black text-decoration-none">
                         <div class="card text-bg-light text-black shadow-lg mb-3">
                             <div class="card-header">
@@ -236,36 +218,36 @@ try {
 
                 <div class="col-md-4">
 
-                        <div class="card text-bg-light text-black shadow-lg mb-3">
-                            <div class="card-header"> Course</div>
-                            <div class="card-body">
-                                <?php
-                                try {
-                                    // Assuming you're using PDO and have a database connection
-                                    $stmt = $conn->prepare("SELECT p.program_name, COUNT(*) AS student_count 
+                    <div class="card text-bg-light text-black shadow-lg mb-3">
+                        <div class="card-header"> Course</div>
+                        <div class="card-body">
+                            <?php
+                            try {
+                                // Assuming you're using PDO and have a database connection
+                                $stmt = $conn->prepare("SELECT p.program_name, COUNT(*) AS student_count 
                                 FROM tbl_program p
                                 INNER JOIN tbl_student s ON p.program_id = s.program_id
                                 WHERE s.stud_status = 1 AND p.program_id = :program_id
                                 GROUP BY p.program_name");
-                                    $stmt->bindParam(':program_id', $user['program_id']);
-                                    $stmt->execute();
-                                    $program = $stmt->fetch(PDO::FETCH_ASSOC);
+                                $stmt->bindParam(':program_id', $user['program_id']);
+                                $stmt->execute();
+                                $program = $stmt->fetch(PDO::FETCH_ASSOC);
 
-                                    // Display the program name and its corresponding student count
-                                    if ($program) {
-                                        echo '<ul class="list-group">';
-                                        echo '<li class="list-group-item">' . '<img height="35" width="35" src="./GIF/read.gif" alt="">' . " " . $program['program_name'] . ' <span style="font-size: 1.2em; font-weight: bold; color:black;" class="badge badge-primary badge-pill">' . '</span></li>';
-                                        echo '</ul>';
-                                    } else {
-                                        // If no program found for the user's program ID
-                                        echo '<p>No program found.</p>';
-                                    }
-                                } catch (PDOException $e) {
-                                    echo "Error: " . $e->getMessage();
+                                // Display the program name and its corresponding student count
+                                if ($program) {
+                                    echo '<ul class="list-group">';
+                                    echo '<li class="list-group-item">' . '<img height="35" width="35" src="./GIF/read.gif" alt="">' . " " . $program['program_name'] . ' <span style="font-size: 1.2em; font-weight: bold; color:black;" class="badge badge-primary badge-pill">' . '</span></li>';
+                                    echo '</ul>';
+                                } else {
+                                    // If no program found for the user's program ID
+                                    echo '<p>No program found.</p>';
                                 }
-                                ?>
-                            </div>
+                            } catch (PDOException $e) {
+                                echo "Error: " . $e->getMessage();
+                            }
+                            ?>
                         </div>
+                    </div>
 
 
 

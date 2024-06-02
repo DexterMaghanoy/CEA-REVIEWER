@@ -27,19 +27,14 @@ $stud_id = isset($_SESSION['stud_id']) ? $_SESSION['stud_id'] : null; // Retriev
 $sql = "SELECT tbl_result.result_score, tbl_result.total_questions, tbl_module.module_name, tbl_result.created_at as date_created, tbl_result.attempt_id
         FROM tbl_result
         INNER JOIN tbl_module ON tbl_result.module_id = tbl_module.module_id
-        WHERE tbl_result.quiz_type = 2 AND tbl_result.course_id = :course_id AND tbl_result.stud_id = :stud_id
+        WHERE tbl_result.quiz_type = 3 AND tbl_result.stud_id = :stud_id
         ORDER BY tbl_result.created_at DESC";
-
-// Prepare and execute the SQL query
 $result = $conn->prepare($sql);
-$result->bindParam(':course_id', $course_id, PDO::PARAM_INT);
 $result->bindParam(':stud_id', $stud_id, PDO::PARAM_INT);
 $result->execute();
 
-// Fetch the results
 $results = $result->fetchAll(PDO::FETCH_ASSOC);
 
-// Find the course name corresponding to the given course_id
 $courseName = "";
 foreach ($courses as $course) {
     if ($course['course_id'] == $course_id) {
@@ -48,17 +43,15 @@ foreach ($courses as $course) {
     }
 }
 
-// Fetch distinct module names for the course
-$sqlModuleNames = "SELECT DISTINCT tbl_module.module_id, tbl_module.module_name
-                   FROM tbl_module
-                   INNER JOIN tbl_result ON tbl_module.module_id = tbl_result.module_id
-                   WHERE tbl_result.course_id = :course_id AND module_status = 1";
-$stmtModuleNames = $conn->prepare($sqlModuleNames);
-$stmtModuleNames->bindParam(':course_id', $course_id, PDO::PARAM_INT);
-$stmtModuleNames->execute();
-$moduleNames = $stmtModuleNames->fetchAll(PDO::FETCH_ASSOC);
+$sqlCourseNames = "SELECT course_id, course_name
+                   FROM tbl_course
+                   WHERE program_id = :program_id and course_status = 1";
+$stmtCourseNames = $conn->prepare($sqlCourseNames);
+$stmtCourseNames->bindParam(':program_id', $program_id, PDO::PARAM_INT);
+$stmtCourseNames->execute();
+$courseNames = $stmtCourseNames->fetchAll(PDO::FETCH_ASSOC);
 
-// Fetch distinct module quizzes for the course along with attempt_id
+
 $queryModuleQuiz = "SELECT DISTINCT m.module_id, m.module_name, qa.attempt_id
                     FROM tbl_module m
                     INNER JOIN tbl_quiz_answers qa ON m.module_id = qa.module_id
@@ -69,17 +62,12 @@ $stmtModuleQuiz->execute();
 $moduleQuiz = $stmtModuleQuiz->fetchAll(PDO::FETCH_ASSOC);
 
 // Count the attempts for the current course and student
-$attemptSql = "SELECT COUNT(*) FROM tbl_result WHERE quiz_type = 2 AND course_id = :course_id AND program_id = :program_id AND stud_id = :stud_id";
+$attemptSql = "SELECT COUNT(*) FROM tbl_result WHERE quiz_type = 3 AND stud_id = :stud_id";
 $stmtAttempt = $conn->prepare($attemptSql);
-$stmtAttempt->bindParam(':course_id', $course_id, PDO::PARAM_INT);
-$stmtAttempt->bindParam(':program_id', $program_id, PDO::PARAM_INT);
 $stmtAttempt->bindParam(':stud_id', $stud_id, PDO::PARAM_INT);
 $stmtAttempt->execute();
 $attemptCount = $stmtAttempt->fetchColumn();
-
 ?>
-
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -93,18 +81,16 @@ $attemptCount = $stmtAttempt->fetchColumn();
     <link rel="shortcut icon" href="../img/cea_logo.png" type="image/x-icon">
     <link rel="stylesheet" href="style.css" type="text/css">
 </head>
-
 <body>
-    <!-- Body content goes here -->
     <div class="wrapper">
-        <?php include 'sidebar.php'; ?> <!-- Assuming sidebar.php contains your sidebar code -->
+        <?php include 'sidebar.php'; ?> 
         <div class="main p-3">
             <div class="container">
                 <div class="row justify-content-center mt-2">
                     <div class="col-md-12">
                         <div class="text-center mb-4">
                             <h1><?php
-                                echo "Subject: " . $courseName;
+                                echo "Exam Result" . $courseName;
                                 ?></h1>
                         </div>
                         <!-- Search Bar -->
@@ -120,9 +106,11 @@ $attemptCount = $stmtAttempt->fetchColumn();
                                 <thead class="table-dark">
                                     <tr style="text-align: center;">
                                         <th scope="col">Attempt</th>
-                                        <?php foreach ($moduleNames as $moduleName) : ?>
-                                            <th scope="col"><?php echo htmlspecialchars($moduleName['module_name']); ?></th>
+                                        <?php foreach ($courseNames as $course) : ?>
+                                            <th scope="col"><?php echo htmlspecialchars($course['course_name']); ?></th>
                                         <?php endforeach; ?>
+
+
                                         <th scope="col">ResultScore</th>
                                         <th scope="col">Remarks</th>
                                         <th scope="col">Date</th>
@@ -138,62 +126,56 @@ $attemptCount = $stmtAttempt->fetchColumn();
                                                 <?php
                                                 $attemptCount--;
                                                 ?>
-                                                <?php foreach ($moduleNames as $moduleName) : ?>
-
+                                                <?php foreach ($courseNames as $course) : ?>
                                                     <td>
                                                         <?php
-                                                        // Display Module ID
-                                                        $module_id = (int)$moduleName['module_id'];
-                                                        // echo 'Module#: ' . $module_id;
-                                                        // echo '<br>';
+                                                        // Display Course ID
+                                                        $course_id = (int)$course['course_id'];
 
                                                         // Calculate and display Attempt count
                                                         $attempt = $attemptCount + 1;
-                                                        // echo 'Attempt: ' . $attempt;
-                                                        // echo '<br>';
-                                                        // echo 'Stud_id: ' . $stud_id;
-                                                        // echo '<br>';
 
                                                         // Fetch total quiz questions
                                                         $quizAnswersSql = "SELECT COUNT(*) AS total_quiz_questions
-                       FROM `tbl_quiz_answers`
-                       WHERE module_id = :module_id 
-                       AND quiz_type = 2
-                       AND student_id = :stud_id
-                       AND attempt_id = :attempt_id";
+                           FROM `tbl_quiz_answers`
+                           WHERE course_id = :course_id 
+                           AND quiz_type = 3
+                           AND student_id = :stud_id
+                           AND attempt_id = :attempt_id";
 
                                                         $quizAnswersStmt = $conn->prepare($quizAnswersSql);
-                                                        $quizAnswersStmt->bindParam(':module_id', $module_id, PDO::PARAM_INT);
+                                                        $quizAnswersStmt->bindParam(':course_id', $course_id, PDO::PARAM_INT);
                                                         $quizAnswersStmt->bindParam(':stud_id', $stud_id, PDO::PARAM_INT);
                                                         $quizAnswersStmt->bindParam(':attempt_id', $attempt, PDO::PARAM_INT);
                                                         $quizAnswersStmt->execute();
-                                                        $result = $quizAnswersStmt->fetch(PDO::FETCH_ASSOC);
+                                                        $quizAnswersResult = $quizAnswersStmt->fetch(PDO::FETCH_ASSOC);
 
                                                         // Fetch total correct answers
                                                         $quizCorrectAnswersSql = "SELECT COUNT(*) AS total_correct_answers
-                              FROM `tbl_quiz_answers`
-                              WHERE module_id = :module_id 
-                              AND quiz_type = 2
-                              AND student_id = :stud_id
-                              AND answer_status = 1
-                              AND attempt_id = :attempt_id";
+                                  FROM `tbl_quiz_answers`
+                                  WHERE course_id = :course_id 
+                                  AND quiz_type = 3
+                                  AND student_id = :stud_id
+                                  AND answer_status = 1
+                                  AND attempt_id = :attempt_id";
 
                                                         $quizCorrectAnswersStmt = $conn->prepare($quizCorrectAnswersSql);
-                                                        $quizCorrectAnswersStmt->bindParam(':module_id', $module_id, PDO::PARAM_INT);
+                                                        $quizCorrectAnswersStmt->bindParam(':course_id', $course_id, PDO::PARAM_INT);
                                                         $quizCorrectAnswersStmt->bindParam(':stud_id', $stud_id, PDO::PARAM_INT);
                                                         $quizCorrectAnswersStmt->bindParam(':attempt_id', $attempt, PDO::PARAM_INT);
                                                         $quizCorrectAnswersStmt->execute();
-                                                        $CorrectResult = $quizCorrectAnswersStmt->fetch(PDO::FETCH_ASSOC);
+                                                        $quizCorrectAnswersResult = $quizCorrectAnswersStmt->fetch(PDO::FETCH_ASSOC);
 
                                                         // Display the result with proper styling
                                                         $colorStyle = ""; // Define your $colorStyle variable as needed
                                                         ?>
                                                         <span style="<?php echo htmlspecialchars($colorStyle) . ' font-size: 15px;'; ?>">
-                                                            <?php echo htmlspecialchars("{$CorrectResult['total_correct_answers']}/{$result['total_quiz_questions']}"); ?>
+                                                            <?php echo htmlspecialchars("{$quizCorrectAnswersResult['total_correct_answers']}/{$quizAnswersResult['total_quiz_questions']}"); ?>
                                                         </span>
+                                                        
                                                     </td>
-
                                                 <?php endforeach; ?>
+
 
                                                 <td>
                                                     <?php

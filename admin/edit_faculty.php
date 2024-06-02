@@ -50,7 +50,6 @@ if ($stmt->rowCount() > 0) {
     $user_fname = $row['user_fname'];
     $user_mname = $row['user_mname'];
     $user_lname = $row['user_lname'];
-    $user_image = $row['user_image'];
     $user_name = $row['user_name'];
     $user_password = $row['user_password'];
 }
@@ -61,7 +60,6 @@ if (isset($_POST['update'])) {
     $user_fname = $_POST['user_fname'];
     $user_mname = $_POST['user_mname'];
     $user_lname = $_POST['user_lname'];
-    $user_image = $_POST['user_image'];
     $user_name = $_POST['user_name'];
     $user_password = $_POST['user_password'];
 
@@ -87,7 +85,6 @@ if (isset($_POST['update'])) {
             user_fname = :user_fname,
             user_mname = :user_mname,
             user_lname = :user_lname,
-            user_image = :user_image,
             user_name = :user_name,
             user_password = :user_password
             WHERE user_id = :user_id";
@@ -98,7 +95,6 @@ if (isset($_POST['update'])) {
         $stmt->bindParam(":user_fname", $user_fname);
         $stmt->bindParam(":user_mname", $user_mname);
         $stmt->bindParam(":user_lname", $user_lname);
-        $stmt->bindParam(":user_image", $user_image);
         $stmt->bindParam(":user_name", $user_name);
         $stmt->bindParam(":user_password", $user_password);
         $stmt->bindParam(":user_id", $user_id, PDO::PARAM_INT);
@@ -204,59 +200,61 @@ if (isset($_POST['update'])) {
                                 </div>
                             </div>
                             <!-- First Name Input -->
+                            <!-- First Name Input -->
                             <div class="mb-3">
                                 <label for="user_fname" class="form-label">First Name</label>
-                                <input type="text" class="form-control" id="user_fname" name="user_fname" value="<?php echo htmlspecialchars($user_fname); ?>" pattern="[A-Za-z]+" title="Please enter only alphabetic characters" required>
+                                <input type="text" class="form-control" id="user_fname" name="user_fname" value="<?php echo htmlspecialchars($user_fname); ?>" pattern="[A-Za-z ]+" title="Please enter only alphabetic characters" required>
                             </div>
 
                             <!-- Middle Name Input -->
                             <div class="mb-3">
                                 <label for="user_mname" class="form-label">Middle Name</label>
-                                <input type="text" class="form-control" id="user_mname" name="user_mname" value="<?php echo htmlspecialchars($user_mname); ?>" pattern="[A-Za-z]+" title="Please enter only alphabetic characters" required>
+                                <input type="text" class="form-control" id="user_mname" name="user_mname" value="<?php echo htmlspecialchars($user_mname); ?>" pattern="[A-Za-z ]+" title="Please enter only alphabetic characters" required>
                             </div>
 
                             <!-- Last Name Input -->
                             <div class="mb-3">
                                 <label for="user_lname" class="form-label">Last Name</label>
-                                <input type="text" class="form-control" id="user_lname" name="user_lname" value="<?php echo htmlspecialchars($user_lname); ?>" pattern="[A-Za-z]+" title="Please enter only alphabetic characters" required>
+                                <input type="text" class="form-control" id="user_lname" name="user_lname" value="<?php echo htmlspecialchars($user_lname); ?>" pattern="[A-Za-z ]+" title="Please enter only alphabetic characters" required>
                             </div>
 
                             <!-- User Image Input -->
-                            <div class="mb-3">
+                            <!-- <div class="mb-3">
                                 <label for="user_image" class="form-label">Image</label>
                                 <input class="form-control" type="file" id="user_image" name="user_image">
-                            </div>
+                            </div> -->
 
                             <!-- Username Input -->
                             <div class="mb-3">
-                                <label for="user_name" class="form-label">Username</label>
-                                <input type="text" class="form-control" id="user_name" name="user_name" value="<?php echo htmlspecialchars($user_name); ?>" required>
+                                <label for="user_name   " class="form-label">Username</label>
+                                <input type="text" class="form-control" id="user_name" name="user_name" pattern="[^\s\/<>]*" value="<?php echo htmlspecialchars($user_name); ?>" required>
                             </div>
-                            <style>
-                            .password-input-container {
-                                position: relative;
-                            }
 
-                            .toggle-password {
-                                position: absolute;
-                                right: 10px;
-                                /* Adjust as needed */
-                                top: 50%;
-                                transform: translateY(-50%);
-                                cursor: pointer;
-                                z-index: 1;
-                            }
-                      
-                        </style>
+                            <style>
+                                .password-input-container {
+                                    position: relative;
+                                }
+
+                                .toggle-password {
+                                    position: absolute;
+                                    right: 10px;
+                                    /* Adjust as needed */
+                                    top: 50%;
+                                    transform: translateY(-50%);
+                                    cursor: pointer;
+                                    z-index: 1;
+                                }
+                            </style>
 
                             <!-- Password Input -->
                             <div class="mb-3">
                                 <label for="user_password" class="form-label">Password</label>
                                 <div class="password-input-container">
-                                    <input type="password" class="form-control" id="user_password" name="user_password" value="<?php echo htmlspecialchars($user_password); ?>" pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{12,}" title="Must contain at least one number and one uppercase and lowercase letter, and at least 12 or more characters" required>
-                                    <span class="toggle-password" onclick="togglePasswordVisibility()"><i class="far fa-eye-slash"></i></span>
+                                    <input type="password" class="form-control" id="user_password" name="user_password" value="<?php echo htmlspecialchars($user_password); ?>" pattern="^(?!.*[<>.\\?;'\" ]).*(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{12,}$" title="Must contain at least one number, one uppercase letter, one lowercase letter, be at least 12 characters long, and not contain any of the following characters: <, >, ., \, ?, ;, ', \"" required>
+ <span class=" toggle-password" onclick="togglePasswordVisibility()"><i class="far fa-eye-slash"></i></span>
                                 </div>
                             </div>
+
 
                             <!-- Hidden Employee ID and Submit Button -->
                             <input type="hidden" name="user_id" value="<?php echo $user_id; ?>">

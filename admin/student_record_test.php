@@ -117,10 +117,10 @@ if (isset($_SESSION['program_id'])) {
             <?php include 'back.php'; ?>
             <div class="row justify-content-center mt-1">
                 <div class="col-md-">
-                    
-                <div class="text-center mb-1">
+
+                    <div class="text-center mb-1">
                         <div class="text-center mb-1">
-                        <h1>Test data:
+                            <h1>Test data:
                                 <?php
                                 // Check if student_id is provided in the URL
                                 if (isset($_GET['student_id'])) {
@@ -165,10 +165,17 @@ if (isset($_SESSION['program_id'])) {
                     <!-- Display all results in a table -->
                     <div class="table-container">
                         <table id="resultTable" style="background: linear-gradient(to left, rgba(220, 210, 211, 0.3), rgba(200, 240, 241, 0.3));" class="table table-bordered table-custom">
-                            <caption>List of Scores</capt   ion>
+                            <caption>List of Scores</capt ion>
                             <thead class="table-dark">
                                 <tr style="text-align: center;">
-                                    <th scope="col"><a href="#" class="sortable" data-column="0">Title</a></th>
+                                    <th scope="col">
+                                        <select id="titleDropdown" class="sortable" data-column="0">
+                                            <option value="Title 1">Title 1</option>
+                                            <option value="Title 2">Title 2</option>
+                                            <option value="Title 3">Title 3</option>
+                                        </select>
+                                    </th>
+
                                     <th scope="col"><a href="#" class="sortable" data-column="1">Score</a></th>
                                     <th scope="col"><a href="#" class="sortable" data-column="2">Result</a></th>
                                     <th scope="col"><a href="#" class="sortable" data-column="3">Date</a></th>

@@ -19,8 +19,7 @@ $stmt_module = $conn->prepare($sql_module);
 $stmt_module->bindParam(':module_id', $module_id, PDO::PARAM_INT);
 $stmt_module->execute();
 $module_row = $stmt_module->fetch(PDO::FETCH_ASSOC);
-$course_id = $module_row['course_id'];
-$module_name = $module_row['module_name'];
+
 
 $recordsPerPage = 10;
 $page = isset($_GET['page']) ? $_GET['page'] : 1;
@@ -65,19 +64,24 @@ $totalPages = ceil($totalCount / $recordsPerPage);
         <div class="main p-3">
             <div class="container">
                 <div class="row justify-content-center mt-5">
-                    <div class="col-md-10">
+                    <div class="col-md-12">
                         <div class="text-center mb-2">
-                            <h1>Questions: <?php echo htmlspecialchars($module_name); ?></h1>
+                            <h1>Questions: <?php echo htmlspecialchars($module_row['module_name']); ?></h1>
                         </div>
                         <div class="d-flex mb-2">
-                            <a class="btn btn-outline-success btn-sm me-2" href="add_question.php?program_id=<?php echo $program_id ?>&course_id=<?php echo $course_id ?>&module_id=<?php echo $module_id ?>"><i class="lni lni-plus"></i> Add Question</a>
-                            <a class="btn btn-outline-primary btn-sm" href="import_question.php?program_id=<?php echo $program_id ?>&course_id=<?php echo $course_id ?>&module_id=<?php echo $module_id ?>"><i class="lni lni-upload"></i> Import Question</a>
+                            <a class="btn btn-outline-success btn-sm me-2" href="add_question.php?program_id=<?php echo $program_id ?>&course_id=<?php echo $module_row['course_id'] ?>&module_id=<?php echo $module_id?>"><i class="lni lni-plus"></i> Add Question</a>
+                            <a class="btn btn-outline-primary btn-sm" href="import_question.php?program_id=<?php echo $program_id ?>&course_id=<?php echo $module_row['course_id'] ?>&module_id=<?php echo $module_id?>"><i class="lni lni-upload"></i> Import Question</a>
                         </div>
 
-                        <table class="table table-bordered border-secondary" style="table-layout: auto; width: 100%;">
+                        <!-- <table class="table table-bordered border-secondary" style="table-layout: auto; width: 100%;"> -->
+                        <table id="resultTable" style="background: linear-gradient(to left, rgba(220, 210, 211, 0.3), rgba(200, 240, 241, 0.3));" class="table table-bordered table-custom">
+
+
+
                             <caption>List of Questions</caption>
                             <thead>
-                                <tr>
+                                <tr class="bg-dark text-light">
+
                                     <th scope="col">Question</th>
                                     <th scope="col">Option A</th>
                                     <th scope="col">Option B</th>
@@ -166,5 +170,5 @@ $totalPages = ceil($totalCount / $recordsPerPage);
     </script>
 
 </body>
-</html>
 
+</html>

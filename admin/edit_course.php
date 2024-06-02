@@ -25,7 +25,7 @@ if (isset($_POST['update'])) {
                     text: "Please input all fields.",
                     icon: "error"
                 }).then(() => {
-                    window.location.href = "program.php";
+                    window.location.href = "courses.php";
                 });
             });
         </script>';
@@ -35,8 +35,9 @@ if (isset($_POST['update'])) {
         WHERE program_id = :program_id";
 
         $stmt = $conn->prepare($sql);
+        $program_name = htmlspecialchars($program_name, ENT_QUOTES, 'UTF-8');
         $stmt->bindParam(":program_name", $program_name);
-        $stmt->bindParam(":program_id", $program_id);
+        $stmt->bindParam(":program_id", $program_id, PDO::PARAM_INT);
 
         if ($stmt->execute()) {
             echo '<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>';
@@ -46,10 +47,11 @@ if (isset($_POST['update'])) {
                         $(document).ready(function(){
                             Swal.fire({
                                 title: "Success!",
-                                text: "Program updated successfully.",
+                                text: "Course updated successfully.",
                                 icon: "success"
                             }).then(() => {
-                                window.location.href = "program.php";
+                                window.location.href = "courses.php?program_id=' . $_SESSION['program_id'] . '&course_id=' . $_SESSION['course_id'] . '&module_id=' . $_GET['module_id'] . '";
+          
                             });
                         });
                     </script>';
@@ -58,10 +60,10 @@ if (isset($_POST['update'])) {
                     $(document).ready(function(){
                         Swal.fire({
                             title: "Failed!",
-                            text: "Failed to update program.",
+                            text: "Failed to update course.",
                             icon: "error"
                         }).then(() => {
-                            window.location.href = "program.php";
+                            window.location.href = "courses.php";
                         });
                     });
                     </script>';
@@ -106,27 +108,26 @@ if (isset($_GET['program_id'])) {
         <?php
         include 'back.php';
         ?>
-            <div class="container">
-
+        <div class="container">
             <div class="text-center mb-4">
                 <h1>Edit Course</h1>
             </div>
-                <div class="row justify-content-center">
-                    <div class="col-md-5">
-                        <form action="edit_program.php" method="post">
-                            <!-- Program Name Input -->
-                            <div class="mb-3">
-                                <label for="program_name" class="form-label">Course Name</label>
-                                <input type="text" class="form-control" id="program_name" name="program_name" value="<?php echo $program_name; ?>" required>
-                            </div>
+            <div class="row justify-content-center">
+                <div class="col-md-5">
+                    <form action="edit_course.php" method="post">
+                        <!-- Program Name Input -->
+                        <div class="mb-3">
+                            <label for="program_name" class="form-label">Course Name</label>
+                            <input type="text" class="form-control" id="program_name" name="program_name" value="<?php echo htmlspecialchars($program_name); ?>" pattern="[A-Za-z0-9\s]+" title="Invalid Input" required>
+                        </div>
 
-                            <!-- Hidden Employee ID and Submit Button -->
-                            <input type="hidden" name="program_id" value="<?php echo $program_id; ?>">
-                            <input type="submit" class="btn btn-success mt-2" value="Update" name="update">
-                        </form>
-                    </div>
+                        <!-- Hidden Employee ID and Submit Button -->
+                        <input type="hidden" name="program_id" value="<?php echo $program_id; ?>">
+                        <input type="submit" class="btn btn-success mt-2" value="Update" name="update">
+                    </form>
                 </div>
             </div>
+        </div>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe" crossorigin="anonymous"></script>
 </body>
 <script>

@@ -24,6 +24,8 @@ if (isset($_POST['save'])) {
         $module_file = file_get_contents($_FILES["module_file"]["tmp_name"]);
     }
 
+
+
     if (empty($course_id) || empty($module_name) || is_null($module_file)) {
         echo '<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>';
         echo '<script src="https://cdn.jsdelivr.net/npm/sweetalert2@10.16.6/dist/sweetalert2.min.js"></script>';
@@ -63,6 +65,7 @@ if (isset($_POST['save'])) {
                             });
                         });
                     </script>';
+                exit();
             } else {
                 echo '<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>';
                 echo '<script src="https://cdn.jsdelivr.net/npm/sweetalert2@10.16.6/dist/sweetalert2.min.js"></script>';
@@ -78,6 +81,7 @@ if (isset($_POST['save'])) {
                             });
                         });
                     </script>';
+                exit();
             }
         } catch (PDOException $e) {
             echo '<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>';
@@ -95,6 +99,7 @@ if (isset($_POST['save'])) {
                             });
                         });
                     </script>';
+                exit();
             } else {
                 echo '<script>
                         $(document).ready(function(){
@@ -107,8 +112,8 @@ if (isset($_POST['save'])) {
                             });
                         });
                     </script>';
+                exit();
             }
-            $avoid = 1;
         }
     }
 }
@@ -130,21 +135,11 @@ if (isset($_POST['save'])) {
 
 <body>
     <div class="wrapper">
-
         <?php
-
-
-        if ($avoid != 1) {
-            include 'sidebar.php';
-        }
-
-
+        include 'sidebar.php';
         ?>
         <div class="container">
-
-
             <div class="text-center mb-5 mt-4">
-
                 <?php
                 $courseSql = "SELECT course_name FROM tbl_course WHERE course_id = :course_id";
                 $courseStmt = $conn->prepare($courseSql);
@@ -159,21 +154,15 @@ if (isset($_POST['save'])) {
                     $courseName = "Unknown Course"; // Default value if course name not found
                 }
                 ?>
-
                 <h1>Add Module: <span style="font-weight: normal;"><?php echo htmlspecialchars($courseName); ?></span></h1>
-
-
-
             </div>
-
-
-
             <div class="row justify-content-center mt-5 mb-5">
                 <div class="col-md-5">
                     <form action="add_module.php" method="post" enctype="multipart/form-data">
                         <div class="mb-3">
                             <label for="module_name" class="form-label">Module Title</label>
-                            <input type="text" class="form-control" id="module_name" name="module_name" required>
+                            <input type="text" class="form-control" id="module_name" name="module_name" required pattern="[a-zA-Z0-9\s]+" title="Please enter a valid module name">
+
                         </div>
                         <div class="mb-3">
                             <label for="module_file" class="form-label">Module File</label>

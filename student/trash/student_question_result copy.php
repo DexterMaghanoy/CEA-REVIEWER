@@ -29,11 +29,11 @@ $course_id = isset($_GET['course_id']) ? $_GET['course_id'] : null;
 $stud_id = isset($_SESSION['stud_id']) ? $_SESSION['stud_id'] : null; // Retrieve stud_id from session
 
 
-$sql = "SELECT tbl_result.result_score, tbl_result.total_questions, tbl_module.module_name, tbl_result.attempt_id ,tbl_result.created_at as date_created
+// Your original SQL query
+$sql = "SELECT tbl_result.result_score, tbl_result.total_questions, tbl_module.module_name, tbl_result.created_at as date_created
         FROM tbl_result
         INNER JOIN tbl_module ON tbl_result.module_id = tbl_module.module_id
-        WHERE tbl_result.quiz_type = 1 AND tbl_result.course_id = '$course_id' AND tbl_result.stud_id = '$stud_id'
-        ORDER BY tbl_result.created_at DESC"; // Ordering by date_created column in descending order
+        WHERE tbl_result.quiz_type = 1 AND tbl_result.course_id = '$course_id' AND tbl_result.stud_id = '$stud_id'";
 
 
 // Execute the SQL query
@@ -81,7 +81,7 @@ foreach ($courses as $course) {
                     <div class="col-md-12">
                         <div class="text-center mb-4">
                             <h1><?php
-                                echo "Subject: " . $courseName;
+                                echo "Subject: ".$courseName;
 
                                 ?></h1>
                         </div>
@@ -104,7 +104,7 @@ foreach ($courses as $course) {
                                 <caption>List of Scores</caption>
                                 <thead class="table-dark">
                                     <tr style="text-align: center;">
-                                        <th scope="col">Attempt No.</th>
+                                        <!-- <th scope="col">Module No.</th> -->
                                         <th scope="col">Title</th>
                                         <th scope="col">Score</th>
                                         <th scope="col">Result</th>
@@ -115,30 +115,18 @@ foreach ($courses as $course) {
                                     <?php if ($results) : ?>
                                         <?php foreach ($results as $row) : ?>
                                             <tr style="text-align: center;">
-                                                <td><?php echo $row['attempt_id']; ?></td>
-
                                                 <td><?php echo $row['module_name']; ?></td>
-                                                <td>
-                                                    <?php
-                                                    $res = ($row['result_score'] / $row['total_questions']) * 100;
-                                                    if ($res >= 50) {
-                                                        echo '<span style="color: green;">' . $row['result_score'] . ' / ' . $row['total_questions'] . '</span>';
-                                                    } else {
-                                                        echo '<span style="color: red;">' . $row['result_score'] . ' / ' . $row['total_questions'] . '</span>';
-                                                    }
-                                                    ?>
-                                                </td>
-
+                                                <td><?php echo $row['result_score']; ?> / <?php echo $row['total_questions']; ?></td>
                                                 <td scope="col">
+
                                                     <?php
                                                     $res = ($row['result_score'] / $row['total_questions']) * 100;
                                                     if ($res >= 50) {
-                                                        echo '<span style="color:green;">Passed</span>';
+                                                        echo "Pass";
                                                     } else {
-                                                        echo '<span style="color:red;">Failed</span>';
+                                                        echo "Failed";
                                                     }
                                                     ?>
-
 
                                                 </td>
                                                 <td><?php echo date("M d, Y", strtotime($row['date_created'])); ?></td>

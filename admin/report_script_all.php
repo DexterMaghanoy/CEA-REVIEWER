@@ -12,7 +12,7 @@ $allStudentbyProgram = $totalStudentsDataByProgram['total_students'];
 $passRates = [];
 foreach ($uniqueCourses as $course) {
     $totalAttempts = $course['failed_attempts'] + $course['passed_attempts'];
-    $passRates[$course['course_code']] = ($totalAttempts > 0) ? (($course['passed_attempts'] / $totalAttempts) / $allStudentbyProgram) * 100 : 0;
+    $passRates[$course['course_code']] = ($totalAttempts > 0) ? ((($course['passed_attempts'] / $totalAttempts) / $allStudentbyProgram) ) * 100 : 0;
 }
 ?>
 
@@ -41,15 +41,15 @@ foreach ($uniqueCourses as $course) {
 
     <!-- HTML code to display course information -->
     <a href="report_results_test.php?course_id=<?php echo $course['course_id']; ?>&user_id=<?php echo $_SESSION['user_id']; ?>&module_id=<?php echo $course['module_id']; ?>&quiz_type=<?php echo $quiz_type; ?>">
-        <div <?php if (isset($_GET['quiz_type'])) {
-                    $quiz_type = $_GET['quiz_type'];
-                    if ($quiz_type != 1) {
-                        $hideTestCard = 'hidden';
-                    } else {
-                        $hideTestCard = '';
+        <div styl <?php if (isset($_GET['quiz_type'])) {
+                        $quiz_type = $_GET['quiz_type'];
+                        if ($quiz_type != 1) {
+                            $hideTestCard = 'hidden';
+                        } else {
+                            $hideTestCard = '';
+                        }
                     }
-                }
-                echo $hideTestCard; ?> class="card subject-<?php echo ($index % 3) + 1; ?> mb-1" style="background: linear-gradient(to left, rgba(220, 210, 211, 0.3), rgba(200, 240, 241, 0.3));">
+                    echo $hideTestCard; ?> class="card subject-<?php echo ($index % 3) + 1; ?> mb-1" style="background: linear-gradient(to left, rgba(220, 210, 211, 0.3), rgba(200, 240, 241, 0.3));">
             <div class="card-body" style="padding: 0.5rem;">
                 <h5 class="card-title" style="font-size: 1rem;"><?php echo '<img height="25" width="35" src="../GIF/book-write.gif"> ' . htmlspecialchars($course['course_code']) . ' -  ' . htmlspecialchars($course['course_name']); ?></h5>
                 <p style="font-size: 0.8rem; margin-bottom: 0;">Student answered: <?php echo htmlspecialchars($answeredStudents) . " / " . htmlspecialchars($allStudentbyProgram); ?></p>
@@ -96,7 +96,7 @@ foreach ($uniqueCourses as $course) {
         // Prepare chart data and options
         const data = google.visualization.arrayToDataTable(chartData);
         const options = {
-            title: 'Quiz Pass Rate by Subject',
+            title: 'Test Pass Rate',
             chartArea: {
                 width: '50%'
             },

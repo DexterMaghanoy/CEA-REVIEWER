@@ -15,19 +15,19 @@ global $questionCount;
 $sql = "SELECT tbl_course.program_id, tbl_course.course_id, tbl_course.course_name 
         FROM tbl_course 
         INNER JOIN tbl_program ON tbl_course.program_id = tbl_program.program_id
-        WHERE tbl_course.user_id = :user_id";
+        WHERE tbl_course.user_id = :user_id and tbl_course.course_status = 1";
 
 
 if (isset($_SESSION['program_id'])) {
     $program_id = $_SESSION['program_id'];
-    $sql = "SELECT * FROM tbl_course WHERE program_id = :program_id";
+    $sql = "SELECT * FROM tbl_course WHERE program_id = :program_id and course_status = 1";
     $result = $conn->prepare($sql);
     $result->bindParam(':program_id', $program_id);
     $result->execute();
 
 
     // Fetch module_id based on course_id
-    $moduleSql = "SELECT module_id FROM tbl_module WHERE course_id = :course_id";
+    $moduleSql = "SELECT module_id FROM tbl_module WHERE course_id = :course_id and module_status = 1";
     $moduleStmt = $conn->prepare($moduleSql);
     $moduleStmt->bindParam(':course_id', $course_id, PDO::PARAM_INT);
 
@@ -81,7 +81,7 @@ if (isset($_SESSION['program_id'])) {
 
 
     // Count total number of records
-    $countSql = "SELECT COUNT(*) as total FROM tbl_module WHERE course_id = :course_id";
+    $countSql = "SELECT COUNT(*) as total FROM tbl_module WHERE course_id = :course_id  AND module_status = 1";
     $countStmt = $conn->prepare($countSql);
     $countStmt->bindParam(':course_id', $course_id, PDO::PARAM_INT);
     $countStmt->execute();
@@ -148,7 +148,7 @@ if (isset($_SESSION['program_id'])) {
                                 <th scope="col">Module Title</th>
                                 <th scope="col">Action</th>
                                 <th scope="col">Attempts</th>
-                                <th scope="col">Result</th>
+                                <th scope="col">Remarks</th>
                                 <th scope="col">Pass Rate</th>
                             </tr>
                         </thead>
@@ -272,9 +272,10 @@ if (isset($_SESSION['program_id'])) {
                                             // Calculate and display pass rate
                                             if ($resultCount > 0 && $percentage >= 50) {
                                                 if ($totalQuestions > 0) {
-                                                    echo 'Passed';
+                                                    echo '<strong><span style="color: green;">Passed</span></strong>';
                                                 } else {
-                                                    echo 'N/A ';
+                                                    echo '<span style="color: grey;"><strong>n/a</strong></span>';
+
                                                     $qs = -1;
                                                 }
                                             } else {
@@ -282,12 +283,13 @@ if (isset($_SESSION['program_id'])) {
 
                                                     echo 'No Questions';
                                                 } else {
-
+                                                    
                                                     if ($resultCount > 0) {
-                                                        echo 'Failed';
+                                                        echo '<span style="color: red;"><strong>Failed</strong></span>';
                                                         $qs = -1;
                                                     } else {
-                                                        echo 'N/A';
+                                                        echo '<span style="color: grey;"><strong>n/a</strong></span>';
+
                                                         $qs = -1;
                                                     }
                                                 }
@@ -308,13 +310,13 @@ if (isset($_SESSION['program_id'])) {
                                                     $passRate = (1 / $resultCount) * 100;
                                                     echo number_format($passRate, 1) . '%';
                                                 } else {
-                                                    echo 'N/A';
+                                                    echo '<span style="color: grey;"><strong>n/a</strong></span>';
                                                 }
                                             } else {
                                                 if ($questionCount <= 0) {
                                                     echo 'No questions';
                                                 } else {
-                                                    echo 'N/A';
+                                                    echo '<span style="color: grey;"><strong>n/a</strong></span>';
                                                 }
                                             }
 
@@ -386,16 +388,17 @@ if (isset($_SESSION['program_id'])) {
                                         if ($passed_result['passed_count'] > 0) {
                                             // User has already passed the quiz, disable the button
                                             echo '<button class="btn btn-info mb-2" disabled><i class="lni lni-invention"></i></button>';
-                                            $quiz_result_final = "Passed";
+                                            $quiz_result_final = "<strong><span style=\"color: green;\">Passed</span></strong>";
                                         } else {
                                             // User hasn't passed the quiz, enable the button
                                             echo '<button onclick="window.location.href=\'quiz.php?course_id=' . $course_id . '\'" class="btn btn-info mb-2" ' . $quiz_button . '><i class="lni lni-invention"></i></button>';
-                                            $quiz_result_final = "-";
+
+                                            $quiz_result_final = "<strong><span style=\"color: red;\">Failed</span></strong>";
+                                            // $quiz_result_final = "";
+                                            
                                         }
                                     }
                                     ?>
-
-
                                 </td>
                                 <td>
                                     <?php
@@ -447,15 +450,23 @@ if (isset($_SESSION['program_id'])) {
                                         // Calculate the pass rate and display pass/fail status here
                                         $passRate = 0;
 
-                                        if ($result_score > 0 && ($result_score / $total_questions) * 100 >= 50) {
+                                        if ($quizAttempts>0 && $result_score > 0 && ($result_score / $total_questions) * 100 >= 50) {
                                             echo $quiz_result_final;
+                                            // echo '<span style="color: grey;"><strong>n/a</strong></span>';
                                         } else {
-                                            echo  $quiz_result_final;;
+
+
+                                            if ($quizAttempts > 0) {
+                                                echo '<span style="color: red;"><strong>Failed</strong></span>';
+                                            } else {
+
+                                                echo '<span style="color: grey;"><strong>n/a</strong></span>';
+                                            }
                                         }
                                     } else {
                                         // Handle the case where no result is found
-                                        echo "-";
-                                    }
+                                        echo '<span style="color: grey;"><strong>n/a</strong></span>';
+                                    }   
                                     ?>
                                 </td>
 
@@ -468,10 +479,10 @@ if (isset($_SESSION['program_id'])) {
                                             $QuizPercentage = 100 / $quizAttempts;
                                             echo number_format($QuizPercentage) . '%';
                                         } else {
-                                            echo '-';
+                                            echo '0.0%';
                                         }
                                     } else {
-                                        echo '-';
+                                        echo '<span style="color: grey;"><strong>n/a</strong></span>';
                                     }
                                     ?>
                                 </td>
@@ -482,16 +493,6 @@ if (isset($_SESSION['program_id'])) {
                     </table>
 
 
-                    <!-- Pagination -->
-                    <nav aria-label="Page navigation">
-                        <ul class="pagination justify-content-center">
-                            <?php for ($i = 1; $i <= $totalPages; $i++) : ?>
-                                <li class="page-item <?php echo $i == $page ? 'active' : ''; ?>">
-                                    <a class="page-link" href="?page=<?php echo $i; ?>&course_id=<?php echo $course_id; ?>"><?php echo $i; ?></a>
-                                </li>
-                            <?php endfor; ?>
-                        </ul>
-                    </nav>
                 </div>
             </div>
         </div>
@@ -514,6 +515,7 @@ if (isset($_SESSION['program_id'])) {
                 </style>
 
                 <div class="modal-header">
+                    <h5 class="modal-title" id="moduleModalLabel"></h5>
                     <h5 class="modal-title" id="moduleModalLabel">Module: <?php echo $row['module_name']; ?></h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>

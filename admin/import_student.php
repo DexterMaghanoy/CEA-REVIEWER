@@ -30,7 +30,6 @@ if (isset($_POST["import"])) {
 
     foreach ($reader as $key => $row) {
         $program_id = $row[0];
-        $year_id = $row[1];
         $stud_no = $row[2];
         $stud_fname = $row[3];
         $stud_mname = $row[4];
@@ -43,7 +42,6 @@ if (isset($_POST["import"])) {
 
         $stmt = $conn->prepare($sql);
         $stmt->bindParam(":program_id", $program_id);
-        $stmt->bindParam(":year_id", $year_id);
         $stmt->bindParam(":stud_no", $stud_no);
         $stmt->bindParam(":stud_fname", $stud_fname);
         $stmt->bindParam(":stud_mname", $stud_mname);
