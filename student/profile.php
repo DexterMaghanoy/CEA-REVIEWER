@@ -84,24 +84,23 @@ if ($user) {
     <title>Profile</title>
     <!-- Include Bootstrap CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css">
-    
+
     <!-- Include FontAwesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 
     <link href="https://cdn.lineicons.com/4.0/lineicons.css" rel="stylesheet" />
     <link rel="shortcut icon" href="../img/cea_logo.png" type="image/x-icon">
-    <link rel="stylesheet" href="profile.css" type="text/css">
     <link rel="stylesheet" href="mobile-desktop.css" type="text/css">
+    <link rel="stylesheet" href="./css/profile.css" type="text/css">
+
 </head>
 
-
-
 <style>
-    .card {
-        border: none;
-        box-shadow: 10px 20px 30px rgba(0, 0, 0, 0.1);
-    }
+
+  
 </style>
+
+
 
 <body>
     <div id="topBar">
@@ -118,7 +117,7 @@ if ($user) {
 
         <div class="container">
             <br>
-            <div class="text-center">
+            <div id="profile-title" class="text-center">
                 <h1>Profile</h1>
             </div>
             <br>
@@ -200,7 +199,7 @@ if ($user) {
 
                                         <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
                                         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10.16.6/dist/sweetalert2.min.js"></script>
-                                        
+
                                         <link href="https://cdn.jsdelivr.net/npm/sweetalert2@10.16.6/dist/sweetalert2.min.css" rel="stylesheet">
                                         <style>
                                             .my-custom-popup {
