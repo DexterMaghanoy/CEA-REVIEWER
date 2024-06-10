@@ -18,15 +18,27 @@
         <?php
         }
         ?>
-        
     </ul>
 </div>
 
 <style>
-    .dropdown:hover .dropdown-menu {
-        display: block;
-
+    @media (min-width: 769px) {
+        .dropdown:hover .dropdown-menu {
+            display: block;
+        }
     }
-
-
 </style>
+
+
+<script>
+    $(document).ready(function() {
+        $('#dropdownMenuButton').on('click', function() {
+            var $dropdownMenu = $(this).next('.dropdown-menu');
+            if ($dropdownMenu.is(':visible')) {
+                $dropdownMenu.hide();
+            } else {
+                $dropdownMenu.show();
+            }
+        });
+    });
+</script>

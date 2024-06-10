@@ -136,7 +136,13 @@ AND module_id = :module_id";
             }
         }
 
-        $passingScore = 0.5;
+        $sql = "SELECT pass_rate FROM tbl_passrate ORDER BY pass_id DESC LIMIT 1";
+        $stmtPass_rate = $conn->prepare($sql);
+        $stmtPass_rate->execute();
+        $passRate = $stmtPass_rate->fetchColumn();
+
+        $passingScore = $passRate / 100;
+
         $passStatus = ($score / $total_questions) >= $passingScore ? 1 : 0;
         $sql = "INSERT INTO tbl_result (module_id, stud_id, result_score, total_questions, quiz_type, course_id, program_id, result_status, attempt_id) 
                 VALUES (:module_id, :stud_id, :result_score, :total_questions, :quiz_type, :course_id, :program_id, :result_status, :attempt_id)";

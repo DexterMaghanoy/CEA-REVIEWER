@@ -1,103 +1,125 @@
 <?php
 session_start();
+
 require '../api/db-connect.php';
 
-// Check if program_id, course_id, and module_id are set in the URL parameters
-if (isset($_GET['program_id']) && isset($_GET['course_id']) && isset($_GET['module_id'])) {
-    // Set the session variables based on the URL parameters
-    $_SESSION['program_id'] = $_GET['program_id'];
-    $_SESSION['course_id'] = $_GET['course_id'];
-    $_SESSION['module_id'] = $_GET['module_id'];
+if (isset($_SESSION['program_id'])) {
+    $program_id = $_SESSION['program_id'];
+} else {
+    header("Location: ../index.php");
+    exit();
 }
 
-// Retrieve user_id from session
+
+global $avoid;
+
 $user_id = $_SESSION['user_id'];
 
-// Check if the form is submitted
 if (isset($_POST['save'])) {
-    // Retrieve form data
-    $question_text = $_POST['question_text'];
-    $question_A = $_POST['question_A'];
-    $question_B = $_POST['question_B'];
-    $question_C = $_POST['question_C'];
-    $question_D = $_POST['question_D'];
-    $question_answer = $_POST['question_answer'];
 
-    // Validate form data
-    if (empty($question_text) || empty($question_A) || empty($question_B) || empty($question_C) || empty($question_D) || empty($question_answer)) {
-        // Handle empty fields
-        echo '
-            <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-            <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10.16.6/dist/sweetalert2.min.js"></script>
-            <link href="https://cdn.jsdelivr.net/npm/sweetalert2@10.16.6/dist/sweetalert2.min.css" rel="stylesheet">
-            <script>
-                $(document).ready(function(){
-                    Swal.fire({
-                        title: "Failed!",
-                        text: "Please input all fields.",
-                        icon: "error"
-                    });
+    $course_id = $_POST['course_id'];
+    $module_name = $_POST['module_name'];
+
+    $module_file = null;
+    if (isset($_FILES["module_file"]) && $_FILES["module_file"]["error"] == UPLOAD_ERR_OK) {
+        $module_file = file_get_contents($_FILES["module_file"]["tmp_name"]);
+    }
+
+    if (empty($course_id) || empty($module_name) || is_null($module_file)) {
+        echo '<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>';
+        echo '<script src="https://cdn.jsdelivr.net/npm/sweetalert2@10.16.6/dist/sweetalert2.min.js"></script>';
+        echo '<link href="https://cdn.jsdelivr.net/npm/sweetalert2@10.16.6/dist/sweetalert2.min.css" rel="stylesheet">';
+        echo '<script>
+            $(document).ready(function(){
+                Swal.fire({
+                    title: "Failed!",
+                    text: "Please fill in all fields.",
+                    icon: "error"
                 });
-            </script>';
+            });
+        </script>';
+        exit();
     } else {
-        // Insert new question with module_id and course_id
-        $sql = "INSERT INTO `tbl_question` (`module_id`, `question_text`, `question_A`, `question_B`, `question_C`, `question_D`, `question_answer`, `course_id`, `program_id`)
-        VALUES (:module_id, :question_text, :question_A, :question_B, :question_C, :question_D, :question_answer, :course_id, :program_id)";
-
         try {
+            // Insert new module
+            $sql = "INSERT INTO `tbl_module` (`program_id`, `course_id`, `module_name`, `module_file`)
+                VALUES (:program_id, :course_id, :module_name, :module_file)";
             $stmt = $conn->prepare($sql);
-            $stmt->bindParam(":module_id", $_SESSION['module_id']);
-            $stmt->bindParam(":question_text", $question_text);
-            $stmt->bindParam(":question_A", $question_A);
-            $stmt->bindParam(":question_B", $question_B);
-            $stmt->bindParam(":question_C", $question_C);
-            $stmt->bindParam(":question_D", $question_D);
-            $stmt->bindParam(":question_answer", $question_answer);
-            $stmt->bindParam(":course_id", $_SESSION['course_id']);
-            $stmt->bindParam(":program_id", $_SESSION['program_id']);
+            $stmt->bindParam(":program_id", $program_id);
+            $stmt->bindParam(":course_id", $course_id);
+            $stmt->bindParam(":module_name", $module_name);
+            $stmt->bindParam(":module_file", $module_file, PDO::PARAM_LOB);
 
-            // Execute the query
             if ($stmt->execute()) {
-                // Handle successful query execution
-                echo '
-                    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-                    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10.16.6/dist/sweetalert2.min.js"></script>
-                    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@10.16.6/dist/sweetalert2.min.css" rel="stylesheet">
-                    <script>
+                echo '<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>';
+                echo '<script src="https://cdn.jsdelivr.net/npm/sweetalert2@10.16.6/dist/sweetalert2.min.js"></script>';
+                echo '<link href="https://cdn.jsdelivr.net/npm/sweetalert2@10.16.6/dist/sweetalert2.min.css" rel="stylesheet">';
+                echo '<script>
                         $(document).ready(function(){
                             Swal.fire({
                                 title: "Success!",
-                                text: "Question added successfully.",
+                                text: "Module added successfully.",
                                 icon: "success"
                             }).then(() => {
-                                window.location.href = window.location.href;
+                                window.location.href = "subjects.php";
                             });
                         });
                     </script>';
+                exit();
             } else {
-                // Handle query execution failure
-                echo '
-                    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-                    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10.16.6/dist/sweetalert2.min.js"></script>
-                    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@10.16.6/dist/sweetalert2.min.css" rel="stylesheet">
-                    <script>
+                echo '<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>';
+                echo '<script src="https://cdn.jsdelivr.net/npm/sweetalert2@10.16.6/dist/sweetalert2.min.js"></script>';
+                echo '<link href="https://cdn.jsdelivr.net/npm/sweetalert2@10.16.6/dist/sweetalert2.min.css" rel="stylesheet">';
+                echo '<script>
                         $(document).ready(function(){
                             Swal.fire({
                                 title: "Failed!",
-                                text: "Failed to add question.",
+                                text: "Failed to add module.",
                                 icon: "error"
+                            }).then(() => {
+                                window.location.href = "subjects.php";
                             });
                         });
                     </script>';
+                exit();
             }
         } catch (PDOException $e) {
-            // Handle PDO exception
-            echo "Error: " . $e->getMessage();
+            echo '<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>';
+            echo '<script src="https://cdn.jsdelivr.net/npm/sweetalert2@10.16.6/dist/sweetalert2.min.js"></script>';
+            echo '<link href="https://cdn.jsdelivr.net/npm/sweetalert2@10.16.6/dist/sweetalert2.min.css" rel="stylesheet">';
+            if (strpos($e->getMessage(), 'SQLSTATE[HY000]: General error: 2006 MySQL server has gone away') !== false) {
+                echo '<script>
+                        $(document).ready(function(){
+                            Swal.fire({
+                                title: "Failed!",
+                                text: "The uploaded file is too large.",
+                                icon: "error"
+                            }).then(() => {
+                                window.location.href = "./subjects.php";
+                            });
+                        });
+                    </script>';
+                exit();
+            } else {
+                echo '<script>
+                        $(document).ready(function(){
+                            Swal.fire({
+                                title: "Failed!",
+                                text: "An unexpected error occurred.",
+                                icon: "error"
+                            }).then(() => {
+                                window.location.href = "subjects.php";
+                            });
+                        });
+                    </script>';
+                exit();
+            }
         }
     }
 }
-?>
 
+
+?>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -141,7 +163,7 @@ if (isset($_POST['save'])) {
                     <form action="add_module.php" method="post" enctype="multipart/form-data">
                         <div class="mb-3">
                             <label for="module_name" class="form-label">Module Title</label>
-                            <input type="text" class="form-control" id="module_name" name="module_name" required pattern="^[^/<>*]+$" title="Please enter a valid module name"> 
+                            <input type="text" class="form-control" id="module_name" name="module_name" required pattern="^[^/<>*]+$" title="Please enter a valid module name">
                         </div>
                         <div class="mb-3">
                             <label for="module_file" class="form-label">Module File</label>

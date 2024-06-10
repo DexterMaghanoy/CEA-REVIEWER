@@ -104,58 +104,64 @@ $totalPages = ceil($totalCount / $recordsPerPage);
                         <a class="btn btn-outline-primary btn-sm" href="import_student.php"><i class="lni lni-upload"></i></a>
                     </div><br>
                     <!-- Search bar -->
-                    <form action="" method="GET" class="mb-3">
-                        <div class="input-group">
-                            <input type="text" class="form-control" name="search" placeholder="Search...">
-                            <button class="btn btn-primary" type="submit">Search</button>
+                        <div class="row">
+                            <div class="col-sm-6">
+                            </div>
+                            <div class="col-sm-6">
+                                <form action="" method="GET" class="mb-3">
+                                    <div class="input-group">
+                                        <input type="text" class="form-control" name="search" placeholder="Search...">
+                                        <button class="btn btn-primary" type="submit">Search</button>
+                                    </div>
+                                </form>
+                            </div>
                         </div>
-                    </form>
                     <table style="background: linear-gradient(to left, rgba(220, 210, 211, 0.3), rgba(200, 240, 241, 0.3)); table-layout: auto; width: 100%;" class="table table-bordered table-custom">
 
-                            <caption>List of Student</caption>  
-                            <thead class="table-dark">
-                                <tr>
-                                    <th scope="col">Student No.</th>
-                                    <th scope="col">Program</th>
-                                    <th scope="col">Fullname</th>
-                                    <th scope="col">Action</th>
-                                    <th scope="col">Status</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php if ($result->rowCount() > 0) : ?>
-                                    <?php while ($row = $result->fetch(PDO::FETCH_ASSOC)) : ?>
-                                        <tr>
-                                            <td><?php echo $row['stud_no']; ?></td>
-                                            <td><?php echo $row['program_name']; ?></td>
-                                            <td><?php echo $row['stud_lname'] . ', ' . $row['stud_fname'] . ' ' . $row['stud_mname']; ?></td>
-                                            <td>
-                                                <a class="btn btn-info btn-sm" href="edit_student.php?stud_id=<?php echo $row['stud_id']; ?>"><i class="lni lni-pencil"></i></a>
-
-                                                <a href="student_record_test.php?student_id=<?php echo $row['stud_id']; ?>" class="btn btn-primary btn-sm eye-icon-btn"><i class="lni lni-eye eye-icon text-white"></i></a>
-
-                                            </td>
-                                            <td>
-                                                <form method="post" style="display: inline;">
-                                                    <input type="hidden" name="stud_id" value="<?php echo $row['stud_id']; ?>">
-                                                    <button type="submit" name="toggle_status" class="btn btn-sm <?php echo $row['stud_status'] == 1 ? 'btn-success' : 'btn-warning'; ?>">
-                                                        <?php if ($row['stud_status'] == 1) : ?>
-                                                            <i class="lni lni-checkmark-circle"></i> <!-- Green circle icon for activated -->
-                                                        <?php else : ?>
-                                                            <i class="lni lni-checkmark-circle"></i> <!-- Yellow circle icon for deactivated -->
-                                                        <?php endif; ?>
-                                                    </button>
-                                                </form>
-                                            </td>
-                                        </tr>
-                                    <?php endwhile; ?>
-                                <?php else : ?>
+                        <caption>List of Student</caption>
+                        <thead class="table-dark">
+                            <tr>
+                                <th scope="col">Student No.</th>
+                                <th scope="col">Program</th>
+                                <th scope="col">Fullname</th>
+                                <th scope="col">Action</th>
+                                <th scope="col">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php if ($result->rowCount() > 0) : ?>
+                                <?php while ($row = $result->fetch(PDO::FETCH_ASSOC)) : ?>
                                     <tr>
-                                        <td colspan="5" class="text-center">No records found for student.</td>
+                                        <td><?php echo $row['stud_no']; ?></td>
+                                        <td><?php echo $row['program_name']; ?></td>
+                                        <td><?php echo $row['stud_lname'] . ', ' . $row['stud_fname'] . ' ' . $row['stud_mname']; ?></td>
+                                        <td>
+                                            <a class="btn btn-info btn-sm" href="edit_student.php?stud_id=<?php echo $row['stud_id']; ?>"><i class="lni lni-pencil"></i></a>
+
+                                            <a href="student_record_test.php?student_id=<?php echo $row['stud_id']; ?>" class="btn btn-primary btn-sm eye-icon-btn"><i class="lni lni-eye eye-icon text-white"></i></a>
+
+                                        </td>
+                                        <td>
+                                            <form method="post" style="display: inline;">
+                                                <input type="hidden" name="stud_id" value="<?php echo $row['stud_id']; ?>">
+                                                <button type="submit" name="toggle_status" class="btn btn-sm <?php echo $row['stud_status'] == 1 ? 'btn-success' : 'btn-warning'; ?>">
+                                                    <?php if ($row['stud_status'] == 1) : ?>
+                                                        <i class="lni lni-checkmark-circle"></i> <!-- Green circle icon for activated -->
+                                                    <?php else : ?>
+                                                        <i class="lni lni-checkmark-circle"></i> <!-- Yellow circle icon for deactivated -->
+                                                    <?php endif; ?>
+                                                </button>
+                                            </form>
+                                        </td>
                                     </tr>
-                                <?php endif; ?>
-                            </tbody>
-                        </table>
+                                <?php endwhile; ?>
+                            <?php else : ?>
+                                <tr>
+                                    <td colspan="5" class="text-center">No records found for student.</td>
+                                </tr>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
 
                 </div>
                 <!-- Pagination -->

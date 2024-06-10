@@ -18,6 +18,7 @@ if (isset($_SESSION['program_id']) && !empty($_SESSION['program_id'])) {
 
 
 
+
 // Output program_id for debugging
 
 $course_id = $_GET['course_id'];

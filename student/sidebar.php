@@ -65,27 +65,27 @@ require '../api/db-connect.php';
             ?>
             <h6>
                 <a href="dashboard.php">Hello, <?php echo htmlspecialchars($Student_user); ?>!
-                    <p style="text-align: center; font-size: 13px;"><?php echo htmlspecialchars($programName_students) . "  " . " Student"; ?></p>
+                    <p style="font-size: 13px;"><?php echo htmlspecialchars($programName_students) . "  " . " Student"; ?></p>
                 </a>
             </h6>
         </div>
     </div>
-    <ul title="Dashboard"  class="sidebar-nav">
+    <ul title="Dashboard" class="sidebar-nav">
         <li class="sidebar-item">
             <a href="dashboard.php" class="sidebar-link">
-                <i class="lni lni-dashboard"></i>
+                <i class="lni lni-home"></i>
                 <span>Dashboard</span>
             </a>
         </li>
-        <li title="Profile"  class="sidebar-item">
+        <li title="Profile" class="sidebar-item">
             <a href="profile.php" class="sidebar-link">
                 <i class="lni lni-user"></i>
                 <span>Profile</span>
             </a>
         </li>
-        <li  title="Subjects" class="sidebar-item">
+        <li title="Subjects" class="sidebar-item">
             <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse" data-bs-target="#auth" aria-expanded="false" aria-controls="auth">
-                <i class="lni lni-agenda"></i>
+                <i class="lni lni-book"></i>
                 <span>Subjects</span>
             </a>
             <?php
@@ -99,7 +99,7 @@ require '../api/db-connect.php';
                             $displayedCourseIDs[] = $row['course_id'];
                     ?>
                             <li class="sidebar-item">
-                                <a href="module.php?course_id=<?php echo htmlspecialchars($row['course_id']); ?>" class="sidebar-link"><?php echo htmlspecialchars($row['course_name']); ?></a>
+                                <a href="module.php?course_id=<?php echo htmlspecialchars($row['course_id']); ?>" class="sidebar-link"><?php echo htmlspecialchars(' 🔵 ' . $row['course_name']); ?></a>
                             </li>
                     <?php endif;
                     endforeach; ?>
@@ -153,13 +153,52 @@ require '../api/db-connect.php';
         } catch (PDOException $e) {
             echo "Error: " . $e->getMessage();
         }
+
+
+
+
+        $sql = "SELECT 
+        COUNT(*) AS quiz_type_3_count
+    FROM 
+        tbl_result r
+    JOIN 
+        tbl_module m ON r.module_id = m.module_id
+    JOIN 
+        tbl_course c ON r.course_id = c.course_id
+    WHERE 
+        r.stud_id = :stud_id
+        AND c.program_id = :program_id
+        AND r.quiz_type = 3
+        AND r.result_status = 1";
+
+        $stmt = $conn->prepare($sql);
+        $stmt->bindParam(':stud_id', $user_id, PDO::PARAM_INT);
+        $stmt->bindParam(':program_id', $program_id, PDO::PARAM_INT);
+        $stmt->execute();
+        $resultSideBar = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        $quiz_type_3_count = $resultSideBar['quiz_type_3_count'];
+
+        // echo "Quiz Type 3 Count: " . $quiz_type_3_count . "<br>";
         ?>
-        <li title="Exam"  class="sidebar-item">
-            <?php if ($allCoursesCompleted) : ?>
-                <a class="sidebar-link" style="color: green;" onclick="showAlertProceed();">
+
+
+
+
+        <li title="Exam" class="sidebar-item">
+            <?php if ($quiz_type_3_count > 0) : ?>
+                <a class="sidebar-link" style="color: green; cursor: pointer;" onclick="showAlertDone();">
                     <i class="lni lni-pencil-alt"></i>
                     <span>Exam</span>
                 </a>
+            <?php elseif ($allCoursesCompleted) : ?>
+                <a class="sidebar-link" style="color: green; cursor: pointer;" onclick="showAlertProceed();">
+                    <i class="lni lni-pencil-alt"></i>
+                    <span>Exam</span>
+                </a>
+
+
+
 
             <?php else : ?>
                 <a class="sidebar-link" style="color: red; cursor: pointer;" onclick="showAlert();">
@@ -204,6 +243,18 @@ require '../api/db-connect.php';
 
 
 
+        <script>
+            function showAlertDone() {
+                Swal.fire({
+                    title: "Exam Completed",
+                    text: "You have already passed the exam. Please proceed to the reports page to view your records.",
+                    icon: "success"
+                }).then(() => {
+                    window.location.href = "dashboard.php";
+                });
+            }
+        </script>
+
 
         <li title="Report" class="sidebar-item">
             <a href="report_questions.php" class="sidebar-link">
@@ -211,21 +262,48 @@ require '../api/db-connect.php';
                 <span>Report</span>
             </a>
         </li>
+
+        <li class="sidebar-item">
+            <a href="leaderboards-tests.php" class="sidebar-link">
+                <i class="lni lni-bar-chart"></i>
+                <span>Leaderboards</span>
+            </a>
+        </li>
+        <style>
+            @media (max-width: 1000px) and (orientation: landscape) {
+                #logout {
+                    display: block;
+                    /* Show the logout button in mobile landscape */
+                }
+
+                #desktopLogout {
+                    display: none;
+                }
+            }
+
+            @media (min-width: 1001px) {
+                #logout {
+                    display: none;
+                    /* Hide the logout button on desktop */
+                }
+            }
+        </style>
+
+        <li id="logout" class="sidebar-item">
+            <a href="../logout.php" class="sidebar-link">
+                <i class="lni lni-exit"></i>
+                <span>Logout</span>
+            </a>
+        </li>
+
+
+
+
     </ul>
-    <div title="Logout" class="sidebar-footer">
+    <div id="desktopLogout" title="Logout" class="sidebar-footer">
         <a href="../logout.php" class="sidebar-link">
             <i class="lni lni-exit"></i>
             <span>Logout</span>
         </a>
     </div>
 </aside>
-
-
-<script>
-    // Disable right-click context menu
-    document.addEventListener('contextmenu', function(event) {
-        event.preventDefault();
-    });
-</script>
-
-

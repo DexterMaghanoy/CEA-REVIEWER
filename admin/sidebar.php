@@ -37,7 +37,7 @@ if ($stmtSidebar->rowCount() > 0) {
             </a>
         </div>
 
-        
+
     </div>
 
 
@@ -85,6 +85,12 @@ if ($stmtSidebar->rowCount() > 0) {
                 <span>Reports</span>
             </a>
         </li>
+        <li class="sidebar-item">
+            <a href="leaderboards-tests.php" class="sidebar-link">
+                <i class="lni lni-bar-chart"></i>
+                <span>Leaderboards</span>
+            </a>
+        </li>
 
     </ul>
     <div class="sidebar-footer">
@@ -94,3 +100,11 @@ if ($stmtSidebar->rowCount() > 0) {
         </a>
     </div>
 </aside>
+
+
+<script>
+    // Disable right-click context menu
+    document.addEventListener('contextmenu', function(event) {
+        event.preventDefault();
+    });
+</script>

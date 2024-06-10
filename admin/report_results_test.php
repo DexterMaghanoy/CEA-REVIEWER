@@ -1,4 +1,5 @@
 <?php
+
 session_start();
 
 require '../api/db-connect.php';
@@ -22,14 +23,17 @@ $offset = ($page - 1) * 10;
 // Retrieve the module name if module_id is set
 $module_name = '';
 if ($module_id) {
-    $stmt = $conn->prepare("SELECT module_name FROM tbl_module WHERE module_id = :module_id");
+    $stmt = $conn->prepare("SELECT module_name FROM tbl_module WHERE module_id = :module_id AND program_id = :program_id");
     $stmt->bindParam(':module_id', $module_id, PDO::PARAM_INT);
+    $stmt->bindParam(':program_id', $_SESSION['program_id'], PDO::PARAM_INT);
     $stmt->execute();
     $module = $stmt->fetch(PDO::FETCH_ASSOC);
     if ($module) {
         $module_name = $module['module_name'];
     }
 }
+
+
 
 // Retrieve modules for the specified course
 if ($course_id) {

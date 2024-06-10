@@ -139,17 +139,13 @@ try {
 
             <div class="col-md-12 card custom-card mb-2">
                 <div class="card-body">
-                    <h1>Program Dashboard</h1>
+                    <h1>Program Head Dashboard
+                        
+                    </h1>
                 </div>
             </div>
-
-
-
             <div class="row">
-
-
                 <div class="col-md-4">
-
                     <div class="card text-bg-light text-black shadow-lg mb-3">
                         <div class="card-header">Time</div>
                         <div class="card-body">

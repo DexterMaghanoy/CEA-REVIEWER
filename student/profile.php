@@ -75,22 +75,26 @@ if ($user) {
 }
 
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Question Answers</title>
+    <title>Profile</title>
     <!-- Include Bootstrap CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css">
+    
     <!-- Include FontAwesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
     <link href="https://cdn.lineicons.com/4.0/lineicons.css" rel="stylesheet" />
     <link rel="shortcut icon" href="../img/cea_logo.png" type="image/x-icon">
     <link rel="stylesheet" href="profile.css" type="text/css">
+    <link rel="stylesheet" href="mobile-desktop.css" type="text/css">
 </head>
+
+
 
 <style>
     .card {
@@ -100,11 +104,18 @@ if ($user) {
 </style>
 
 <body>
-    <div style="background-color: rgb(252, 249, 249);" class="wrapper">
+    <div id="topBar">
 
         <?php
-        include 'sidebar.php';
+        include 'topNavBar.php';
         ?>
+
+    </div>
+
+    <div style="background-color: rgb(252, 249, 249);" class="wrapper">
+
+        <?php include 'sidebar.php'; ?>
+
         <div class="container">
             <br>
             <div class="text-center">
@@ -118,8 +129,7 @@ if ($user) {
                             <div class="col-md-4 gradient-custom text-center text-white" style="border-top-left-radius: .5rem; border-bottom-left-radius: .5rem;">
                                 <img src="../img/student.png" alt="Avatar" class="rounded-circle img-fluid my-5" style="width: 100px;">
                                 <h5><?php echo $user['stud_fname'] . ' ' . $user['stud_lname'] ?></h5>
-                                <p><?php echo "Student" ?></p>
-
+                                <p>Student</p>
                             </div>
                             <div class="col-md-8">
                                 <div class="card-body p-4">
@@ -144,8 +154,8 @@ if ($user) {
                                             <button class="btn btn-success mt-3" data-bs-toggle="modal" data-bs-target="#changePasswordModal">Change Password</button>
                                         </div>
 
-
-                                        <div style="margin-top: -60px; padding-left: 90px" class="modal fade" id="changePasswordModal" tabindex="-1" aria-labelledby="changePasswordModalLabel" aria-hidden="true">
+                                        <!-- Modal for changing password -->
+                                        <div class="modal fade" id="changePasswordModal" tabindex="-1" aria-labelledby="changePasswordModalLabel" aria-hidden="true">
                                             <div class="modal-dialog modal-dialog-centered">
                                                 <div class="modal-content">
                                                     <div class="modal-header bg-info text-white">
@@ -190,128 +200,15 @@ if ($user) {
 
                                         <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
                                         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10.16.6/dist/sweetalert2.min.js"></script>
+                                        
                                         <link href="https://cdn.jsdelivr.net/npm/sweetalert2@10.16.6/dist/sweetalert2.min.css" rel="stylesheet">
                                         <style>
                                             .my-custom-popup {
                                                 position: center;
                                                 top: -10%;
-                                                /* Adjust as needed */
                                                 left: 2.5%;
-                                                /* Adjust as needed */
                                             }
                                         </style>
-                                        <script>
-                                            var userCurrentPassword = "<?php echo $userPassword; ?>";
-                                            document.getElementById('changePasswordForm').addEventListener('submit', function(event) {
-                                                event.preventDefault(); // Prevent default form submission
-
-                                                var isValid = validatePassword();
-                                                if (isValid) {
-                                                    var formData = new FormData(this);
-
-                                                    // Make AJAX request
-                                                    var xhr = new XMLHttpRequest();
-                                                    xhr.open('POST', 'changepass.php', true);
-                                                    xhr.onload = function() {
-                                                        function handlePasswordChangeResponse(xhr) {
-                                                            if (xhr.status === 200) {
-                                                                // Password updated successfully
-                                                                Swal.fire({
-                                                                    title: "Success!",
-                                                                    text: "Password changed successfully.",
-                                                                    icon: "success",
-                                                                    customClass: {
-                                                                        popup: 'my-custom-popup'
-                                                                    }
-                                                                }).then(() => {
-                                                                    // Clear form fields
-                                                                    document.getElementById('changePasswordForm').reset();
-                                                                    // Close the modal
-                                                                    var modal = bootstrap.Modal.getInstance(document.getElementById('changePasswordModal'));
-                                                                    modal.hide();
-                                                                    window.location.href = 'profile.php';
-                                                                });
-                                                            } else {
-                                                                // Error updating password
-                                                                Swal.fire({
-                                                                    title: "Error!",
-                                                                    text: "There was an error updating your password. Please try again.",
-                                                                    icon: "error",
-                                                                    customClass: {
-                                                                        popup: 'my-custom-popup'
-                                                                    }
-                                                                });
-                                                            }
-                                                        }
-                                                        // Call the nested function to handle the response
-                                                        handlePasswordChangeResponse(xhr);
-                                                    };
-
-                                                    xhr.send(formData);
-                                                }
-                                            });
-
-                                            document.getElementById('toggleNewPassword').addEventListener('click', function() {
-                                                var newPasswordInput = document.getElementById('newPassword');
-                                                if (newPasswordInput.type === 'password') {
-                                                    newPasswordInput.type = 'text';
-                                                } else {
-                                                    newPasswordInput.type = 'password';
-                                                }
-                                            });
-
-                                            document.getElementById('toggleConfirmPassword').addEventListener('click', function() {
-                                                var confirmPasswordInput = document.getElementById('confirmPassword');
-                                                if (confirmPasswordInput.type === 'password') {
-                                                    confirmPasswordInput.type = 'text';
-                                                } else {
-                                                    confirmPasswordInput.type = 'password';
-                                                }
-                                            });
-
-                                            function validatePassword() {
-                                                var currentPasswordInput = document.getElementById("currentPassword").value;
-                                                var currentError = document.getElementById("currentError");
-
-                                                var pass1 = document.getElementById("newPassword").value;
-                                                var pass2 = document.getElementById("confirmPassword").value;
-                                                var pass1Error = document.getElementById("pass1Error");
-                                                var pass2Error = document.getElementById("pass2Error");
-                                                var isValid = true;
-
-
-                                                // Reset error messages
-                                                pass1Error.innerHTML = "";
-                                                pass2Error.innerHTML = "";
-                                                currentError.innerHTML = "";
-
-                                                // Password length validation
-                                                if (pass1.length < 8) {
-                                                    pass1Error.innerHTML = "Password must be at least 8 characters long";
-                                                    isValid = false;
-                                                }
-
-                                                // Password complexity validation
-                                                var uppercaseRegex = /[A-Z]/;
-                                                var lowercaseRegex = /[a-z]/;
-                                                var specialCharRegex = /[!@#$%^&*(),.?":{}|<>]/;
-                                                var numberRegex = /[0-9]/;
-
-                                                if (!uppercaseRegex.test(pass1) || !lowercaseRegex.test(pass1) || !specialCharRegex.test(pass1) || !numberRegex.test(pass1)) {
-                                                    pass1Error.innerHTML = "Password must contain at least one uppercase letter, one lowercase letter, one special character, and one number";
-                                                    isValid = false;
-                                                }
-                                                if (pass1 !== pass2) {
-                                                    pass2Error.innerHTML = "Passwords do not match";
-                                                    isValid = false;
-                                                } else if (userCurrentPassword != currentPasswordInput) {
-
-                                                    currentError.innerHTML = "Current Password didn't match";
-                                                    isValid = false;
-                                                }
-                                                return isValid;
-                                            }
-                                        </script>
                                     </div>
                                 </div>
                             </div>
@@ -319,18 +216,14 @@ if ($user) {
                     </div>
                 </div>
             </div>
-
         </div>
 
+        <script>
+            const hamBurger = document.querySelector(".toggle-btn");
+            hamBurger.addEventListener("click", function() {
+                document.querySelector("#sidebar").classList.toggle("expand");
+            });
+        </script>
 </body>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe" crossorigin="anonymous"></script>
-
-<script>
-    const hamBurger = document.querySelector(".toggle-btn");
-
-    hamBurger.addEventListener("click", function() {
-        document.querySelector("#sidebar").classList.toggle("expand");
-    });
-</script>
 
 </html>

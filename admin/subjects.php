@@ -132,6 +132,7 @@ $courses = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                 </select>
                             </div>
 
+
                             <script>
                                 document.addEventListener('DOMContentLoaded', function() {
                                     document.getElementById('program_id').addEventListener('change', function() {
@@ -148,6 +149,8 @@ $courses = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 
                         </div>
+                        <div class="col-sm-3"></div>
+
                         <div class="col">
                             <form action="" method="GET" class="mb-3">
                                 <div class="input-group">

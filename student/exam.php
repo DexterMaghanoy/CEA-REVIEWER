@@ -18,6 +18,8 @@ if (isset($_SESSION['program_id'])) {
 }
 
 $questions = [];
+
+
 if (isset($_SESSION['program_id'])) {
     $program_id = $_SESSION['program_id'];
 
@@ -25,7 +27,15 @@ if (isset($_SESSION['program_id'])) {
     foreach ($courses as $course) {
         $course_id = $course['course_id'];
         // Modify the SQL query to select up to 6 questions related to the course_id
-        $sql = "SELECT * FROM tbl_question WHERE program_id = :program_id AND course_id = :course_id ORDER BY RAND() LIMIT 5";
+        $sql = "SELECT q.*, m.module_id 
+                FROM tbl_question q 
+                INNER JOIN tbl_course c ON q.course_id = c.course_id 
+                INNER JOIN tbl_module m ON q.module_id = m.module_id 
+                WHERE c.program_id = :program_id 
+                AND q.course_id = :course_id 
+                AND c.course_status = 1
+                AND m.module_status = 1
+                ORDER BY RAND() LIMIT 5";
         $stmt = $conn->prepare($sql);
         $stmt->bindParam(':program_id', $program_id, PDO::PARAM_INT);
         $stmt->bindParam(':course_id', $course_id, PDO::PARAM_INT);
@@ -39,6 +49,7 @@ if (isset($_SESSION['program_id'])) {
     // Shuffle the questions array if needed
     shuffle($questions);
 }
+
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if (isset($_SESSION['stud_id'])) {
@@ -112,7 +123,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $stmtInsertAnswer->execute();
         }
 
-        $passingScore = 0.5;
+
+        $sql = "SELECT pass_rate FROM tbl_passrate ORDER BY pass_id DESC LIMIT 1";
+        $stmtPass_rate = $conn->prepare($sql);
+        $stmtPass_rate->execute();
+        $passRate = $stmtPass_rate->fetchColumn();
+
+        $passingScore = $passRate / 100;
+
         $passStatus = ($score / $total_questions) >= $passingScore ? 1 : 0;
 
         // Insert the result into tbl_result
@@ -155,7 +173,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 }
 
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -208,11 +225,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                             <?php foreach ($questions as $key => $question) : ?>
                                 <div class="question-box <?php echo $counter === 0 ? '' : 'd-none'; ?>">
                                     <div class="question-text"><?php echo $counter + 1 . ". " . htmlspecialchars($question['question_text']); ?></div>
-                                    <?php foreach (['A', 'B', 'C', 'D'] as $option) : ?>
-                                        <?php $optionKey = 'question_' . $option; ?>
+                                    <?php
+                                    // Create an array of options
+                                    $options = ['A' => $question['question_A'], 'B' => $question['question_B'], 'C' => $question['question_C'], 'D' => $question['question_D']];
+
+                                    // Shuffle the options
+                                    shuffle($options);
+                                    ?>
+                                    <?php foreach ($options as $option => $optionText) : ?>
                                         <div style="padding-left: 100px;" class="form-check">
-                                            <input class="form-check-input" type="radio" name="answer_<?php echo $question['question_id']; ?>" id="option<?php echo $option; ?>_<?php echo $question['question_id']; ?>" value="<?php echo htmlspecialchars($question[$optionKey]); ?>">
-                                            <label class="form-check-label" for="option<?php echo $option; ?>_<?php echo $question['question_id']; ?>"><?php echo htmlspecialchars($question[$optionKey]); ?></label>
+                                            <input class="form-check-input" type="radio" name="answer_<?php echo $question['question_id']; ?>" id="option<?php echo $option; ?>_<?php echo $question['question_id']; ?>" value="<?php echo htmlspecialchars($optionText); ?>">
+                                            <label class="form-check-label" for="option<?php echo $option; ?>_<?php echo $question['question_id']; ?>"><?php echo htmlspecialchars($optionText); ?></label>
                                         </div>
                                     <?php endforeach; ?>
                                 </div>
@@ -231,6 +254,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                 </div>
                             </div>
                         </form>
+
                     <?php else : ?>
                         <p>No questions found.</p>
                     <?php endif; ?>

@@ -182,3 +182,17 @@ a.sidebar-link:hover {
 
 
 
+
+
+@media (max-width: 768px) {
+    #topBar {
+        display: block;
+    }
+
+    #sidebar {
+        display: none;
+    }
+
+}
+
+

@@ -1,0 +1,157 @@
+.card {
+    border: none;
+    border-radius: 15px;
+    transition: transform 0.3s, box-shadow 0.3s;
+    position: relative;
+    overflow: hidden;
+}
+
+.card:hover,
+.card:focus {
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+    transform: scale(1.05);
+}
+
+.card-body {
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+.card-title {
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+.card-text {
+    font-size: 1.2rem;
+}
+
+.card:active::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.aligned-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.aligned-row h1 {
+    text-align: center;
+    margin: 0;
+    /* Reset margin */
+}
+
+/* Style for back.php content */
+.back-content {
+    margin-right: auto;
+}
+
+#topBar {
+    display: none;
+}
+
+#card-size{
+
+height: 220px; width: 320px;
+    
+}
+
+#dashboard-title-name {
+
+    text-align: center;
+}
+
+
+#card-text-inside-dashboard{
+  font-size: 0.9rem;
+
+}
+
+
+
+@media (max-width: 450px) {
+    #topBar {
+        display: block;
+    }
+
+    #sidebar {
+        display: none;
+    }
+
+    #dashboard-cards {
+        padding-left: 5%;
+    }
+}
+
+
+/* Media Query for screens with max height of 500px */
+@media (max-height: 500px) {
+    #topBar {
+        display: block;
+    }
+
+    #sidebar {
+        display: none;
+    }
+
+    #dashboard-cards {
+        padding-left: 5%;
+    }
+
+    #card-size {
+        height: 180px;
+        width: 200px;
+        
+    }
+
+
+
+
+
+
+
+
+
+    
+/* General styles */
+.card {
+    border: none;
+    border-radius: 15px;
+    transition: transform 0.3s, box-shadow 0.3s;
+    position: relative;
+    overflow: hidden;
+    width: 70vw; /* Adjust width for smaller screens */
+    margin: 0 auto; /* Center align */
+    
+}
+
+.card:hover,
+.card:focus {
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2); /* Slightly smaller shadow */
+    transform: scale(1.03); /* Slightly smaller scaling */
+}
+
+.card-body {
+    padding: 10px; /* Smaller padding */
+}
+
+.card-title {
+    font-size: 1rem; /* Smaller font size */
+}
+
+.card-text {
+    font-size: 0.9rem; /* Smaller font size */
+    
+}
+}
+
+

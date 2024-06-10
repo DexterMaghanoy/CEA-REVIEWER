@@ -3,12 +3,15 @@ session_start();
 
 require '../api/db-connect.php';
 
-if(isset($_SESSION['program_id'])){
+if (isset($_SESSION['program_id'])) {
     $program_id = $_SESSION['program_id'];
 } else {
     header("Location: ../index.php");
     exit();
 }
+
+$course_id = 1;
+
 
 if (isset($_POST["import"])) {
     $fileName = $_FILES["excel"]["name"];
@@ -28,7 +31,7 @@ if (isset($_POST["import"])) {
     require "../excelReader/SpreadsheetReader.php";
 
     $test_id = $_POST['test_id'];
-    
+
     // Check if the necessary session variables are set
     if (isset($_POST['module_id'])) {
         $module_id = $_POST['module_id'];
@@ -43,8 +46,8 @@ if (isset($_POST["import"])) {
             $question_D = $row[4];
             $question_answer = $row[5];
 
-            $sql = "INSERT INTO `tbl_question` (`module_id`, `question_text`, `question_A`, `question_B`, `question_C`, `question_D`, `question_answer`)";
-            $sql .= " VALUES (:module_id, :question_text, :question_A, :question_B, :question_C, :question_D, :question_answer)";
+            $sql = "INSERT INTO `tbl_question` (`module_id`, `question_text`, `question_A`, `question_B`, `question_C`, `question_D`, `question_answer`, `course_id`, `program_id`)";
+            $sql .= " VALUES (:module_id, :question_text, :question_A, :question_B, :question_C, :question_D, :question_answer, :course_id, :program_id)";
 
             $stmt = $conn->prepare($sql);
             $stmt->bindParam(":module_id", $module_id);
@@ -54,8 +57,9 @@ if (isset($_POST["import"])) {
             $stmt->bindParam(":question_C", $question_C);
             $stmt->bindParam(":question_D", $question_D);
             $stmt->bindParam(":question_answer", $question_answer);
+            $stmt->bindParam(":course_id", $course_id);
+            $stmt->bindParam(":program_id", $program_id);
 
-            // Execute the statement to insert data
             if ($stmt->execute()) {
                 // Data was successfully inserted
                 echo '<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>';
@@ -68,7 +72,7 @@ if (isset($_POST["import"])) {
                             text: "Questions imported successfully!",
                             icon: "success"
                         }).then(() => {
-                            window.location.href = "course.php";
+                            window.location.href = "question.php?program_id=' . $_SESSION['program_id'] . '&course_id=' . $_SESSION['course_id'] . '&module_id=' . $_SESSION['module_id'] . '";
                         });
                     });
                 </script>';
@@ -80,36 +84,37 @@ if (isset($_POST["import"])) {
                         text: "Failed to import questions.",
                         icon: "error"
                     }).then(() => {
-                        window.location.href = "course.php";
+                        window.location.href = "question.php?program_id=' . $_SESSION['program_id'] . '&course_id=' . $_SESSION['course_id'] . '&module_id=' . $_SESSION['module_id'] . '";
                     });
                 });
                 </script>';
             }
-                }
-            } else {
-                echo "Session variables not set.";
-            }
+        }
+    } else {
+        echo "Session variables not set.";
+    }
 }
 ?>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Import Questions</title>
     <link href="https://cdn.lineicons.com/4.0/lineicons.css" rel="stylesheet" />
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet"
-        integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous">
     <link rel="shortcut icon" href="../img/cea_logo.png" type="image/x-icon">
     <link rel="stylesheet" href="style.css" type="text/css">
 </head>
+
 <body>
-<div class="wrapper">
-    
-<?php
-include 'sidebar.php';
-?>
+    <div class="wrapper">
+
+        <?php
+        include 'sidebar.php';
+        ?>
         <div class="main p-3">
             <div class="container">
                 <div class="row justify-content-center mt-5">
@@ -132,15 +137,14 @@ include 'sidebar.php';
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"
-        integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe"
-        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe" crossorigin="anonymous"></script>
 </body>
 <script>
-const hamBurger = document.querySelector(".toggle-btn");
+    const hamBurger = document.querySelector(".toggle-btn");
 
-hamBurger.addEventListener("click", function () {
-  document.querySelector("#sidebar").classList.toggle("expand");
-});
+    hamBurger.addEventListener("click", function() {
+        document.querySelector("#sidebar").classList.toggle("expand");
+    });
 </script>
+
 </html>

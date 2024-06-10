@@ -98,19 +98,33 @@ if ($results) {
 <!DOCTYPE html>
 <html lang="en">
 
+
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Exam Report</title>
+    <title>Report</title>
     <link href="https://cdn.lineicons.com/4.0/lineicons.css" rel="stylesheet" />
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous">
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
     <link rel="shortcut icon" href="../img/cea_logo.png" type="image/x-icon">
     <link rel="stylesheet" href="style.css" type="text/css">
     <script src="https://www.gstatic.com/charts/loader.js"></script>
+    <link rel="stylesheet" href="mobile-desktop.css" type="text/css">
 </head>
 
 <body>
+
+
+    <div class="mt-5" id="topBar">
+
+        <?php
+        include 'topNavBar.php';
+        ?>
+
+    </div>
 
     <div class="wrapper">
 
@@ -121,10 +135,7 @@ if ($results) {
                 <div class="text-center mb-2 mt-3">
                     <h1>Exam Report</h1>
 
-                    <?php
 
-
-                    ?>
                 </div>
 
                 <?php include 'report_dropdown.php'; ?>
@@ -140,15 +151,16 @@ if ($results) {
                             height: 350px;
                         }
                     </style>
-                    <div id="myChartExam" class="col-sm"></div>
+
+                    <div id="myChartExam" class="col-sm mb-3"></div>
 
                 </div>
                 <div class="col-sm">
-                    <div class="card" style="background: linear-gradient(to left, rgba(220, 210, 211, 0.3), rgba(200, 240, 241, 0.3));">
+                    <div class="card" style="background: linear-gradient(to left, rgba(220, 210, 211, 0.3), rgba(200, 240, 241, 0.3));  box-shadow: 0 8px 12px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08); outline: 1px solid rgba(0, 0, 0, 0.2);">
 
 
-                            <div style="color: black;" class="card-body">
-                        <a style="color: black;" href="student_exam_result.php">
+                        <div style="color: black;" class="card-body">
+                            <a style="color: black;" href="student_exam_result.php">
 
                                 <h5 class="card-title">EXAM</h5>
                                 <?php
@@ -227,9 +239,9 @@ if ($results) {
                                     echo "<p class='card-text'>Result: No Record</p>";
                                 }
                                 ?>
-                        </a>
+                            </a>
 
-                            </div>
+                        </div>
 
 
                     </div>
@@ -245,7 +257,6 @@ if ($results) {
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         const hamBurger = document.querySelector(".toggle-btn");
         const sidebar = document.querySelector("#sidebar");

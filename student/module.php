@@ -17,7 +17,6 @@ $sql = "SELECT tbl_course.program_id, tbl_course.course_id, tbl_course.course_na
         INNER JOIN tbl_program ON tbl_course.program_id = tbl_program.program_id
         WHERE tbl_course.user_id = :user_id and tbl_course.course_status = 1";
 
-
 if (isset($_SESSION['program_id'])) {
     $program_id = $_SESSION['program_id'];
     $sql = "SELECT * FROM tbl_course WHERE program_id = :program_id and course_status = 1";
@@ -99,25 +98,44 @@ if (isset($_SESSION['program_id'])) {
 <!DOCTYPE html>
 <html lang="en">
 
+
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Module</title>
+    <!-- Include Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css">
+    <!-- Include FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
     <link href="https://cdn.lineicons.com/4.0/lineicons.css" rel="stylesheet" />
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous">
     <link rel="shortcut icon" href="../img/cea_logo.png" type="image/x-icon">
     <link rel="stylesheet" href="style.css" type="text/css">
+    <link rel="stylesheet" href="mobile-desktop.css" type="text/css">
+
+
 </head>
 
+
+
+
 <body>
+
+    <div id="topBar">
+
+        <?php
+        include 'topNavBar.php';
+        ?>
+
+    </div>
     <div class="wrapper">
         <?php include "sidebar.php"; ?>
         <!-- <div class="main p-3"> -->
         <div class="container">
             <div class="row justify-content-center mt-5">
                 <div class="col-md-12">
-                    <div class="text-center mb-4">
+
+                    <div class="text-center mt-4 mb-4">
                         <h1>Subject: <?php
                                         $sql = "SELECT c.course_name
                                         FROM tbl_course AS c
@@ -146,7 +164,7 @@ if (isset($_SESSION['program_id'])) {
                             <tr>
                                 <th scope="col">No.</th>
                                 <th scope="col">Module Title</th>
-                                <th scope="col">Action</th>
+                                <th scope="col">Test & Answer🔑</th>
                                 <th scope="col">Attempts</th>
                                 <th scope="col">Remarks</th>
                                 <th scope="col">Pass Rate</th>
@@ -161,8 +179,12 @@ if (isset($_SESSION['program_id'])) {
                                     <tr>
                                         <td><?php echo $counter; ?></td>
                                         <td>
-                                            <a href="#" class="view-module-btn" data-bs-toggle="modal" data-bs-target="#moduleModal" data-module-id="<?php echo $row['module_id']; ?>"><?php echo $row['module_name']; ?></a>
+
+                                            <a href="#" class="view-module-btn" data-bs-toggle="modal" data-bs-target="#moduleModal" data-module-id="<?php echo $row['module_id']; ?>" data-module-name="<?php echo $row['module_name']; ?>"><?php echo $row['module_name']; ?> 🔎</a>
+
+                                            </a>
                                         </td>
+
                                         <td>
 
 
@@ -216,17 +238,18 @@ if (isset($_SESSION['program_id'])) {
 
                                                         // Display appropriate action buttons based on percentage
                                                         if ($percentage >= 50) {
-                                                            echo '<button class="btn btn-success btn-sm" disabled><i class="lni lni-invention"></i></button>';
-                                                            echo '<button class="btn btn-warning btn-sm eye-icon-btn" onclick="window.location.href=\'question-answers.php?module_id=' . $row['module_id'] . '\'"><i class="lni lni-eye eye-icon text-white"></i></button>';
+                                                            echo '<button class="btn btn-success btn-sm" disabled><i style = "color: black;" class="lni lni-remove-file"></i></button>';
+                                                            echo '<button class="btn btn-warning btn-sm eye-icon-btn" style="border: 1px solid black; box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);" onclick="window.location.href=\'question-answers.php?module_id=' . $row['module_id'] . '\'"><i class="lni lni-key"></i></button>';
                                                         } else {
                                                             // Check if questions are available for retake
                                                             if ($questionCount > 0) {
-                                                                echo '<button class="btn btn-success btn-sm" onclick="window.location.href=\'question.php?module_id=' . $row['module_id'] . '&course_id=' . $course_id . '\'"><i class="lni lni-invention"></i></button>';
-                                                                echo '<button class="btn btn-warning btn-sm eye-icon-btn" data-bs-toggle="modal" data-bs-target="question-answers.php" data-module-id="' . $row['module_id'] . '" disabled><i class="lni lni-eye eye-icon text-white"></i></button>';
+                                                                echo '<button class="btn btn-success btn-sm" style="border: 1px solid black; box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);" onclick="window.location.href=\'question.php?module_id=' . $row['module_id'] . '&course_id=' . $course_id . '\'"><i style="color: black;" class="lni lni-remove-file"></i></button>';
+
+                                                                echo '<button class="btn btn-warning btn-sm eye-icon-btn" data-bs-toggle="modal" data-bs-target="question-answers.php" data-module-id="' . $row['module_id'] . '" disabled><i class="lni lni-key"></i></button>';
                                                                 $allButtonsDisabled = false;
                                                             } else {
-                                                                echo '<button class="btn btn-success btn-sm" disabled><i class="lni lni-invention"></i></button>';
-                                                                echo '<button class="btn btn-warning btn-sm eye-icon-btn" data-bs-toggle="modal" data-bs-target="question-answers.php" data-module-id="' . $row['module_id'] . '" disabled><i class="lni lni-eye eye-icon text-white"></i></button>';
+                                                                echo '<button class="btn btn-success btn-sm" style="border: 1px solid black;" onclick="window.location.href=\'question.php?module_id=' . $row['module_id'] . '&course_id=' . $course_id . '\'"><i style="color: black; border: 1px solid black; padding: 2px;" class="lni lni-remove-file"></i></button>';
+                                                                echo '<button class="btn btn-warning btn-sm eye-icon-btn" data-bs-toggle="modal" data-bs-target="question-answers.php" data-module-id="' . $row['module_id'] . '" disabled><i class="lni lni-key"></i></i></button>';
                                                             }
                                                         }
                                                     } else {
@@ -238,12 +261,12 @@ if (isset($_SESSION['program_id'])) {
                                             } else {
                                                 // Check if questions are available for first attempt
                                                 if ($questionCount > 0) {
-                                                    echo '<button class="btn btn-success btn-sm" onclick="window.location.href=\'question.php?module_id=' . $row['module_id'] . '&course_id=' . $course_id . '\'"><i class="lni lni-invention"></i></button>';
-                                                    echo '<button class="btn btn-warning btn-sm eye-icon-btn" data-bs-toggle="modal" data-bs-target="question-answers.php" data-module-id="' . $row['module_id'] . '" disabled><i class="lni lni-eye eye-icon text-white"></i></button>';
+                                                    echo '<button class="btn btn-success btn-sm" style="border: 1px solid black; box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);" onclick="window.location.href=\'question.php?module_id=' . $row['module_id'] . '&course_id=' . $course_id . '\'"><i style="color: black;" class="lni lni-remove-file"></i></button>';
+                                                    echo '<button class="btn btn-warning btn-sm eye-icon-btn" data-bs-toggle="modal" data-bs-target="question-answers.php" data-module-id="' . $row['module_id'] . '" disabled><i class="lni lni-key"></i></i></button>';
                                                     $allButtonsDisabled = false;
                                                 } else {
-                                                    echo '<button class="btn btn-success btn-sm" disabled><i class="lni lni-invention"></i></button>';
-                                                    echo '<button class="btn btn-warning btn-sm eye-icon-btn" data-bs-toggle="modal" data-bs-target="question-answers.php" data-module-id="' . $row['module_id'] . '" disabled><i class="lni lni-eye eye-icon text-white"></i></button>';
+                                                    echo '<button class="btn btn-success btn-sm" disabled><i style = "color: black;" class="lni lni-remove-file"></i></button>';
+                                                    echo '<button class="btn btn-warning btn-sm eye-icon-btn" data-bs-toggle="modal" data-bs-target="question-answers.php" data-module-id="' . $row['module_id'] . '" disabled><i class="lni lni-key"></i></i></button>';
                                                 }
                                             }
 
@@ -272,7 +295,7 @@ if (isset($_SESSION['program_id'])) {
                                             // Calculate and display pass rate
                                             if ($resultCount > 0 && $percentage >= 50) {
                                                 if ($totalQuestions > 0) {
-                                                    echo '<strong><span style="color: green;">Passed</span></strong>';
+                                                    echo '<a href="student_question_result.php?course_id=' . $course_id . '&stud_id=' . $stud_id . '" style="color: green;"><strong>Passed 👁</strong></a>';
                                                 } else {
                                                     echo '<span style="color: grey;"><strong>n/a</strong></span>';
 
@@ -283,13 +306,13 @@ if (isset($_SESSION['program_id'])) {
 
                                                     echo 'No Questions';
                                                 } else {
-                                                    
+
                                                     if ($resultCount > 0) {
-                                                        echo '<span style="color: red;"><strong>Failed</strong></span>';
+                                                        echo '<a href="student_question_result.php?course_id=' . $course_id . '&stud_id=' . $stud_id . '" style="color: red;"><strong>Failed 👁</strong></a>';
+
                                                         $qs = -1;
                                                     } else {
                                                         echo '<span style="color: grey;"><strong>n/a</strong></span>';
-
                                                         $qs = -1;
                                                     }
                                                 }
@@ -387,15 +410,16 @@ if (isset($_SESSION['program_id'])) {
 
                                         if ($passed_result['passed_count'] > 0) {
                                             // User has already passed the quiz, disable the button
-                                            echo '<button class="btn btn-info mb-2" disabled><i class="lni lni-invention"></i></button>';
-                                            $quiz_result_final = "<strong><span style=\"color: green;\">Passed</span></strong>";
+                                            echo '<button class="btn btn-info mb-2" disabled><i style = "color: black;" class="lni lni-remove-file"></i></button>';
+                                            $quiz_result_final = '<a href="student_quiz_result.php?course_id=' . $course_id . '&stud_id=' . $stud_id . '" style="color: green;"><strong>Passed 👁</strong></a>';
                                         } else {
                                             // User hasn't passed the quiz, enable the button
-                                            echo '<button onclick="window.location.href=\'quiz.php?course_id=' . $course_id . '\'" class="btn btn-info mb-2" ' . $quiz_button . '><i class="lni lni-invention"></i></button>';
+                                            echo '<button onclick="window.location.href=\'quiz.php?course_id=' . $course_id . '\'" class="btn btn-info mb-2" ' . $quiz_button . '><i style = "color: black;" class="lni lni-remove-file"></i></button>';
 
-                                            $quiz_result_final = "<strong><span style=\"color: red;\">Failed</span></strong>";
+                                            $quiz_result_final = 'echo \'<a href="student_quiz_result.php?course_id=' . $course_id . '&stud_id=' . $stud_id . '" style="color: red;"><strong>Failed 👁</strong></a>\';';
+
                                             // $quiz_result_final = "";
-                                            
+
                                         }
                                     }
                                     ?>
@@ -450,14 +474,14 @@ if (isset($_SESSION['program_id'])) {
                                         // Calculate the pass rate and display pass/fail status here
                                         $passRate = 0;
 
-                                        if ($quizAttempts>0 && $result_score > 0 && ($result_score / $total_questions) * 100 >= 50) {
+                                        if ($quizAttempts > 0 && $result_score > 0 && ($result_score / $total_questions) * 100 >= 50) {
                                             echo $quiz_result_final;
                                             // echo '<span style="color: grey;"><strong>n/a</strong></span>';
                                         } else {
 
 
                                             if ($quizAttempts > 0) {
-                                                echo '<span style="color: red;"><strong>Failed</strong></span>';
+                                                echo '<a href="student_quiz_result.php?course_id=' . $course_id . '&stud_id=' . $stud_id . '" style="color: red;"><strong>Failed 👁</strong></a>';
                                             } else {
 
                                                 echo '<span style="color: grey;"><strong>n/a</strong></span>';
@@ -466,7 +490,7 @@ if (isset($_SESSION['program_id'])) {
                                     } else {
                                         // Handle the case where no result is found
                                         echo '<span style="color: grey;"><strong>n/a</strong></span>';
-                                    }   
+                                    }
                                     ?>
                                 </td>
 
@@ -501,70 +525,78 @@ if (isset($_SESSION['program_id'])) {
 
     <!-- Module Modal -->
     <div class="modal fade" id="moduleModal" tabindex="-1" aria-labelledby="moduleModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-xl"> <!-- Adjust modal size as needed -->
+        <div class="modal-dialog modal-xl">
             <div class="modal-content">
                 <style>
                     .modal-header {
                         background-color: #007bff;
-                        /* Professional blue color */
                         color: #fff;
-                        /* White text for contrast */
-                        padding: 15px;
-                        /* Add padding for better spacing */
+                        padding: 5px;
                     }
                 </style>
 
                 <div class="modal-header">
-                    <h5 class="modal-title" id="moduleModalLabel"></h5>
-                    <h5 class="modal-title" id="moduleModalLabel">Module: <?php echo $row['module_name']; ?></h5>
+                    <h5 class="modal-title" id="moduleModalLabel">Module: <span id="dynamicModuleName"></span></h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <iframe id="moduleIframe" style="width: 100%; height: 80vh;" frameborder="0"></iframe> <!-- Set height to 80vh (80% of the viewport height) -->
+                    <iframe id="moduleIframe" style="width: 100%; height: 80vh;" frameborder="0"></iframe>
                 </div>
             </div>
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe" crossorigin="anonymous">
-    </script>
-    <script>
-        const viewModuleButtons = document.querySelectorAll('.view-module-btn');
-        const actionTestButtons = document.querySelectorAll('.action-test-btn');
-        const moduleIframe = document.getElementById('moduleIframe');
 
-        // Function to handle opening modal with module content
-        function openModuleModal(moduleId) {
-            moduleIframe.src = `pdf_viewer.php?module_id=${moduleId}`;
-            $('#moduleModal').modal('show'); // Trigger modal manually using jQuery
-        }
-
-        viewModuleButtons.forEach(button => {
-            button.addEventListener('click', function() {
-                const moduleId = this.getAttribute('data-module-id');
-                openModuleModal(moduleId);
-            });
-        });
-
-        // Handle action test button clicks
-        actionTestButtons.forEach(button => {
-            button.addEventListener('click', function() {
-                const moduleId = this.getAttribute('data-module-id');
-                const targetPage = this.getAttribute('data-bs-target');
-                if (targetPage) {
-                    window.location.href = targetPage + `?module_id=${moduleId}`;
-                }
-            });
-        });
-        // Optional: JavaScript for toggling the sidebar
-        const hamBurger = document.querySelector(".toggle-btn");
-
-        hamBurger.addEventListener("click", function() {
-            document.querySelector("#sidebar").classList.toggle("expand");
-        });
-    </script>
 
 
 </body>
 
 </html>
+
+
+
+
+
+<script>
+    const viewModuleButtons = document.querySelectorAll('.view-module-btn');
+    const actionTestButtons = document.querySelectorAll('.action-test-btn');
+    const moduleIframe = document.getElementById('moduleIframe');
+    const dynamicModuleName = document.getElementById('dynamicModuleName'); // Added line
+
+    // Function to handle opening modal with module content
+    function openModuleModal(moduleId, moduleName) {
+        moduleIframe.src = `pdf_viewer.php?module_id=${moduleId}`;
+        dynamicModuleName.textContent = moduleName; // Added line to update module name in modal header
+        $('#moduleModal').modal('show'); // Trigger modal manually using jQuery
+    }
+
+    viewModuleButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const moduleId = this.getAttribute('data-module-id');
+            const moduleName = this.getAttribute('data-module-name'); // Added line to get module name
+            openModuleModal(moduleId, moduleName);
+        });
+    });
+
+    // Handle action test button clicks
+    actionTestButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const moduleId = this.getAttribute('data-module-id');
+            const targetPage = this.getAttribute('data-bs-target');
+            if (targetPage) {
+                window.location.href = targetPage + `?module_id=${moduleId}`;
+            }
+        });
+    });
+
+    // Optional: JavaScript for toggling the sidebar
+    const hamBurger = document.querySelector(".toggle-btn");
+
+    hamBurger.addEventListener("click", function() {
+        document.querySelector("#sidebar").classList.toggle("expand");
+    });
+</script>
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe" crossorigin="anonymous">

@@ -96,12 +96,19 @@ $totalPages = ceil($totalCount / $recordsPerPage);
                         <a class="btn btn-outline-primary btn-sm" href="import_student.php"><i class="lni lni-upload"></i></a>
                     </div><br>
                     <!-- Search bar -->
-                    <form action="" method="GET" class="mb-3">
-                        <div class="input-group">
-                            <input type="text" class="form-control" name="search" placeholder="Search..." value="<?php echo htmlspecialchars($search); ?>">
-                            <button class="btn btn-primary" type="submit">Search</button>
+                        <div class="row">
+                            <div class="col-sm-6"> </div>
+                            <div class="col-sm-6">
+                                <form action="" method="GET" class="mb-3">
+                                    <div class="input-group">
+                                        <input type="text" class="form-control" name="search" placeholder="Search..." value="<?php echo htmlspecialchars($search); ?>">
+                                        <button class="btn btn-primary" type="submit">Search</button>
+                                    </div>
+                                </form>
+
+
+                            </div>
                         </div>
-                    </form>
                     <div class="table-responsive">
                         <table style="background: linear-gradient(to left, rgba(220, 210, 211, 0.3), rgba(200, 240, 241, 0.3));" class="table table-bordered table-custom">
                             <caption>List of Student</caption>

@@ -32,20 +32,18 @@ if (isset($_POST["import"])) {
     $program_id = $_SESSION['program_id'];
 
     foreach ($reader as $key => $row) {
-        $year_id = $row[1];
-        $stud_no = $row[2];
-        $stud_fname = $row[3];
-        $stud_mname = $row[4];
-        $stud_lname = $row[5];
-        $stud_password = $row[6];
-        $stud_status = $row[7];
+        $stud_no = $row[1];
+        $stud_fname = $row[2];
+        $stud_mname = $row[3];
+        $stud_lname = $row[4];
+        $stud_password = $row[5];
+        $stud_status = $row[6];
 
-        $sql = "INSERT INTO `tbl_student`(`program_id`, `year_id`, `stud_no`, `stud_fname`, `stud_mname`, `stud_lname`, `stud_password`, `stud_status`)";
-        $sql .= " VALUES (:program_id,:year_id,:stud_no,:stud_fname,:stud_mname,:stud_lname,:stud_password,:stud_status)";
+        $sql = "INSERT INTO `tbl_student`(`program_id`, `stud_no`, `stud_fname`, `stud_mname`, `stud_lname`, `stud_password`, `stud_status`)";
+        $sql .= " VALUES (:program_id,:stud_no,:stud_fname,:stud_mname,:stud_lname,:stud_password,:stud_status)";
 
         $stmt = $conn->prepare($sql);
         $stmt->bindParam(":program_id", $program_id);
-        $stmt->bindParam(":year_id", $year_id);
         $stmt->bindParam(":stud_no", $stud_no);
         $stmt->bindParam(":stud_fname", $stud_fname);
         $stmt->bindParam(":stud_mname", $stud_mname);
