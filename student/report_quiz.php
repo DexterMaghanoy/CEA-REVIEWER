@@ -12,8 +12,8 @@ if (isset($_SESSION['program_id'], $_SESSION['stud_id'])) {
                 c.course_id,
                 c.course_code,
                 c.course_name,
-                COALESCE(passed_attempts, 0) AS passed_attempts,
-                COALESCE(failed_attempts, 0) AS failed_attempts
+                COALESCE(CAST(passed_attempts AS UNSIGNED), 0) AS passed_attempts,
+                COALESCE(CAST(failed_attempts AS UNSIGNED), 0) AS failed_attempts
             FROM 
                 tbl_course c
             LEFT JOIN 
@@ -37,8 +37,8 @@ if (isset($_SESSION['program_id'], $_SESSION['stud_id'])) {
 
     // Ensure that passed_attempts and failed_attempts are set to 0 for courses without records
     foreach ($courses as &$course) {
-        $course['passed_attempts'] = isset($course['passed_attempts']) ? $course['passed_attempts'] : 0;
-        $course['failed_attempts'] = isset($course['failed_attempts']) ? $course['failed_attempts'] : 0;
+        $course['passed_attempts'] = (int) $course['passed_attempts'];
+        $course['failed_attempts'] = (int) $course['failed_attempts'];
 
         // Calculate pass rate for each course
         $total_attempts = $course['passed_attempts'] + $course['failed_attempts'];
@@ -53,6 +53,8 @@ if (isset($_SESSION['program_id'], $_SESSION['stud_id'])) {
     header("Location: ../index.php");
     exit();
 }
+
+
 ?>
 
 <!DOCTYPE html>
@@ -64,10 +66,8 @@ if (isset($_SESSION['program_id'], $_SESSION['stud_id'])) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Report</title>
     <link href="https://cdn.lineicons.com/4.0/lineicons.css" rel="stylesheet" />
-
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-
     <link rel="shortcut icon" href="../img/cea_logo.png" type="image/x-icon">
     <link rel="stylesheet" href="style.css" type="text/css">
     <script src="https://www.gstatic.com/charts/loader.js"></script>
@@ -75,19 +75,16 @@ if (isset($_SESSION['program_id'], $_SESSION['stud_id'])) {
 </head>
 
 <body>
-
-
     <div class="mt-5" id="topBar">
 
         <?php
         include 'topNavBar.php';
         ?>
-
     </div>
-
     <div class="wrapper">
-
-        <?php include 'sidebar.php'; ?>
+        <?php
+        include 'sidebar.php';
+        ?>
 
         <div class="container mt-3 mb-3">
             <div class="row justify-content-center mt-2">
@@ -100,7 +97,7 @@ if (isset($_SESSION['program_id'], $_SESSION['stud_id'])) {
                 <div class="col-sm">
 
                     <style>
-                        #myChart {
+                        #myQuizChart {
                             border: 1px solid lightblue;
                             padding: 10px;
                             box-sizing: border-box;
@@ -110,7 +107,7 @@ if (isset($_SESSION['program_id'], $_SESSION['stud_id'])) {
                         }
                     </style>
 
-                    <div id="myChart" class="col-sm mb-4"></div>
+                    <div id="myQuizChart" class="col-sm mb-4"></div>
 
 
 
@@ -187,14 +184,12 @@ if (isset($_SESSION['program_id'], $_SESSION['stud_id'])) {
                                 }
                             };
 
-                            const chart = new google.visualization.BarChart(document.getElementById('myChart'));
+                            const chart = new google.visualization.BarChart(document.getElementById('myQuizChart'));
                             chart.draw(data, options);
                         }
                     </script>
-
-
-
                 </div>
+
                 <div class="col-sm">
                     <?php if (!empty($courses)) : ?>
                         <?php foreach ($courses as $index => $course) : ?>
@@ -204,9 +199,9 @@ if (isset($_SESSION['program_id'], $_SESSION['stud_id'])) {
                                     <div class="card-body" style="padding: 0.5rem;">
                                         <h5 class="card-title" style="font-size: 1rem;"><?php echo $course['course_code'] . ' -  ' . $course['course_name']; ?></h5>
                                         <?php
-                                        $total_attempts = $course['failed_attempts'] + $course['passed_attempts'];
+                                        // $total_attempts = $course['failed_attempts'] + $course['passed_attempts'];
                                         if ($total_attempts > 0) {
-                                            $pass_rate = 100 * $course['passed_attempts'] / $total_attempts;
+                                            // $pass_rate = 100 * $course['passed_attempts'] / $total_attempts;
                                         } else {
                                             $pass_rate = 'N/A';
                                             $total_attempts = '0';

@@ -2,6 +2,27 @@
 $Student_user = $_SESSION['stud_fname'];
 $stud_id = $_SESSION['stud_id'];
 require '../api/db-connect.php';
+
+if (isset($_SESSION['program_id'])) {
+
+    $program_id = $_SESSION['program_id'];
+
+    // Prepare SQL query to fetch courses for the given program and year
+    $sql = "SELECT * FROM tbl_course WHERE program_id = :program_id";
+    $Sideresult = $conn->prepare($sql);
+    $Sideresult->bindParam(':program_id', $program_id, PDO::PARAM_INT);
+
+    $Sideresult->execute();
+
+    // Fetch the result and store it in a variable to use later
+    $SideBarCourses = $Sideresult->fetchAll(PDO::FETCH_ASSOC);
+} else {
+    // Redirect to login page if session data is not set
+    header("Location: ../index.php");
+    exit();
+}
+
+
 ?>
 
 <style>
@@ -90,16 +111,16 @@ require '../api/db-connect.php';
             </a>
             <?php
             $displayedCourseIDs = [];
-            if (!empty($courses)) :
+            if (!empty($SideBarCourses)) :
             ?>
                 <ul id="auth" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
-                    <?php foreach ($courses as $row) :
+                    <?php foreach ($SideBarCourses as $rowCourse) :
 
-                        if (!in_array($row['course_id'], $displayedCourseIDs)) :
-                            $displayedCourseIDs[] = $row['course_id'];
+                        if (!in_array($rowCourse['course_id'], $displayedCourseIDs)) :
+                            $displayedCourseIDs[] = $rowCourse['course_id'];
                     ?>
                             <li class="sidebar-item">
-                                <a href="module.php?course_id=<?php echo htmlspecialchars($row['course_id']); ?>" class="sidebar-link"><?php echo htmlspecialchars(' 🔵 ' . $row['course_name']); ?></a>
+                                <a href="module.php?course_id=<?php echo htmlspecialchars($rowCourse['course_id']); ?>" class="sidebar-link"><?php echo htmlspecialchars(' 🔵 ' . $rowCourse['course_name']); ?></a>
                             </li>
                     <?php endif;
                     endforeach; ?>
@@ -172,7 +193,7 @@ require '../api/db-connect.php';
         AND r.result_status = 1";
 
         $stmt = $conn->prepare($sql);
-        $stmt->bindParam(':stud_id', $user_id, PDO::PARAM_INT);
+        $stmt->bindParam(':stud_id', $stud_id, PDO::PARAM_INT);
         $stmt->bindParam(':program_id', $program_id, PDO::PARAM_INT);
         $stmt->execute();
         $resultSideBar = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -187,12 +208,12 @@ require '../api/db-connect.php';
 
         <li title="Exam" class="sidebar-item">
             <?php if ($quiz_type_3_count > 0) : ?>
-                <a class="sidebar-link" style="color: green; cursor: pointer;" onclick="showAlertDone();">
+                <a class="sidebar-link" style="color: lightgreen; cursor: pointer;" onclick="showAlertDone();">
                     <i class="lni lni-pencil-alt"></i>
                     <span>Exam</span>
                 </a>
             <?php elseif ($allCoursesCompleted) : ?>
-                <a class="sidebar-link" style="color: green; cursor: pointer;" onclick="showAlertProceed();">
+                <a class="sidebar-link" style="color: yellow; cursor: pointer;" onclick="showAlertProceed();">
                     <i class="lni lni-pencil-alt"></i>
                     <span>Exam</span>
                 </a>

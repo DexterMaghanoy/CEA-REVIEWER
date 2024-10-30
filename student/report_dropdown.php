@@ -27,6 +27,16 @@
             display: block;
         }
     }
+
+
+    @media (max-height: 500px) {
+
+        .dropdown:hover .dropdown-menu {
+            display: none;
+        }
+
+
+    }
 </style>
 
 

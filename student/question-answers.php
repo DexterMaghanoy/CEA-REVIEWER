@@ -2,6 +2,7 @@
 require_once "../api/db-connect.php";
 session_start();
 
+
 function sanitizeInput($input)
 {
     return htmlspecialchars(trim($input), ENT_QUOTES, 'UTF-8');
@@ -58,6 +59,8 @@ $module_name = isset($questions_and_answers[0]) ? $questions_and_answers[0]['mod
     <link href="https://cdn.lineicons.com/4.0/lineicons.css" rel="stylesheet" />
     <link rel="shortcut icon" href="../img/cea_logo.png" type="image/x-icon">
     <link rel="stylesheet" href="style.css" type="text/css">
+
+    <link rel="stylesheet" href="mobile-desktop.css" type="text/css">
     <style>
         .correct-answer {
             color: green;
@@ -123,8 +126,16 @@ $module_name = isset($questions_and_answers[0]) ? $questions_and_answers[0]['mod
 </head>
 
 <body>
+    <div class="mt-5" id="topBar">
+
+        <?php
+        include 'topNavBar.php';
+        ?>
+    </div>
     <div class="wrapper">
-        <?php include 'sidebar.php'; ?>
+        <?php
+        include 'sidebar.php';
+        ?>
 
         <div class="container">
             <div class="mb-5 mt-5">
@@ -210,7 +221,6 @@ $module_name = isset($questions_and_answers[0]) ? $questions_and_answers[0]['mod
 </html>
 
 <!-- Include Bootstrap 5 JS and Popper.js -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
 <script>
     // Trigger modal on row click
     document.querySelectorAll('.attempt-row').forEach(function(row) {

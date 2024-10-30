@@ -8,7 +8,7 @@ if (isset($_SESSION['program_id'], $_SESSION['stud_id'])) {
     $stud_id = $_SESSION['stud_id'];
 
     // Modify the SQL query to calculate total attempts
-    $sql = "SELECT 
+    $ReportSql = "SELECT 
                 c.course_id,
                 c.course_code,
                 c.course_name,
@@ -32,31 +32,31 @@ if (isset($_SESSION['program_id'], $_SESSION['stud_id'])) {
             GROUP BY 
                 c.course_id";
 
-    $result = $conn->prepare($sql);
-    $result->bindParam(':program_id', $program_id, PDO::PARAM_INT);
-    $result->bindParam(':stud_id', $stud_id, PDO::PARAM_INT); // Bind stud_id parameter
-    $result->execute();
-    $courses = $result->fetchAll(PDO::FETCH_ASSOC);
+    $reportResult = $conn->prepare($ReportSql);
+    $reportResult->bindParam(':program_id', $program_id, PDO::PARAM_INT);
+    $reportResult->bindParam(':stud_id', $stud_id, PDO::PARAM_INT); // Bind stud_id parameter
+    $reportResult->execute();
+    $reportCourses = $reportResult->fetchAll(PDO::FETCH_ASSOC);
 
-    if (!empty($courses)) {
-        // Ensure that passed_attempts and failed_attempts are set to 0 for courses without records
-        foreach ($courses as &$course) {
-            $course['passed_attempts'] = isset($course['passed_attempts']) ? $course['passed_attempts'] : 0;
-            $course['failed_attempts'] = isset($course['failed_attempts']) ? $course['failed_attempts'] : 0;
+    if (!empty($reportCourses)) {
+
+        foreach ($reportCourses as &$reportCourse) {
+            $reportCourse['passed_attempts'] = isset($reportCourse['passed_attempts']) ? $reportCourse['passed_attempts'] : 0;
+            $reportCourse['failed_attempts'] = isset($reportCourse['failed_attempts']) ? $reportCourse['failed_attempts'] : 0;
             // Calculate pass rate
-            $totalAttempts = $course['failed_attempts'] + $course['passed_attempts'];
-            $course['pass_rate'] = $totalAttempts > 0 ? ($course['passed_attempts'] / $totalAttempts) * 100 : 0;
+            $totalAttempts = $reportCourse['failed_attempts'] + $reportCourse['passed_attempts'];
+            $reportCourse['pass_rate'] = $totalAttempts > 0 ? ($reportCourse['passed_attempts'] / $totalAttempts) * 100 : 0;
         }
-        unset($course); // unset reference variable to prevent accidental modification
+        unset($reportCourse); // unset reference variable to prevent accidental modification
 
         // Encode data for JavaScript
-        $chartDataJson = json_encode($courses);
+        $chartDataJson = json_encode($reportCourses);
 
         // Check if all pass rates are zero
-        $noResultsFound = (array_sum(array_column($courses, 'passed_attempts')) == 0) && (array_sum(array_column($courses, 'failed_attempts')) == 0);
+        $noResultsFound = (array_sum(array_column($reportCourses, 'passed_attempts')) == 0) && (array_sum(array_column($reportCourses, 'failed_attempts')) == 0);
 
-        $overallPassedAttempts = array_sum(array_column($courses, 'passed_attempts'));
-        $overallFailedAttempts = array_sum(array_column($courses, 'failed_attempts'));
+        $overallPassedAttempts = array_sum(array_column($reportCourses, 'passed_attempts'));
+        $overallFailedAttempts = array_sum(array_column($reportCourses, 'failed_attempts'));
         $overallTotalAttempts = $overallPassedAttempts + $overallFailedAttempts;
         $overallAveragePassRate = $overallTotalAttempts > 0 ? ($overallPassedAttempts / $overallTotalAttempts) * 100 : 0;
     } else {
@@ -75,7 +75,7 @@ if (isset($_SESSION['program_id'], $_SESSION['stud_id'])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard</title>
+    <title>Test</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link href="https://cdn.lineicons.com/4.0/lineicons.css" rel="stylesheet" />
@@ -84,6 +84,10 @@ if (isset($_SESSION['program_id'], $_SESSION['stud_id'])) {
     <script src="https://www.gstatic.com/charts/loader.js"></script>
     <link rel="stylesheet" href="mobile-desktop.css" type="text/css">
 </head>
+
+<style>
+
+</style>
 
 
 <body>
@@ -122,10 +126,7 @@ if (isset($_SESSION['program_id'], $_SESSION['stud_id'])) {
                             height: 350px;
                         }
                     </style>
-
-
                     <div id="myChart" class="col-sm mb-3"></div>
-
                     <script>
                         google.charts.load('current', {
                             'packages': ['corechart']
@@ -146,22 +147,22 @@ if (isset($_SESSION['program_id'], $_SESSION['stud_id'])) {
                                 role: 'annotation'
                             });
 
-                            chartData.forEach(function(course) {
+                            chartData.forEach(function(reportCourse) {
                                 var strengthWeakness;
                                 var passRateString;
 
-                                if (course.pass_rate === 0 || !course.pass_rate) {
+                                if (reportCourse.pass_rate === 0 || !reportCourse.pass_rate) {
                                     strengthWeakness = 'No record';
                                     passRateString = '0%';
                                 } else {
-                                    strengthWeakness = course.pass_rate >= 50 ? 'Good' : 'Weak';
-                                    passRateString = course.pass_rate.toFixed(2) + '%';
+                                    strengthWeakness = reportCourse.pass_rate >= 50 ? 'Good' : 'Weak';
+                                    passRateString = reportCourse.pass_rate.toFixed(2) + '%';
                                 }
 
                                 var annotation = passRateString + ' ' + strengthWeakness + ' ';
-                                var color = strengthWeakness === 'Good' ? 'green' : (strengthWeakness === 'Weak' ? 'red' : 'gray'); // Determine color based on strength, weakness, or no record
+                                var color = strengthWeakness === 'Good' ? 'green' : (strengthWeakness === 'Weak' ? 'red' : 'gray');
 
-                                data.addRow([course.course_name, course.pass_rate, color, annotation]);
+                                data.addRow([reportCourse.course_name, reportCourse.pass_rate, color, annotation]);
                             });
 
                             var options = {
@@ -193,16 +194,16 @@ if (isset($_SESSION['program_id'], $_SESSION['stud_id'])) {
 
                 </div>
                 <div class="col-sm">
-                    <?php if (!empty($courses)) : ?>
-                        <?php foreach ($courses as $index => $course) : ?>
+                    <?php if (!empty($reportCourses)) : ?>
+                        <?php foreach ($reportCourses as $index => $reportCourse) : ?>
                             <!-- Debug output -->
-                            <a href="student_question_result.php?course_id=<?php echo $course['course_id']; ?>&stud_id=<?php echo $_SESSION['stud_id']; ?>">
+                            <a href="student_question_result.php?course_id=<?php echo $reportCourse['course_id']; ?>&stud_id=<?php echo $_SESSION['stud_id']; ?>">
                                 <div class="card subject-<?php echo ($index % 3) + 1; ?> mb-1" style="background: linear-gradient(to left, rgba(220, 210, 211, 0.3), rgba(200, 240, 241, 0.3)); color: black;   box-shadow: 0 8px 12px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08); outline: 1px solid rgba(0, 0, 0, 0.2);">
                                     <div class="card-body" style="padding: 0.5rem;">
-                                        <h5 class="card-title" style="font-size: 1rem;"><?php echo $course['course_code'] . ' -  ' . $course['course_name']; ?></h5>
-                                        <p style="font-size: 0.8rem; margin-bottom: 0;">Module Passed: <?php echo $course['passed_attempts']; ?></p>
-                                        <p style="font-size: 0.8rem; margin-bottom: 0;">Attempts: <?php echo $course['failed_attempts'] + $course['passed_attempts']; ?></p>
-                                        <p style="font-size: 0.8rem; margin-bottom: 0;">Pass Rate: <?php echo number_format($course['pass_rate'], 2); ?>%</p>
+                                        <h5 class="card-title" style="font-size: 1rem;"><?php echo $reportCourse['course_code'] . ' -  ' . $reportCourse['course_name']; ?></h5>
+                                        <p style="font-size: 0.8rem; margin-bottom: 0;">Module Passed: <?php echo $reportCourse['passed_attempts']; ?></p>
+                                        <p style="font-size: 0.8rem; margin-bottom: 0;">Attempts: <?php echo $reportCourse['failed_attempts'] + $reportCourse['passed_attempts']; ?></p>
+                                        <p style="font-size: 0.8rem; margin-bottom: 0;">Pass Rate: <?php echo number_format($reportCourse['pass_rate'], 2); ?>%</p>
                                     </div>
                                 </div>
                             </a>
