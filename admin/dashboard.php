@@ -14,7 +14,7 @@ try {
     $user_stmt = $conn->prepare("SELECT s.*, p.program_name
             FROM tbl_student s
             INNER JOIN tbl_program p ON s.program_id = p.program_id
-            WHERE s.stud_id = :stud_id");
+            WHERE s.stud_id = :stud_id and s.stud_status = 1 and p.program_status =1");
     $user_stmt->bindParam(':stud_id', $user_id, PDO::PARAM_INT);
     $user_stmt->execute();
     if ($user_stmt->rowCount() > 0) {
@@ -53,94 +53,45 @@ try {
 <!DOCTYPE html>
 <html lang="en">
 
+
+
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard</title>
+    <!-- Include Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css">
+    <!-- Include FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
     <link href="https://cdn.lineicons.com/4.0/lineicons.css" rel="stylesheet" />
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous">
     <link rel="shortcut icon" href="../img/cea_logo.png" type="image/x-icon">
     <link rel="stylesheet" href="style.css" type="text/css">
+    <link rel="stylesheet" href="mobile-desktop.css" type="text/css">
+    <link rel="stylesheet" href="./css/dashboard.css" type="text/css">
+    <script defer src="./scripts/dashboard.js"></script>
+
+
+
 </head>
-<style>
-    .card {
-        border: none;
-        border-radius: 10px;
-        transition: transform 0.3s, box-shadow 0.3s;
-        position: relative;
-        overflow: hidden;
-    }
 
-    .card:hover,
-    .card:focus {
-        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
-        transform: scale(1.05);
-    }
 
-    .card-body {
-        padding: 20px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        flex-direction: column;
-    }
-
-    .card-title {
-        font-size: 1.5rem;
-        font-weight: bold;
-    }
-
-    .card-text {
-        font-size: 1.2rem;
-    }
-
-    .card:active::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-    }
-</style>
-
-<style>
-    .aligned-row {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-
-    .aligned-row h1 {
-        text-align: center;
-        margin: 0;
-        /* Reset margin */
-    }
-
-    /* Style for back.php content */
-    .back-content {
-        margin-right: auto;
-    }
-</style>
 
 <body>
+
+    <div class="mt-5" id="topBar">
+        <?php include 'topNavBar.php'; ?>
+    </div>
+
     <div class="wrapper">
         <?php include 'sidebar.php'; ?>
 
         <div class="container">
-
             <div class="row">
-
-                <div class="col-lg-1">
-                </div>
-
-                <div class="col-lg">
-
-                <h1 class="mt-4 mb-4" style="text-align: center;">Dashboard</h1>
-
-
-                    <div class="row justify-content-center">
+                <div class="col-lg-1"></div>
+                <div class="col-lg-10">
+                    <h1 class="mt-4 mb-4" id="dashboard-title-name">Student Dashboard</h1>
+                    <div id="dashboard-cards" class="row justify-content-center">
                         <?php
                         if (!empty($enrolled_courses)) {
                             $background_classes = ['card-bg1', 'card-bg2', 'card-bg3', 'card-bg4', 'card-bg5', 'card-bg6', 'card-bg7', 'card-bg8'];
@@ -150,30 +101,38 @@ try {
                         ?>
                                 <div class="col-md-4">
                                     <a href="module.php?course_id=<?php echo $course['course_id']; ?>" class="card-link text-decoration-none">
-                                        <div class="card bg-light text-dark rounded-3 shadow <?php echo $background_class; ?>" style="height: 220px; width: 320px;">
+                                        <div class="card bg-light text-dark rounded-5 shadow mb-4 <?php echo $background_class; ?>" id="card-size">
                                             <div class="card-body d-flex flex-column justify-content-between">
                                                 <h5 class="card-title text-white"><?php echo $course['course_code'] . ': ' . $course['course_name']; ?></h5>
                                                 <div>
-                                                    <p class="card-text" style="font-size: 0.9rem;">
-
-
+                                                    <p class="card-text" id="card-text-inside-dashboard">
                                                         <?php
-
-                                                        $stmtTotalModules = $conn->prepare("SELECT COUNT(module_id) AS total_modules FROM tbl_module WHERE course_id = :course_id  and module_status = 1");
+                                                        $stmtTotalModules = $conn->prepare("SELECT COUNT(module_id) AS total_modules FROM tbl_module WHERE course_id = :course_id and module_status = 1");
                                                         $stmtTotalModules->bindValue(':course_id', $course['course_id'], PDO::PARAM_INT);
                                                         $stmtTotalModules->execute();
                                                         $totalModuleData = $stmtTotalModules->fetch(PDO::FETCH_ASSOC);
                                                         $totalModules = $totalModuleData['total_modules'];
 
+                                                        $stmtTotalModulesWithQuestions = $conn->prepare("
+                                                        SELECT COUNT(*) AS total_modules_q 
+                                                        FROM (
+                                                            SELECT module_id 
+                                                            FROM tbl_question 
+                                                            WHERE module_id IN (SELECT module_id FROM tbl_module WHERE course_id = :course_id AND module_status = 1)
+                                                            GROUP BY module_id
+                                                        ) AS subquery
+                                                    ");
+                                                        $stmtTotalModulesWithQuestions->bindValue(':course_id', $course['course_id'], PDO::PARAM_INT);
+                                                        $stmtTotalModulesWithQuestions->execute();
+                                                        $stmtTotalModulesWithQ = $stmtTotalModulesWithQuestions->fetch(PDO::FETCH_ASSOC);
+                                                        $totalModulesQ = $stmtTotalModulesWithQ['total_modules_q'];
 
                                                         $stmtPassedModules = $conn->prepare("SELECT COUNT(module_id) AS passed_modules FROM tbl_result WHERE course_id = :course_id AND stud_id = :stud_id AND result_status = 1 AND quiz_type = 1");
                                                         $stmtPassedModules->bindValue(':course_id', $course['course_id'], PDO::PARAM_INT);
-                                                        $stmtPassedModules->bindValue(':stud_id', $_SESSION['stud_id'], PDO::PARAM_INT); // Changed from ':course_id' to ':stud_id'
+                                                        $stmtPassedModules->bindValue(':stud_id', $_SESSION['stud_id'], PDO::PARAM_INT);
                                                         $stmtPassedModules->execute();
                                                         $totalPassedModules = $stmtPassedModules->fetch(PDO::FETCH_ASSOC);
                                                         $PassedModules = $totalPassedModules['passed_modules'];
-
-
 
                                                         $stmtPassedQuiz = $conn->prepare("SELECT COUNT(module_id) AS passed_quiz FROM tbl_result WHERE course_id = :course_id AND stud_id = :stud_id AND result_status = 1 AND quiz_type = 2");
                                                         $stmtPassedQuiz->bindValue(':course_id', $course['course_id'], PDO::PARAM_INT);
@@ -182,26 +141,26 @@ try {
                                                         $totalPassedQuiz = $stmtPassedQuiz->fetch(PDO::FETCH_ASSOC);
                                                         $PassedQuiz = $totalPassedQuiz['passed_quiz'];
 
-
                                                         if ($PassedQuiz == 0 || $PassedQuiz == null) {
-                                                            $displayQuizStatus = '
-                                                            <img src="./icons/warning-mark.gif" alt="Warning" width="25" height="25">';
+                                                            $displayQuizStatus = '<img src="./icons/warning-mark.gif" alt="Warning" width="20" height="20">';
                                                         } elseif ($PassedQuiz == 1) {
                                                             $displayQuizStatus = '<img src="./icons/check-mark.gif" alt="Warning" width="20" height="20">';
                                                         } else {
-                                                            $displayQuizStatus = $PassedQuiz; // Fallback in case there are other values
+                                                            $displayQuizStatus = $PassedQuiz;
                                                         }
 
-
+                                                        if ($PassedModules == $totalModulesQ) {
+                                                            $displayQuestionStatus = '<img src="./icons/check-mark.gif" alt="Warning" width="20" height="20">';
+                                                        } else {
+                                                            $displayQuestionStatus = '<img src="./icons/warning-mark.gif" alt="Warning" width="20" height="20">';
+                                                        }
                                                         ?>
-                                                        <strong>Completed Test:</strong> <?php echo $PassedModules ?> / <?php echo $totalModules ?> <br>
-                                                        <strong>Quiz Status:</strong> <?php echo  $displayQuizStatus ?> <br>
-
+                                                        <strong>Completed Test:</strong> <?php echo $PassedModules ?>/<?php echo $totalModulesQ ?> <?php echo $displayQuestionStatus ?><br>
+                                                        <strong>Quiz Status:</strong> <?php echo $displayQuizStatus ?> <br>
                                                     </p>
                                                 </div>
                                             </div>
                                         </div>
-
                                     </a>
                                 </div>
                         <?php
@@ -213,33 +172,12 @@ try {
                         ?>
                     </div>
                 </div>
-
                 <div class="col-lg-1"></div>
-
             </div>
-
-
         </div>
     </div>
 
 </body>
 
 
-
 </html>
-
-
-
-
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe" crossorigin="anonymous"></script>
-<script>
-    const hamBurger = document.querySelector(".toggle-btn");
-    const sidebar = document.querySelector("#sidebar");
-    const mainContent = document.querySelector(".main");
-
-    hamBurger.addEventListener("click", function() {
-        sidebar.classList.toggle("expand");
-        mainContent.classList.toggle("expand");
-    });
-</script>

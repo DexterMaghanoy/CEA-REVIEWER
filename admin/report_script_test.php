@@ -1,20 +1,45 @@
 <?php
 $prog_id = isset($_GET['program_id']) ? $_GET['program_id'] : null;
+$selected_year = isset($_GET['created_at']) ? $_GET['created_at'] : date('Y'); // Get year from URL, default to current year
 
-// Fetch total count of students by program
-$stmtTotalStudentsByProgram = $conn->prepare("SELECT COUNT(stud_id) AS total_students FROM tbl_student WHERE program_id = :program_id AND YEAR(created_at) = :created_year");
-$stmtTotalStudentsByProgram->bindValue(':program_id', $program_id, PDO::PARAM_INT);
-$stmtTotalStudentsByProgram->bindValue(':created_year', date('Y'), PDO::PARAM_STR);
+// Fetch total count of students by program and year
+$stmtTotalStudentsByProgram = $conn->prepare("
+    SELECT COUNT(stud_id) AS total_students 
+    FROM tbl_student 
+    WHERE program_id = :program_id 
+    AND YEAR(created_at) = :selected_year
+");
+$stmtTotalStudentsByProgram->bindValue(':program_id', $prog_id, PDO::PARAM_INT);
+$stmtTotalStudentsByProgram->bindValue(':selected_year', $selected_year, PDO::PARAM_INT);
 $stmtTotalStudentsByProgram->execute();
 $totalStudentsDataByProgram = $stmtTotalStudentsByProgram->fetch(PDO::FETCH_ASSOC);
-$allStudentbyProgram = $totalStudentsDataByProgram['total_students'];
+$allStudentbyProgram = $totalStudentsDataByProgram['total_students'] ?? 0;
+
+// Handle zero students case
+if ($allStudentbyProgram == 0) {
+    echo '<div style="
+        text-align: center; 
+        font-weight: bold; 
+        padding: 20px; 
+        border-radius: 10px; 
+        background: linear-gradient(to left, rgba(220, 210, 211, 0.3), rgba(200, 240, 241, 0.3));
+        height: 100%;
+        width: 100%;
+        box-shadow: 2px 2px 10px rgba(0,0,0,0.1);
+    ">
+        No data to display
+    </div>';
+    exit;
+}
+
 
 $passRates = [];
 foreach ($uniqueCourses as $course) {
     $totalAttempts = $course['failed_attempts'] + $course['passed_attempts'];
-    $passRates[$course['course_code']] = ($totalAttempts > 0) ? ((($course['passed_attempts'] / $totalAttempts) / $allStudentbyProgram)) * 100 : 0;
+    $passRates[$course['course_code']] = ($totalAttempts > 0) ? (($course['passed_attempts'] / $totalAttempts) * 100) : 0;
 }
 ?>
+
 
 
 <?php foreach ($uniqueCourses as $index => $course) : ?>

@@ -45,7 +45,7 @@ if (isset($_POST['submit'])) {
 
             $stmt->execute();
 
-            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);       
 
             if ($result && $result['stud_password'] === $password) {
                 $_SESSION['stud_fname'] = $result['stud_fname'];

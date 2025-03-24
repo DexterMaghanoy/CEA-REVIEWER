@@ -1,28 +1,39 @@
 <?php
 $prog_id = isset($_GET['program_id']) ? $_GET['program_id'] : null;
-
-// Fetch total count of students by program
 $stmtTotalStudentsByProgram = $conn->prepare("SELECT COUNT(stud_id) AS total_students FROM tbl_student WHERE program_id = :program_id AND YEAR(created_at) = :created_year");
-$stmtTotalStudentsByProgram->bindValue(':program_id', $program_id, PDO::PARAM_INT);
+$stmtTotalStudentsByProgram->bindValue(':program_id', $prog_id, PDO::PARAM_INT);
 $stmtTotalStudentsByProgram->bindValue(':created_year', date('Y'), PDO::PARAM_STR);
 $stmtTotalStudentsByProgram->execute();
 $totalStudentsDataByProgram = $stmtTotalStudentsByProgram->fetch(PDO::FETCH_ASSOC);
-$allStudentbyProgram = $totalStudentsDataByProgram['total_students'];
+$allStudentbyProgram = $totalStudentsDataByProgram['total_students'] ?? 0;
+
+if ($allStudentbyProgram == 0) {
+    echo '<div style="
+        text-align: center; 
+        font-weight: bold; 
+        padding: 20px; 
+        border-radius: 10px; 
+        background: linear-gradient(to left, rgba(220, 210, 211, 0.3), rgba(200, 240, 241, 0.3));
+        height: 100%;
+        width: 100%;
+        box-shadow: 2px 2px 10px rgba(0,0,0,0.1);
+    ">
+        No data to display
+    </div>';
+    exit;
+}
+
 
 $passRates = [];
 foreach ($uniqueCourses as $course) {
     $totalAttempts = $course['failed_attempts'] + $course['passed_attempts'];
-    $passRates[$course['course_code']] = ($totalAttempts > 0) ? ((($course['passed_attempts'] / $totalAttempts) / $allStudentbyProgram) ) * 100 : 0;
+    $passRates[$course['course_code']] = ($totalAttempts > 0) ? (($course['passed_attempts'] / $totalAttempts) * 100) : 0;
 }
 ?>
 
-
 <?php foreach ($uniqueCourses as $index => $course) : ?>
     <?php
-    // Retrieve the calculated pass rate for the current course
     $passRate = $passRates[$course['course_code']];
-
-    // Fetch total count of students who answered for the current module
     $stmtAnswered = $conn->prepare("SELECT COUNT(DISTINCT stud_id) AS answered FROM tbl_result WHERE course_id = :course_id AND quiz_type = :quiz_type AND YEAR(created_at) = :created_year");
     $stmtAnswered->bindValue(':course_id', $course['course_id'], PDO::PARAM_INT);
     $stmtAnswered->bindValue(':quiz_type', $quiz_type, PDO::PARAM_INT);
@@ -41,15 +52,15 @@ foreach ($uniqueCourses as $course) {
 
     <!-- HTML code to display course information -->
     <a href="report_results_test.php?course_id=<?php echo $course['course_id']; ?>&user_id=<?php echo $_SESSION['user_id']; ?>&module_id=<?php echo $course['module_id']; ?>&quiz_type=<?php echo $quiz_type; ?>">
-        <div styl <?php if (isset($_GET['quiz_type'])) {
-                        $quiz_type = $_GET['quiz_type'];
-                        if ($quiz_type != 1) {
-                            $hideTestCard = 'hidden';
-                        } else {
-                            $hideTestCard = '';
-                        }
+        <div <?php if (isset($_GET['quiz_type'])) {
+                    $quiz_type = $_GET['quiz_type'];
+                    if ($quiz_type != 1) {
+                        $hideTestCard = 'hidden';
+                    } else {
+                        $hideTestCard = '';
                     }
-                    echo $hideTestCard; ?> class="card subject-<?php echo ($index % 3) + 1; ?> mb-1" style="background: linear-gradient(to left, rgba(220, 210, 211, 0.3), rgba(200, 240, 241, 0.3));">
+                }
+                echo $hideTestCard; ?> class="card subject-<?php echo ($index % 3) + 1; ?> mb-1" style="background: linear-gradient(to left, rgba(220, 210, 211, 0.3), rgba(200, 240, 241, 0.3));">
             <div class="card-body" style="padding: 0.5rem;">
                 <h5 class="card-title" style="font-size: 1rem;"><?php echo '<img height="25" width="35" src="../GIF/book-write.gif"> ' . htmlspecialchars($course['course_code']) . ' -  ' . htmlspecialchars($course['course_name']); ?></h5>
                 <p style="font-size: 0.8rem; margin-bottom: 0;">Student answered: <?php echo htmlspecialchars($answeredStudents) . " / " . htmlspecialchars($allStudentbyProgram); ?></p>
