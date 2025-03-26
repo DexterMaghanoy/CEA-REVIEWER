@@ -1,0 +1,112 @@
+
+    /* program */
+    .dropdown-menu .dropdown-item:hover {
+        background-color: #f8f9fa !important;
+        /* Light gray background */
+        color: #000 !important;
+        /* Black text */
+    }
+
+
+    /* Keep dropdown open when hovered */
+    .dropdown:hover .dropdown-menu {
+        display: block;
+    }
+
+    /* Ensure smooth appearance */
+    .dropdown-menu {
+        display: none;
+        opacity: 0;
+        transition: opacity 0.2s ease-in-out;
+    }
+
+    .dropdown:hover .dropdown-menu {
+        display: block;
+        opacity: 1;
+    }
+
+    /* Change background and text color on hover */
+    .dropdown-menu .dropdown-item:hover {
+        background-color: #f8f9fa !important;
+        /* Light gray */
+        color: #000 !important;
+        /* Black text */
+    }
+
+    /* Ensure the dropdown is properly positioned */
+    .dropdown-menu {
+        left: 0 !important;
+        /* Align with the button */
+        right: auto !important;
+        min-width: 100%;
+        /* Ensures the dropdown matches the button width */
+    }
+
+    /* Adjust alignment for adjacent elements like the date */
+    .dropdown {
+        position: relative;
+        /* Keep position context for absolute positioning */
+    }
+
+    /* Prevent overlapping with other elements */
+    .dropdown-menu {
+        z-index: 1050;
+        /* Ensures it's above other elements */
+    }
+
+    /* Make dropdown items gray when hovered */
+    .dropdown-menu .dropdown-item:hover {
+        background-color: #d6d6d6 !important;
+        /* Light gray */
+        color: #000 !important;
+        /* Black text for contrast */
+    }
+
+
+
+
+
+
+    /* Year selection */
+    .dropdown-container {
+        position: relative;
+        display: inline-block;
+    }
+
+    #yearDropdown {
+        appearance: none;
+        /* Remove default styles */
+        background: #0d6efd;
+        /* Bootstrap Primary Blue */
+        color: white;
+        border: none;
+        padding: 10px 35px 10px 15px;
+        font-size: 16px;
+        font-weight: bold;
+        border-radius: 5px;
+        cursor: pointer;
+        outline: none;
+    }
+
+    /* Custom Arrow */
+    .dropdown-container::after {
+        content: "▾";
+        position: absolute;
+        top: 50%;
+        right: 10px;
+        transform: translateY(-50%);
+        color: white;
+        pointer-events: none;
+    }
+
+    /* Dropdown on hover */
+    #yearDropdown:focus {
+        background: #0056b3;
+    }
+
+    /* Style dropdown options */
+    #yearDropdown option {
+        background: white;
+        color: black;
+        padding: 5px;
+    }

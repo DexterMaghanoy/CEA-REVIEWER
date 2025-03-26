@@ -143,61 +143,87 @@ $selectedYear = isset($_GET['year']) ? htmlspecialchars($_GET['year']) : '';
   </div>
 </nav>
 
-<script>
-  document.addEventListener('DOMContentLoaded', function() {
-    var yearPicker = document.getElementById('yearPicker');
-    var currentYear = new Date().getFullYear();
-    var startYear = 2000; // You can set this to any start year you prefer
 
-    for (var year = currentYear; year >= startYear; year--) {
-      var option = document.createElement('option');
-      option.value = year;
-      option.textContent = year;
-      if (year == <?php echo json_encode($selectedYear); ?>) {
-        option.selected = true;
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    const yearPickerContainer = document.getElementById("yearPickerContainer");
+    const yearPicker = document.getElementById("yearPicker");
+    const showMoreButton = document.getElementById("showMoreButton");
+    const loader = document.getElementById("loadingIndicator");
+
+    const currentYear = new Date().getFullYear();
+    const startYear = 2000;
+    const yearsToShowInitially = 5;
+    let allYears = [];
+    let expanded = false;
+
+    function populateYears(showAll = false) {
+      yearPicker.innerHTML = "";
+      allYears = [];
+
+      for (let year = currentYear; year >= startYear; year--) {
+        allYears.push(year);
       }
-      yearPicker.appendChild(option);
+
+      const yearsToDisplay = showAll ? allYears : allYears.slice(0, yearsToShowInitially);
+      yearsToDisplay.forEach((year) => {
+        let option = document.createElement("option");
+        option.value = year;
+        option.textContent = year;
+        yearPicker.appendChild(option);
+      });
+
+      showMoreButton.style.display = allYears.length > yearsToShowInitially ? "block" : "none";
+      showMoreButton.textContent = showAll ? "Show Less" : "Show More";
     }
 
-    yearPicker.addEventListener('change', function() {
+    showMoreButton.addEventListener("click", function() {
+      expanded = !expanded;
+      populateYears(expanded);
+    });
+
+    populateYears();
+
+    yearPicker.addEventListener("change", function() {
       updateURLParameters();
     });
+
+    function updateURLParameters() {
+      const programId = document.getElementById("selectedProgramId").value;
+      const quizType = document.querySelector('input[name="navigation"]:checked')?.value || "";
+      const selectedYear = yearPicker.value;
+
+      if (!selectedYear) {
+        alert("Please select a year.");
+        return;
+      }
+
+      const url = new URL("http://localhost/cea-reviewer/admin/report.php");
+      if (selectedYear) url.searchParams.set("created_at", selectedYear);
+      if (programId) url.searchParams.set("program_id", programId);
+      if (quizType) url.searchParams.set("quiz_type", quizType);
+
+      loader.style.display = "block";
+      document.body.style.cursor = "wait";
+
+      setTimeout(() => {
+        window.location.href = url;
+      }, 700);
+    }
+
+    function checkEnableDatePicker() {
+      const programId = document.getElementById("selectedProgramId").value;
+      const quizTypeSelected = document.querySelector('input[name="navigation"]:checked');
+      yearPicker.disabled = !(programId && quizTypeSelected);
+    }
+
+    document.getElementById("selectedProgramId").addEventListener("change", checkEnableDatePicker);
+    document.querySelectorAll('input[name="navigation"]').forEach((radio) => {
+      radio.addEventListener("change", checkEnableDatePicker);
+    });
   });
-
-  function updateURLParameters() {
-    var programId = document.getElementById('selectedProgramId').value;
-    var quizType = document.querySelector('input[name="navigation"]:checked') ? document.querySelector('input[name="navigation"]:checked').value : '';
-    var selectedYear = document.getElementById('yearPicker').value;
-
-    if (programId && quizType && selectedYear) {
-      var url = 'http://localhost/cea-reviewer/admin/report.php?program_id=' + programId + '&quiz_type=' + quizType + '&created_at=' + selectedYear;
-      window.location.href = url;
-    } else if (selectedYear) {
-      var url = 'http://localhost/cea-reviewer/admin/report.php?created_at=' + selectedYear;
-      if (programId) url += '&program_id=' + programId;
-      if (quizType) url += '&quiz_type=' + quizType;
-      window.location.href = url;
-    } else {
-      alert('Please select a course and a quiz type first.');
-    }
-  }
-
-  function checkEnableDatePicker() {
-    var programId = document.getElementById('selectedProgramId').value;
-    var quizTypeSelected = document.querySelector('input[name="navigation"]:checked');
-
-    if (programId && quizTypeSelected) {
-      document.getElementById('yearPicker').disabled = false;
-    } else {
-      document.getElementById('yearPicker').disabled = true;
-    }
-
-
-
-
-
-  }
 </script>
+
 
 <!-- Hidden inputs to store the selected program_id and year -->
 <input type="hidden" id="selectedProgramId" value="<?php echo $programId; ?>">

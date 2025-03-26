@@ -207,13 +207,22 @@ unset($course);
                         ?>
 
                         <?php
-                        // Check if the quiz_type parameter is not present in the URL
-                        if (isset($_GET['quiz_type'])) {
-                            include 'report_script_test.php';
-                            include 'report_script_quiz.php';
-                            include 'report_script_exam.php';
-                        } else {
-                            include 'report_script_all.php';
+                        // Get the quiz_type parameter from the URL, defaulting to 0 if not set
+                        $quiz_type = isset($_GET['quiz_type']) ? $_GET['quiz_type'] : 0;
+
+                        switch ($quiz_type) {
+                            case 1:
+                                include 'report_script_test.php';
+                                break;
+                            case 2:
+                                include 'report_script_quiz.php';
+                                break;
+                            case 3:
+                                include 'report_script_exam.php';
+                                break;
+                            default:
+                                include 'report_script_test.php';   
+                                break;
                         }
                         ?>
 
