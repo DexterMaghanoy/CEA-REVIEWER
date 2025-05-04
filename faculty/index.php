@@ -233,8 +233,46 @@ try {
                     </a>
                 </div>
 
-
                 <div class="col-md-4">
+
+                    <div class="card text-bg-light text-black shadow-lg mb-3">
+                        <div class="card-header">Course</div>
+                        <div class="card-body">
+                            <?php
+                            try {
+                                // Query to get the program name based on program_id
+                                $stmt = $conn->prepare("SELECT program_name FROM tbl_program WHERE program_id = :program_id LIMIT 1");
+                                $stmt->bindParam(':program_id', $user['program_id']);
+                                $stmt->execute();
+                                $program = $stmt->fetch(PDO::FETCH_ASSOC);
+
+                                if ($program) {
+                                    // Wrap the program name in a list item and an unordered list for styling
+                                    echo '<ul class="list-group">';
+                                    echo '<li class="list-group-item">';
+                                    // Display image on the left side and program name on the right
+                                    echo '<span style="font-size: 1.2em; font-weight: bold; color:black;" class="badge badge-primary badge-pill">';
+                                    // Adding the image first (on the left side)
+                                    echo '<img height="50" width="50" src="../GIF/read.gif" alt="Program Image" style="margin-right: 10px;">';
+                                    echo htmlspecialchars($program['program_name']);
+                                    echo '</span>';
+                                    echo '</li>';
+                                    echo '</ul>';
+                                } else {
+                                    echo '<p>No program found.</p>';
+                                }
+                            } catch (PDOException $e) {
+                                echo "Error: " . $e->getMessage();
+                            }
+                            ?>
+                        </div>
+                    </div>
+
+
+
+
+
+
 
                     <a href="subjects.php" class="text-black text-decoration-none">
 
@@ -253,7 +291,7 @@ try {
                                     if ($courses) {
                                         echo '<ul class="list-group">';
                                         foreach ($courses as $course) {
-                                            echo '<li class="list-group-item">' . " ". '<img height="35" width="35" src="./GIF/bookshelf.gif" alt="">' . $course['course_code'] . ' - ' . $course['course_name'] . '</li>';
+                                            echo '<li class="list-group-item">' . " " . '<img height="35" width="35" src="./GIF/bookshelf.gif" alt="">' . $course['course_code'] . ' - ' . $course['course_name'] . '</li>';
                                         }
                                         echo '</ul>';
                                     } else {
@@ -269,17 +307,42 @@ try {
 
                     </a>
 
-
-
                 </div>
-
-
 
                 <div class="col-md-4">
                     <div class="card text-bg-light text-black shadow-lg mb-3">
 
-                        <div class="card-header" style="display: flex; align-items: center;">Pass Rate</div>
+                        <div class="card-header" style="display: flex; align-items: center; justify-content: space-between;">
+                            <!-- Wrap the content inside a form -->
+                            <?php
+                            // Get the current year and selected year from the URL (if available)
+                            $currentYear = date('Y');
+                            $selectedYear = $_GET['created_at'] ?? $currentYear;
+                            ?>
 
+                            <form method="get" style="width: 100%;">
+                                <div class="row w-100">
+                                    <!-- Pass Rate Label -->
+                                    <div class="col mt-2">
+                                        <label for="yearDropdown">Pass Rate</label>
+                                    </div>
+
+                                    <!-- Year Dropdown -->
+                                    <div class="col">
+                                        <select id="yearDropdown" name="created_at" class="form-control" onchange="this.form.submit()">
+                                            <?php
+                                            // Loop through the years from current year to 2020
+                                            for ($year = $currentYear; $year >= 2020; $year--) {
+                                                $selected = ($year == $selectedYear) ? 'selected' : '';
+                                                echo "<option value=\"$year\" $selected>$year</option>";
+                                            }
+                                            ?>
+                                        </select>
+                                    </div>
+                                </div>
+                            </form>
+
+                        </div>
 
 
 

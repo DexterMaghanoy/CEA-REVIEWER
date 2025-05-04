@@ -88,7 +88,7 @@ $totalPages = ceil($totalCount / $recordsPerPage);
                 <div class="col-md-12">
                     <div class="text-center mb-4">
 
-                   
+
 
                         <h1>Subjects</h1>
                     </div>
@@ -131,6 +131,10 @@ $totalPages = ceil($totalCount / $recordsPerPage);
                                             </td>
                                         </tr>
                                     <?php endwhile; ?>
+                                    <tr id="noDataRow" style="display: none;">
+                                        <td colspan="4" class="text-center">No records found for course.</td>
+                                    </tr>
+
                                 <?php else : ?>
                                     <tr>
                                         <td colspan="4" class="text-center">No records found for course.</td>
@@ -157,27 +161,7 @@ $totalPages = ceil($totalCount / $recordsPerPage);
 
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe" crossorigin="anonymous"></script>
-    <script>
-        const searchInput = document.getElementById('searchInput');
-        const courseRows = document.querySelectorAll('#courseTable tbody tr');
 
-        searchInput.addEventListener('input', function() {
-            const searchText = this.value.trim().toLowerCase();
-
-            courseRows.forEach(function(row) {
-                const programName = row.cells[0].textContent.trim().toLowerCase();
-                const courseCode = row.cells[1].textContent.trim().toLowerCase();
-                const courseName = row.cells[2].textContent.trim().toLowerCase();
-
-                // Check if any of the row's content matches the search text
-                if (programName.includes(searchText) || courseCode.includes(searchText) || courseName.includes(searchText)) {
-                    row.style.display = '';
-                } else {
-                    row.style.display = 'none';
-                }
-            });
-        });
-    </script>
 
     <script>
         const hamBurger = document.querySelector(".toggle-btn");
@@ -189,3 +173,30 @@ $totalPages = ceil($totalCount / $recordsPerPage);
 </body>
 
 </html>
+
+<script>
+    const searchInput = document.getElementById('searchInput');
+    const courseRows = document.querySelectorAll('#courseTable tbody tr:not(#noDataRow)');
+    const noDataRow = document.getElementById('noDataRow');
+
+    searchInput.addEventListener('input', function() {
+        const searchText = this.value.trim().toLowerCase();
+        let visibleCount = 0;
+
+        courseRows.forEach(function(row) {
+            const programName = row.cells[0].textContent.trim().toLowerCase();
+            const courseCode = row.cells[1].textContent.trim().toLowerCase();
+            const courseName = row.cells[2].textContent.trim().toLowerCase();
+
+            if (programName.includes(searchText) || courseCode.includes(searchText) || courseName.includes(searchText)) {
+                row.style.display = '';
+                visibleCount++;
+            } else {
+                row.style.display = 'none';
+            }
+        });
+
+        // Show or hide the "No Data Found" row
+        noDataRow.style.display = visibleCount === 0 ? '' : 'none';
+    });
+</script>

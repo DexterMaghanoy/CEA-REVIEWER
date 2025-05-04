@@ -77,6 +77,16 @@ $stmtAttempt->bindParam(':stud_id', $stud_id, PDO::PARAM_INT);
 $stmtAttempt->execute();
 $attemptCount = $stmtAttempt->fetchColumn();
 
+
+// Fetch the latest pass rate
+$passRateSql = "SELECT pass_rate FROM tbl_passrate ORDER BY created_at DESC LIMIT 1";
+$passRateStmt = $conn->prepare($passRateSql);
+$passRateStmt->execute();
+$passRateData = $passRateStmt->fetch(PDO::FETCH_ASSOC);
+$passRate = $passRateData['pass_rate'] ?? 0; // Fallback to 0 if no rate is found
+
+
+
 ?>
 
 
@@ -200,7 +210,7 @@ $attemptCount = $stmtAttempt->fetchColumn();
                                                     $resultScore = $row['result_score'];
                                                     $totalQuestions = $row['total_questions'];
                                                     $percentage = $totalQuestions > 0 ? ($resultScore / $totalQuestions) * 100 : 0;
-                                                    $colorStyle = ($percentage < 50) ? 'color: red;' : 'color: green;';
+                                                    $colorStyle = ($percentage < $passRate) ? 'color: red;' : 'color: green;';
                                                     ?>
                                                     <strong><span style="<?php echo $colorStyle; ?>"><?php echo $resultScore; ?> / <?php echo $totalQuestions; ?></span></strong>
                                                 </td>
@@ -208,7 +218,7 @@ $attemptCount = $stmtAttempt->fetchColumn();
                                                 <td scope="col">
                                                     <?php
                                                     $res = ($row['result_score'] / $row['total_questions']) * 100;
-                                                    if ($res >= 50) {
+                                                    if ($res >= $passRate) {
                                                         echo '<b><span style="color: green;">Passed</span></b>';
                                                     } else {
                                                         echo '<b><span style="color: red;">Failed</span></b>';

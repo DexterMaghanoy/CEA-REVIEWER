@@ -36,6 +36,9 @@ try {
 } catch (PDOException $e) {
     echo "Error: " . $e->getMessage();
 }
+$created_at = $_GET['created_at'] ?? date('Y');
+
+// Store values in session
 
 
 ?>
@@ -251,87 +254,93 @@ try {
 
                     <div class="card text-bg-light text-black shadow-lg">
                         <div class="card-header mb-2">
-                            <form id="programForm" method="post" action="" onsubmit="updateFormAction()">
-                                <select style="width: 150px;" name="programSelect" id="programSelect" class="form-select">
-                                    <?php
-                                    try {
-                                        // Assuming you're using PDO and have a database connection
-                                        $stmt = $conn->prepare("SELECT program_id, program_name FROM tbl_program WHERE program_status = 1");
-                                        $stmt->execute();
-                                        $programs = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                            <div class="row">
+                                <div class="col mt-2">
+                                    Pass Rate
+                                </div>
+                                <div class="col">
+                                    <form id="programForm" method="post" action="" onsubmit="updateFormAction()">
+                                        <select style="width: 225px;" name="programSelect" id="programSelect" class="form-select">
+                                            <?php
+                                            try {
+                                                // Assuming you're using PDO and have a database connection
+                                                $stmt = $conn->prepare("SELECT program_id, program_name FROM tbl_program WHERE program_status = 1");
+                                                $stmt->execute();
+                                                $programs = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-                                        $selectedProgram = isset($_POST['programSelect']) ? $_POST['programSelect'] : null;
-                                        $firstOption = true; // Flag to check the first option
+                                                $selectedProgram = isset($_POST['programSelect']) ? $_POST['programSelect'] : null;
+                                                $firstOption = true; // Flag to check the first option
 
-                                        // Display the program options
-                                        foreach ($programs as $program) {
-                                            echo '<option value="' . $program['program_id'] . '"';
-                                            if ($selectedProgram == $program['program_id'] || ($firstOption && !isset($_POST['programSelect']))) {
-                                                echo ' selected';
-                                                $firstOption = false; // A selection has been made
+                                                // Display the program options
+                                                foreach ($programs as $program) {
+                                                    echo '<option value="' . $program['program_id'] . '"';
+                                                    if ($selectedProgram == $program['program_id'] || ($firstOption && !isset($_POST['programSelect']))) {
+                                                        echo ' selected';
+                                                        $firstOption = false; // A selection has been made
+                                                    }
+                                                    echo '>' . $program['program_name'] . '</option>';
+                                                }
+                                            } catch (PDOException $e) {
+                                                echo '<option value="" disabled>Error fetching programs</option>';
                                             }
-                                            echo '>' . $program['program_name'] . '</option>';
-                                        }
-                                    } catch (PDOException $e) {
-                                        echo '<option value="" disabled>Error fetching programs</option>';
-                                    }
-                                    ?>
-                                </select>
-                            </form>
+                                            ?>
+                                        </select>
+                                    </form>
 
 
 
 
 
-                            <script>
-                                document.addEventListener('DOMContentLoaded', function() {
-                                    const programSelect = document.getElementById('programSelect');
+                                    <script>
+                                        document.addEventListener('DOMContentLoaded', function() {
+                                            const programSelect = document.getElementById('programSelect');
 
-                                    // Retrieve selected option from local storage, if available
-                                    const storedValue = localStorage.getItem('selectedProgram');
-                                    if (storedValue) {
-                                        programSelect.value = storedValue;
-                                    }
+                                            // Retrieve selected option from local storage, if available
+                                            const storedValue = localStorage.getItem('selectedProgram');
+                                            if (storedValue) {
+                                                programSelect.value = storedValue;
+                                            }
 
-                                    programSelect.addEventListener('change', function() {
-                                        const selectedProgramName = this.options[this.selectedIndex].text; // Get the text of the selected option
-                                        this.setAttribute('name', selectedProgramName); // Set the name attribute of the select element
-                                        localStorage.setItem('selectedProgram', this.value); // Store selected value in local storage
-                                    });
-                                });
-                            </script>
-
-
+                                            programSelect.addEventListener('change', function() {
+                                                const selectedProgramName = this.options[this.selectedIndex].text; // Get the text of the selected option
+                                                this.setAttribute('name', selectedProgramName); // Set the name attribute of the select element
+                                                localStorage.setItem('selectedProgram', this.value); // Store selected value in local storage
+                                            });
+                                        });
+                                    </script>
 
 
-                            <script>
-                                // Script CODE 1
-
-                                document.addEventListener('DOMContentLoaded', function() {
-                                    const programSelect = document.getElementById('programSelect');
-
-                                    programSelect.addEventListener('change', function() {
-                                        const selectedOption = this.options[this.selectedIndex];
-                                        const selectedProgramId = selectedOption.value;
-                                        const selectedProgramName = selectedOption.textContent; // Get the text of the selected option
-                                        const currentUrl = new URL(window.location.href);
-
-                                        if (selectedProgramId === 'all') {} else {
-                                            currentUrl.searchParams.set('program_id', selectedProgramId);
-                                        }
-
-                                        window.location.href = currentUrl.toString();
-
-                                        // Update the text content of the first option
-                                        document.getElementById('programSelect').getElementsByTagName('option')[0].textContent = selectedProgramName;
-                                    });
-                                });
-                            </script>
 
 
+                                    <script>
+                                        // Script CODE 1
+
+                                        document.addEventListener('DOMContentLoaded', function() {
+                                            const programSelect = document.getElementById('programSelect');
+
+                                            programSelect.addEventListener('change', function() {
+                                                const selectedOption = this.options[this.selectedIndex];
+                                                const selectedProgramId = selectedOption.value;
+                                                const selectedProgramName = selectedOption.textContent; // Get the text of the selected option
+                                                const currentUrl = new URL(window.location.href);
+
+                                                if (selectedProgramId === 'all') {} else {
+                                                    currentUrl.searchParams.set('program_id', selectedProgramId);
+                                                }
+
+                                                window.location.href = currentUrl.toString();
+
+                                                // Update the text content of the first option
+                                                document.getElementById('programSelect').getElementsByTagName('option')[0].textContent = selectedProgramName;
+                                            });
+                                        });
+                                    </script>
+
+                                </div>
+                            </div>
                         </div>
-                        <a href="subjects.php" class="text-white text-decoration-none">
 
+                        <a href="subjects.php" class="text-white text-decoration-none">
 
                             <div class="card-body mt-1" id="courseList" style="max-height: 180px; overflow-y: auto;">
                                 <?php
@@ -365,9 +374,9 @@ try {
                                 ?>
 
                             </div>
+                        </a>
 
                     </div>
-                    </a>
                     <script>
                         // JavaScript to handle displaying courses based on selected program
                         document.getElementById("programSelect").addEventListener("change", function() {
@@ -375,9 +384,56 @@ try {
                         });
                     </script>
                 </div>
+
+
                 <div class="col-md-4">
+
+
                     <div class="card text-bg-light text-black shadow-lg mb-3" style="height: 580px;">
-                        <div class="card-header">Pass Rate</div>
+                        <div class="card-header">
+                            <?php
+                            // Get values from the URL
+                            $selectedYear = $_GET['created_at'] ?? date('Y');
+                            $program_id = $_GET['program_id'] ?? '1'; // default to 1 if needed
+                            $quiz_type = $_GET['quiz_type'] ?? '1';
+                            ?>
+
+                            <!-- Form to handle year selection -->
+                            <form method="get">
+                                <!-- Preserve other query parameters -->
+                                <input type="hidden" name="program_id" value="<?= htmlspecialchars($program_id) ?>">
+                                <input type="hidden" name="quiz_type" value="<?= htmlspecialchars($quiz_type) ?>">
+                                <div class="row">
+                                    <div class="col mt-2">
+                                        Pass Rate
+                                    </div>
+
+
+                                    <div class="col">
+                                        <select id="yearDropdown" name="created_at" class="form-control" onchange="this.form.submit()">
+                                            <?php
+                                            $currentYear = date('Y');
+                                            for ($year = $currentYear; $year >= 2020; $year--) {
+                                                $selected = ($year == $selectedYear) ? 'selected' : '';
+                                                echo "<option value=\"$year\" $selected>$year</option>";
+                                            }
+                                            ?>
+                                        </select>
+                                    </div>
+                                </div>
+
+
+                            </form>
+
+
+
+
+
+
+
+
+
+                        </div>
                         <div class="card-body">
                             <?php
 
@@ -564,7 +620,16 @@ try {
 
                             <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
                             <div id="noDataMessage" style="display: none; margin-top: 45px;">No data to display.</div>
-                            <canvas id="myPieChart"></canvas>
+
+
+
+
+
+                            <div style="position: relative;">
+                                <canvas id="myPieChart" width="400" height="400" style="position: relative;"></canvas>
+                                <a href="student.php" class="text-black text-decoration-none" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; z-index: 1; pointer-events: none;"></a>
+                            </div>
+
 
                             <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
                             <script>
@@ -674,8 +739,8 @@ try {
 
                         </div>
                     </div>
-                </div>
 
+                </div>
 
 
 

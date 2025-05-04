@@ -97,7 +97,6 @@ $courses = $stmt->fetchAll(PDO::FETCH_ASSOC);
         <?php
         include 'sidebar.php';
         ?>
-
         <?php
         include 'back.php';
         ?>
@@ -105,25 +104,20 @@ $courses = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <div class="row justify-content-center">
                 <div class="col-md-12">
                     <div class="text-center mt-3">
-                        <h1>Subjects: <?php echo isset($_GET['search']) ? $_GET['search'] : ''; ?></h1>
-
+                        <h1>Subjects <?php echo isset($_GET['search']) ? $_GET['search'] : ''; ?></h1>
                     </div>
                     <a class="btn btn-outline-primary btn-sm" href="add_subject.php"><i class="lni lni-plus"></i></a><br><br>
+
                     <!-- Search bar -->
                     <div class="row">
                         <div class="col">
                             <!-- Course ID Dropdown -->
-
-
-
-
-                            <!-- Course ID Dropdown -->
                             <div class="mb-3">
                                 <select class="form-select" id="program_id" name="program_id" required>
-                                    <option value="" <?php echo (isset($_GET['search']) && $_GET['search'] === '') ? 'selected' : ''; ?>>
+                                    <!-- Placeholder Option -->
+                                    <option value="" disabled <?php echo (isset($_GET['search']) && $_GET['search'] === '') ? 'selected' : ''; ?>>
                                         <?php echo isset($_GET['search']) ? $_GET['search'] : 'Select Program'; ?>
                                     </option>
-
                                     <?php foreach ($courses as $course) : ?>
                                         <option value="<?= htmlspecialchars($course['program_id']); ?>" data-program-name="<?= htmlspecialchars($course['program_name']); ?>">
                                             <?= htmlspecialchars($course['program_name']); ?>
@@ -131,7 +125,6 @@ $courses = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                     <?php endforeach; ?>
                                 </select>
                             </div>
-
 
                             <script>
                                 document.addEventListener('DOMContentLoaded', function() {
@@ -144,34 +137,27 @@ $courses = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                     });
                                 });
                             </script>
-
-
-
-
                         </div>
-                        <div class="col-sm-3"></div>
 
                         <div class="col">
                             <form action="" method="GET" class="mb-3">
                                 <div class="input-group">
-                                    <input type="text" class="form-control" name="search" placeholder="Search...">
+                                    <input type="text" id="searchInput" class="form-control" name="search" placeholder="Search...">
                                     <button class="btn btn-primary" type="submit">Search</button>
                                 </div>
                             </form>
                         </div>
                     </div>
 
+                    <!-- Table -->
                     <div class="table-responsive">
-                        <table style="background: linear-gradient(to left, rgba(220, 210, 211, 0.3), rgba(200, 240, 241, 0.3));" class="table table-bordered table-custom">
-
+                        <table id="subjectTable" style="background: linear-gradient(to left, rgba(220, 210, 211, 0.3), rgba(200, 240, 241, 0.3));" class="table table-bordered table-custom">
                             <caption>List of Course</caption>
                             <thead class="table-dark">
                                 <tr>
                                     <th scope="col">Code</th>
-
                                     <th scope="col">Subject</th>
                                     <th scope="col">Teacher</th>
-
                                     <th scope="col">Course</th>
                                     <th scope="col">Action</th>
                                     <th scope="col">Status</th>
@@ -180,7 +166,7 @@ $courses = $stmt->fetchAll(PDO::FETCH_ASSOC);
                             <tbody>
                                 <?php if ($result->rowCount() > 0) : ?>
                                     <?php while ($row = $result->fetch(PDO::FETCH_ASSOC)) : ?>
-                                        <tr>
+                                        <tr class="tableRow">
                                             <td><?php echo $row['course_code']; ?></td>
                                             <td><?php echo $row['course_name']; ?></td>
                                             <td><?php echo $row['user_lname'] . ', ' . $row['user_fname'] ?></td>
@@ -190,19 +176,12 @@ $courses = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                                 <a class="btn btn-primary btn-sm" href="view_module.php?course_id=<?php echo $row['course_id']; ?>"><i class="lni lni-radio-button"></i></a>
                                             </td>
                                             <td>
-                                                <!-- Inside the table row for toggling status -->
                                                 <form method="post" action="<?php echo $_SERVER['PHP_SELF']; ?>" style="display: inline;" id="statusForm_<?php echo $row['course_id']; ?>">
                                                     <input type="hidden" name="course_id" value="<?php echo $row['course_id']; ?>">
-                                                    <button type="submit" name="toggle_status" class="btn btn-sm <?php echo $row['course_status'] == 1 ? 'btn-success' : 'btn-warning'; ?>" onclick="submitForm(<?php echo $row['course_id']; ?>)">
-                                                        <?php if ($row['course_status'] == 1) : ?>
-                                                            <i class="lni lni-checkmark-circle"></i>
-                                                        <?php else : ?>
-                                                            <i class="lni lni-checkmark-circle"></i>
-                                                        <?php endif; ?>
+                                                    <button type="submit" name="toggle_status" class="btn btn-sm <?php echo $row['course_status'] == 1 ? 'btn-success' : 'btn-warning'; ?>">
+                                                        <i class="lni lni-checkmark-circle"></i>
                                                     </button>
                                                 </form>
-
-
                                             </td>
                                         </tr>
                                     <?php endwhile; ?>
@@ -214,6 +193,7 @@ $courses = $stmt->fetchAll(PDO::FETCH_ASSOC);
                             </tbody>
                         </table>
                     </div>
+
                     <!-- Pagination -->
                     <nav aria-label="Page navigation">
                         <ul class="pagination justify-content-center">
@@ -228,14 +208,35 @@ $courses = $stmt->fetchAll(PDO::FETCH_ASSOC);
             </div>
         </div>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe" crossorigin="anonymous"></script>
-</body>
-<script>
-    const hamBurger = document.querySelector(".toggle-btn");
 
-    hamBurger.addEventListener("click", function() {
-        document.querySelector("#sidebar").classList.toggle("expand");
-    });
-</script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe" crossorigin="anonymous"></script>
+
+    <script>
+        // Add event listener for input in search field to filter the table dynamically
+        document.getElementById('searchInput').addEventListener('input', function() {
+            let searchQuery = this.value.toLowerCase(); // Get the value typed in the search bar
+            let rows = document.querySelectorAll('#subjectTable .tableRow'); // Get all rows of the table
+
+            rows.forEach(function(row) {
+                let cells = row.querySelectorAll('td'); // Get all cells of the row
+                let matchFound = false;
+
+                // Loop through each cell in the row and check if the search query matches
+                cells.forEach(function(cell) {
+                    if (cell.textContent.toLowerCase().includes(searchQuery)) {
+                        matchFound = true;
+                    }
+                });
+
+                // If a match is found, display the row; otherwise, hide it
+                if (matchFound) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        });
+    </script>
+</body>
 
 </html>

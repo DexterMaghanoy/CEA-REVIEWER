@@ -112,7 +112,7 @@ if (isset($_SESSION['program_id'])) {
             <?php include 'back.php'; ?>
             <div class="row justify-content-center mt-1">
                 <div class="col-md-12">
-                <div class="text-center mb-1">
+                    <div class="text-center mb-1">
                         <div class="text-center mb-1">
                             <h1>Quiz data:
                                 <?php
@@ -148,13 +148,22 @@ if (isset($_SESSION['program_id'])) {
 
 
 
-                    <?php include 'student_record_dropdown.php'; ?>
-                    <form action="" method="GET" class="mb-4">
-                        <div class="input-group">
-                            <input type="text" class="form-control" placeholder="Search by module name" name="search" id="searchInput">
-                            <button class="btn btn-outline-secondary" type="button" id="clearSearchButton"><i class="lni lni-close"></i></button>
+                    <div class="row mb-2 mt-5">
+                        <!-- Left side: Dropdown -->
+                        <div class="col-md-6">
+                            <?php include 'student_record_dropdown.php'; ?>
                         </div>
-                    </form>
+
+                        <!-- Right side: Search Form -->
+                        <div class="col-md-6">
+                            <form action="" method="GET">
+                                <div class="input-group">
+                                    <input type="text" class="form-control" placeholder="Search by module name" name="search" id="searchInput">
+                                    <button class="btn btn-outline-secondary" type="button" id="clearSearchButton"><i class="lni lni-close"></i></button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
 
                     <!-- Display all results in a table -->
                     <div class="table-responsive">
@@ -179,7 +188,7 @@ if (isset($_SESSION['program_id'])) {
                                                 <?php
                                                 if (isset($row['result_score'], $row['total_questions'])) {
                                                     $res = ($row['result_score'] / $row['total_questions']) * 100;
-                                                    echo $res >= 50 ? "Pass" : "Failed";
+                                                    echo $res >= 50 ? "Passed" : "Failed";
                                                 } else {
                                                     echo 'N/A';
                                                 }

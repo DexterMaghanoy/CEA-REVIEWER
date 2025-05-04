@@ -260,114 +260,146 @@ $courses = $result->fetchAll(PDO::FETCH_ASSOC);
 
 
 
-                    <?php
 
-                    include 'module_dropdown.php';
-                    ?>
 
-                    <form id="searchForm" class="mb-3">
-                        <div class="input-group">
-                            <input type="text" id="searchInput" class="form-control" name="search" placeholder="Search..." value="<?php echo ""; ?>">
-                            <button class="btn btn-primary" type="submit">Search</button>
-                        </div>
-                    </form>
+                    <div class="container">
+                        <?php
 
-                    <table style="background: linear-gradient(to left, rgba(220, 210, 211, 0.3), rgba(200, 240, 241, 0.3));" class="table table-bordered table-custom">
-                        <caption>List of Student Performance</caption>
-                        <thead class="table-dark">
-                            <tr style="text-align: center;">
-                                <th scope="col">Student Name</th>
-                                <th scope="col">Module Name</th>
-                                <th scope="col">Date</th>
-                                <th scope="col">Attempts</th>
-                                <th scope="col">Rate</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php if (empty($results)) : ?>
+                        include 'module_dropdown.php';
+                        ?>
+                        <form id="searchForm" class="mb-3" onsubmit="return false;">
+                            <div class="input-group mt-2">
+                                <input type="text" id="searchInput" class="form-control" placeholder="Search..." onkeyup="filterTable()">
+                                <button type="button" class="btn btn-outline-secondary" onclick="clearSearch()">✕</button>
+                            </div>
+                        </form>
+
+                        <table id="studentTable" class="table table-bordered table-custom" style="background: linear-gradient(to left, rgba(220, 210, 211, 0.3), rgba(200, 240, 241, 0.3));">
+                            <caption>List of Student Performance</caption>
+                            <thead class="table-dark">
                                 <tr style="text-align: center;">
-                                    <td colspan="5">No records found</td>
+                                    <th scope="col">Student Name</th>
+                                    <th scope="col">Module Name</th>
+                                    <th scope="col">Date</th>
+                                    <th scope="col">Attempts</th>
+                                    <th scope="col">Rate</th>
                                 </tr>
-                            <?php else : ?>
-                                <?php foreach ($results as $row) : ?>
+                            </thead>
+
+                            <tbody id="dataBody">
+                                <?php if (empty($results)) : ?>
                                     <tr style="text-align: center;">
-                                        <td>
-                                            <?php $module_id = isset($_GET['module_id']) ? $_GET['module_id'] : null; ?>
-                                            <a href="student_record_test.php?student_id=<?php echo $row['stud_id']; ?>&module_id=<?php echo $module_id; ?>">
-                                                <?php echo htmlspecialchars($row['stud_fname'] . ' ' . $row['stud_mname'] . ' ' . $row['stud_lname']); ?>
-                                            </a>
-                                        </td>
-
-
-                                        <td><?php echo htmlspecialchars($row['module_name']); ?></td>
-                                        <td><?php echo date("M d, Y", strtotime($row['created_at'])); ?></td>
-                                        <td>
-                                            <?php
-                                            // Retrieve module_id from URL parameter if available
-                                            $module_id = isset($_GET['module_id']) ? $_GET['module_id'] : null;
-
-                                            // Fetch attempts from tbl_result
-                                            $stmtAttempts = $conn->prepare("SELECT COUNT(*) AS attempts FROM tbl_result WHERE stud_id = :stud_id AND module_id = :module_id AND quiz_type = 1");
-                                            $stmtAttempts->bindValue(':stud_id', $row['stud_id']);
-                                            $stmtAttempts->bindValue(':module_id', $module_id);
-                                            if (!$stmtAttempts->execute()) {
-                                                echo "Error executing query: " . implode(" ", $stmtAttempts->errorInfo());
-                                            } else {
-                                                $attemptsData = $stmtAttempts->fetch(PDO::FETCH_ASSOC);
-                                                $attempts = $attemptsData['attempts'];
-                                                echo htmlspecialchars($attempts);
-                                            }
-                                            ?>
-                                        </td>
-                                        <td>
-                                            <?php
-                                            // Retrieve module_id from URL parameter if available
-                                            $module_id = isset($_GET['module_id']) ? $_GET['module_id'] : null;
-
-                                            // Fetch attempts from tbl_result
-                                            $stmtAttempts = $conn->prepare("SELECT COUNT(*) AS attempts FROM tbl_result WHERE stud_id = :stud_id AND module_id = :module_id AND quiz_type = 1");
-                                            $stmtAttempts->bindValue(':stud_id', $row['stud_id']);
-                                            $stmtAttempts->bindValue(':module_id', $module_id);
-                                            if (!$stmtAttempts->execute()) {
-                                                echo "Error executing query: " . implode(" ", $stmtAttempts->errorInfo());
-                                            } else {
-                                                $attemptsData = $stmtAttempts->fetch(PDO::FETCH_ASSOC);
-                                                $attempts = $attemptsData['attempts'];
-                                                $passRate = ($attempts != 0) ? number_format(100 / $attempts, 2) : 0; // Calculate pass rate with 2 decimal places
-                                                echo htmlspecialchars($passRate) . "%";
-                                            }
-                                            ?>
-                                        </td>
+                                        <td colspan="5">No records found</td>
                                     </tr>
-                                <?php endforeach; ?>
-                            <?php endif; ?>
-                        </tbody>
-                    </table>
+                                <?php else : ?>
+                                    <?php foreach ($results as $row) : ?>
+                                        <tr style="text-align: center;">
+                                            <td>
+                                                <?php $module_id = isset($_GET['module_id']) ? $_GET['module_id'] : null; ?>
+                                                <a href="student_record_test.php?student_id=<?php echo $row['stud_id']; ?>&module_id=<?php echo $module_id; ?>">
+                                                    <?php echo htmlspecialchars($row['stud_fname'] . ' ' . $row['stud_mname'] . ' ' . $row['stud_lname']); ?>
+                                                </a>
+                                            </td>
+                                            <td><?php echo htmlspecialchars($row['module_name']); ?></td>
+                                            <td><?php echo date("M d, Y", strtotime($row['created_at'])); ?></td>
+                                            <td>
+                                                <?php
+                                                $stmtAttempts = $conn->prepare("SELECT COUNT(*) AS attempts FROM tbl_result WHERE stud_id = :stud_id AND module_id = :module_id AND quiz_type = 1");
+                                                $stmtAttempts->bindValue(':stud_id', $row['stud_id']);
+                                                $stmtAttempts->bindValue(':module_id', $module_id);
+                                                if (!$stmtAttempts->execute()) {
+                                                    echo "Error: " . implode(" ", $stmtAttempts->errorInfo());
+                                                } else {
+                                                    $attemptsData = $stmtAttempts->fetch(PDO::FETCH_ASSOC);
+                                                    $attempts = $attemptsData['attempts'];
+                                                    echo htmlspecialchars($attempts);
+                                                }
+                                                ?>
+                                            </td>
+                                            <td>
+                                                <?php
+                                                $stmtAttempts = $conn->prepare("SELECT COUNT(*) AS attempts FROM tbl_result WHERE stud_id = :stud_id AND module_id = :module_id AND quiz_type = 1");
+                                                $stmtAttempts->bindValue(':stud_id', $row['stud_id']);
+                                                $stmtAttempts->bindValue(':module_id', $module_id);
+                                                if (!$stmtAttempts->execute()) {
+                                                    echo "Error: " . implode(" ", $stmtAttempts->errorInfo());
+                                                } else {
+                                                    $attemptsData = $stmtAttempts->fetch(PDO::FETCH_ASSOC);
+                                                    $attempts = $attemptsData['attempts'];
+                                                    $passRate = ($attempts != 0) ? number_format(100 / $attempts, 2) : 0;
+                                                    echo htmlspecialchars($passRate) . "%";
+                                                }
+                                                ?>
+                                            </td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                <?php endif; ?>
+                            </tbody>
+
+                            <!-- "No data found" row for filtering -->
+                            <tbody id="noDataRow" style="display: none;">
+                                <tr style="text-align: center;">
+                                    <td colspan="5">No data found</td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <script>
+                            function filterTable() {
+                                const input = document.getElementById("searchInput");
+                                const filter = input.value.toLowerCase();
+                                const dataBody = document.getElementById("dataBody");
+                                const rows = dataBody.getElementsByTagName("tr");
+                                const noDataRow = document.getElementById("noDataRow");
+
+                                let visibleCount = 0;
+
+                                for (let i = 0; i < rows.length; i++) {
+                                    const row = rows[i];
+                                    const cells = row.getElementsByTagName("td");
+                                    let matchFound = false;
+
+                                    for (let j = 0; j < cells.length; j++) {
+                                        const cell = cells[j];
+                                        if (cell && cell.textContent.toLowerCase().includes(filter)) {
+                                            matchFound = true;
+                                            break;
+                                        }
+                                    }
+
+                                    row.style.display = matchFound ? "" : "none";
+                                    if (matchFound) visibleCount++;
+                                }
+
+                                noDataRow.style.display = visibleCount === 0 ? "" : "none";
+                            }
+
+                            function clearSearch() {
+                                const input = document.getElementById("searchInput");
+                                input.value = "";
+                                filterTable();
+                            }
+                        </script>
+
+                        <!-- Pagination -->
+                        <nav aria-label="Page navigation">
+                            <ul class="pagination justify-content-center">
+                                <?php for ($i = 1; $i <= $totalPages; $i++) : ?>
+                                    <li class="page-item <?php echo $i == $page ? 'active' : ''; ?>">
+                                        <a class="page-link" href="?page=<?php echo $i; ?>&search=<?php echo $search; ?>&course_id=<?php echo $course_id; ?>&module_id=<?php echo $module_id; ?>"><?php echo $i; ?></a>
+                                    </li>
+                                <?php endfor; ?>
+                            </ul>
+                        </nav>
+                    </div>
 
 
 
-
-
-
-                    <!-- Pagination -->
-                    <nav aria-label="Page navigation">
-                        <ul class="pagination justify-content-center">
-                            <?php for ($i = 1; $i <= $totalPages; $i++) : ?>
-                                <li class="page-item <?php echo $i == $page ? 'active' : ''; ?>">
-                                    <a class="page-link" href="?page=<?php echo $i; ?>&search=<?php echo $search; ?>&course_id=<?php echo $course_id; ?>&module_id=<?php echo $module_id; ?>"><?php echo $i; ?></a>
-                                </li>
-                            <?php endfor; ?>
-                        </ul>
-                    </nav>
 
                 </div>
 
-
-
             </div>
-
         </div>
-    </div>
     </div>
     <script>
         document.addEventListener("DOMContentLoaded", function() {

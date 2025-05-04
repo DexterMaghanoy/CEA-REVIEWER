@@ -92,6 +92,14 @@ if (isset($_SESSION['program_id'])) {
 }
 // SQL query with proper indentation
 
+// Fetch the latest pass rate
+$passRateSql = "SELECT pass_rate FROM tbl_passrate ORDER BY created_at DESC LIMIT 1";
+$passRateStmt = $conn->prepare($passRateSql);
+$passRateStmt->execute();
+$passRateData = $passRateStmt->fetch(PDO::FETCH_ASSOC);
+$passRate = $passRateData['pass_rate'] ?? 0; // Fallback to 0 if no rate is found
+
+
 
 ?>
 
@@ -239,7 +247,7 @@ if (isset($_SESSION['program_id'])) {
                                                         $percentage = ($resultScore / $totalQuestions) * 100;
 
                                                         // Display appropriate action buttons based on percentage
-                                                        if ($percentage >= 50) {
+                                                        if ($percentage >= $passRate) {
                                                             echo '<button class="btn btn-success btn-sm" disabled><i style = "color: black;" class="lni lni-remove-file"></i></button>';
                                                             echo '<button class="btn btn-warning btn-sm eye-icon-btn" style="border: 1px solid black; box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);" onclick="window.location.href=\'question-answers.php?module_id=' . $row['module_id'] . '\'"><i class="lni lni-key"></i></button>';
                                                         } else {
@@ -286,13 +294,17 @@ if (isset($_SESSION['program_id'])) {
                                         </td>
                                         <td>
 
+
+
                                             <?php
-                                            $passRate = 0;
+
+
+                                            // $passRate = 0;
 
                                             // Calculate and display pass rate
-                                            if ($resultCount > 0 && $percentage >= 50) {
+                                            if ($resultCount > 0 && $percentage >= $passRate) {
                                                 if ($totalQuestions > 0) {
-                                                    echo '<a href="student_question_result.php?course_id=' . $course_id . '&stud_id=' . $stud_id . '" style="color: green;"><strong>Passed 👁</strong></a>';
+                                                    echo '<a href="student_question_result.php?course_id=' . $course_id . '&module_id=' . $row['module_id'] . '&stud_id=' . $stud_id . '" style="color: green;"><strong>Passed 👁</strong></a>';
                                                 } else {
                                                     echo '<span style="color: grey;"><strong>n/a</strong></span>';
 
@@ -305,7 +317,7 @@ if (isset($_SESSION['program_id'])) {
                                                 } else {
 
                                                     if ($resultCount > 0) {
-                                                        echo '<a href="student_question_result.php?course_id=' . $course_id . '&stud_id=' . $stud_id . '" style="color: red;"><strong>Failed 👁</strong></a>';
+                                                        echo '<a href="student_question_result.php?course_id=' . $course_id . '&module_id=' . $row['module_id'] . '&stud_id=' . $stud_id . '" style="color: red;"><strong>Failed 👁</strong></a>';
 
                                                         $qs = -1;
                                                     } else {
@@ -316,7 +328,7 @@ if (isset($_SESSION['program_id'])) {
                                             }
 
 
-
+                                            // echo $passRate;
                                             ?>
 
                                         </td>
@@ -324,7 +336,7 @@ if (isset($_SESSION['program_id'])) {
                                             <?php
 
                                             // Calculate and display pass rate
-                                            if ($resultCount > 0 && $percentage >= 50) {
+                                            if ($resultCount > 0 && $percentage >= $passRate) {
                                                 if ($totalQuestions > 0) {
                                                     // Calculate pass rate based on attempt number
                                                     $passRate = (1 / $resultCount) * 100;
@@ -381,6 +393,8 @@ if (isset($_SESSION['program_id'])) {
                                 <td>#</td>
                                 <td><b>Quiz</b></td>
                                 <td>
+
+
                                     <?php
 
                                     $course_id = filter_var($_GET['course_id'], FILTER_SANITIZE_NUMBER_INT);
@@ -398,7 +412,7 @@ if (isset($_SESSION['program_id'])) {
                                         $quizAttempts = $qresult['quiz_result_count'];
 
                                         // Check if the user has already passed the quiz
-                                        $sql_passed = "SELECT COUNT(*) AS passed_count FROM tbl_result WHERE course_id = :course_id AND stud_id = :stud_id AND quiz_type = 2 AND result_score >= total_questions * 0.5";
+                                        $sql_passed = "SELECT COUNT(*) AS passed_count FROM tbl_result WHERE course_id = :course_id AND stud_id = :stud_id AND quiz_type = 2";
                                         $stmt_passed = $conn->prepare($sql_passed);
                                         $stmt_passed->bindParam(":course_id", $course_id, PDO::PARAM_INT);
                                         $stmt_passed->bindParam(":stud_id", $_SESSION['stud_id'], PDO::PARAM_INT);
@@ -407,6 +421,7 @@ if (isset($_SESSION['program_id'])) {
 
                                         if ($passed_result['passed_count'] > 0) {
                                             // User has already passed the quiz, disable the button
+
                                             echo '<button class="btn btn-info mb-2" disabled><i style = "color: black;" class="lni lni-remove-file"></i></button>';
                                             $quiz_result_final = '<a href="student_quiz_result.php?course_id=' . $course_id . '&stud_id=' . $stud_id . '" style="color: green;"><strong>Passed 👁</strong></a>';
                                         } else {
@@ -422,7 +437,9 @@ if (isset($_SESSION['program_id'])) {
                                     ?>
                                 </td>
                                 <td>
+
                                     <?php
+
                                     $course_id = filter_var($_GET['course_id'], FILTER_SANITIZE_NUMBER_INT);
 
                                     $sql = "SELECT COUNT(*) AS quiz_result_count FROM tbl_result WHERE course_id = :course_id AND stud_id = :stud_id AND quiz_type = 2";
@@ -443,6 +460,8 @@ if (isset($_SESSION['program_id'])) {
                                 </td>
                                 <td>
                                     <?php
+                                    // echo $passed_result['passed_count'];
+
                                     global $QuizResultCount;
                                     global $QuizResult;
 
@@ -453,11 +472,13 @@ if (isset($_SESSION['program_id'])) {
                                     // Execute SQL query to fetch data
                                     $sql = "SELECT stud_id, course_id, result_score, total_questions
             FROM tbl_result
-            WHERE quiz_type = 2
+            WHERE quiz_type = 2 AND stud_id = :stud_id AND course_id = :course_id
             ORDER BY result_id DESC
             LIMIT 1";
 
                                     $stmt = $conn->prepare($sql);
+                                    $stmt->bindParam(":stud_id", $_SESSION['stud_id'], PDO::PARAM_INT);
+                                    $stmt->bindParam(":course_id", $course_id, PDO::PARAM_INT);
                                     $stmt->execute();
                                     $QuizResult = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -468,19 +489,25 @@ if (isset($_SESSION['program_id'])) {
                                         $result_score = $QuizResult['result_score'];
                                         $total_questions = $QuizResult['total_questions'];
 
-                                        // Calculate the pass rate and display pass/fail status here
-                                        $passRate = 0;
+                                        // ✅ Define the pass rate
 
-                                        if ($quizAttempts > 0 && $result_score > 0 && ($result_score / $total_questions) * 100 >= 50) {
+                                        // Fetch the latest pass rate
+                                        $passRateSql = "SELECT pass_rate FROM tbl_passrate ORDER BY created_at DESC LIMIT 1";
+                                        $passRateStmt = $conn->prepare($passRateSql);
+                                        $passRateStmt->execute();
+                                        $passRateData = $passRateStmt->fetch(PDO::FETCH_ASSOC);
+                                        $passRate = $passRateData['pass_rate'] ?? 0; // Fallback to 0 if no rate is found
+
+
+
+
+                                        // Check if passed
+                                        if ($quizAttempts > 0 && $result_score > 0 && ($result_score / $total_questions) * 100 >= $passRate) {
                                             echo $quiz_result_final;
-                                            // echo '<span style="color: grey;"><strong>n/a</strong></span>';
                                         } else {
-
-
                                             if ($quizAttempts > 0) {
                                                 echo '<a href="student_quiz_result.php?course_id=' . $course_id . '&stud_id=' . $stud_id . '" style="color: red;"><strong>Failed 👁</strong></a>';
                                             } else {
-
                                                 echo '<span style="color: grey;"><strong>n/a</strong></span>';
                                             }
                                         }
@@ -491,11 +518,12 @@ if (isset($_SESSION['program_id'])) {
                                     ?>
                                 </td>
 
+
                                 <td>
                                     <?php
 
                                     if ($quizAttempts > 0) {
-                                        if ($result_score > 0 && ($result_score / $total_questions) * 100 >= 50) {
+                                        if ($result_score > 0 && ($result_score / $total_questions) * 100 >= $passRate) {
                                             // Calculate and display the quiz percentage
                                             $QuizPercentage = 100 / $quizAttempts;
                                             echo number_format($QuizPercentage) . '%';

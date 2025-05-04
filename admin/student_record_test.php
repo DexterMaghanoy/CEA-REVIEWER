@@ -153,14 +153,22 @@ if (isset($_SESSION['program_id'])) {
                     <!-- Search Bar -->
 
 
-
-                    <?php include 'student_record_dropdown.php'; ?>
-                    <form action="" method="GET" class="mb-4">
-                        <div class="input-group">
-                            <input type="text" class="form-control" placeholder="Search by module name" name="search" id="searchInput">
-                            <button class="btn btn-outline-secondary" type="button" id="clearSearchButton"><i class="lni lni-close"></i></button>
+                    <div class="row mb-2 mt-5">
+                        <!-- Left side: Dropdown -->
+                        <div class="col-md-6">
+                            <?php include 'student_record_dropdown.php'; ?>
                         </div>
-                    </form>
+
+                        <!-- Right side: Search Form -->
+                        <div class="col-md-6">
+                            <form action="" method="GET">
+                                <div class="input-group">
+                                    <input type="text" class="form-control" placeholder="Search by module name" name="search" id="searchInput">
+                                    <button class="btn btn-outline-secondary" type="button" id="clearSearchButton"><i class="lni lni-close"></i></button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
 
                     <!-- Display all results in a table -->
                     <div class="table-container">
@@ -168,13 +176,8 @@ if (isset($_SESSION['program_id'])) {
                             <caption>List of Scores</capt ion>
                             <thead class="table-dark">
                                 <tr style="text-align: center;">
-                                    <th scope="col">
-                                        <select id="titleDropdown" class="sortable" data-column="0">
-                                            <option value="Title 1">Title 1</option>
-                                            <option value="Title 2">Title 2</option>
-                                            <option value="Title 3">Title 3</option>
-                                        </select>
-                                    </th>
+                                    <th scope="col"><a href="#" class="sortable" data-column="1">Subject</a></th>
+
 
                                     <th scope="col"><a href="#" class="sortable" data-column="1">Score</a></th>
                                     <th scope="col"><a href="#" class="sortable" data-column="2">Result</a></th>
@@ -191,7 +194,7 @@ if (isset($_SESSION['program_id'])) {
                                                 <?php
                                                 if (isset($row['result_score'], $row['total_questions'])) {
                                                     $res = ($row['result_score'] / $row['total_questions']) * 100;
-                                                    echo $res >= 50 ? "Pass" : "Failed";
+                                                    echo $res >= 50 ? "Passed" : "Failed";
                                                 } else {
                                                     echo 'N/A';
                                                 }

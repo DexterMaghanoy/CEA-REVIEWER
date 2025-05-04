@@ -104,18 +104,19 @@ $totalPages = ceil($totalCount / $recordsPerPage);
                         <a class="btn btn-outline-primary btn-sm" href="import_student.php"><i class="lni lni-upload"></i></a>
                     </div><br>
                     <!-- Search bar -->
-                        <div class="row">
-                            <div class="col-sm-6">
-                            </div>
-                            <div class="col-sm-6">
-                                <form action="" method="GET" class="mb-3">
-                                    <div class="input-group">
-                                        <input type="text" class="form-control" name="search" placeholder="Search...">
-                                        <button class="btn btn-primary" type="submit">Search</button>
-                                    </div>
-                                </form>
-                            </div>
+                    <div class="row">
+                        <div class="col-sm-6">
                         </div>
+                        <div class="col-sm-6">
+                            <div class="input-group mb-3">
+                                <input type="text" class="form-control" id="liveSearch" placeholder="Search...">
+                                <button class="btn btn-outline-secondary" type="button" id="clearSearch">
+                                    <i class="lni lni-close"></i>
+                                </button>
+                            </div>
+
+                        </div>
+                    </div>
                     <table style="background: linear-gradient(to left, rgba(220, 210, 211, 0.3), rgba(200, 240, 241, 0.3)); table-layout: auto; width: 100%;" class="table table-bordered table-custom">
 
                         <caption>List of Student</caption>
@@ -128,7 +129,7 @@ $totalPages = ceil($totalCount / $recordsPerPage);
                                 <th scope="col">Status</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody id="studentTable">
                             <?php if ($result->rowCount() > 0) : ?>
                                 <?php while ($row = $result->fetch(PDO::FETCH_ASSOC)) : ?>
                                     <tr>
@@ -137,19 +138,13 @@ $totalPages = ceil($totalCount / $recordsPerPage);
                                         <td><?php echo $row['stud_lname'] . ', ' . $row['stud_fname'] . ' ' . $row['stud_mname']; ?></td>
                                         <td>
                                             <a class="btn btn-info btn-sm" href="edit_student.php?stud_id=<?php echo $row['stud_id']; ?>"><i class="lni lni-pencil"></i></a>
-
-                                            <a href="student_record_test.php?student_id=<?php echo $row['stud_id']; ?>" class="btn btn-primary btn-sm eye-icon-btn"><i class="lni lni-eye eye-icon text-white"></i></a>
-
+                                            <a href="student_record_test.php?student_id=<?php echo $row['stud_id']; ?>" class="btn btn-primary btn-sm"><i class="lni lni-eye text-white"></i></a>
                                         </td>
                                         <td>
                                             <form method="post" style="display: inline;">
                                                 <input type="hidden" name="stud_id" value="<?php echo $row['stud_id']; ?>">
                                                 <button type="submit" name="toggle_status" class="btn btn-sm <?php echo $row['stud_status'] == 1 ? 'btn-success' : 'btn-warning'; ?>">
-                                                    <?php if ($row['stud_status'] == 1) : ?>
-                                                        <i class="lni lni-checkmark-circle"></i> <!-- Green circle icon for activated -->
-                                                    <?php else : ?>
-                                                        <i class="lni lni-checkmark-circle"></i> <!-- Yellow circle icon for deactivated -->
-                                                    <?php endif; ?>
+                                                    <i class="lni lni-checkmark-circle"></i>
                                                 </button>
                                             </form>
                                         </td>
@@ -160,7 +155,12 @@ $totalPages = ceil($totalCount / $recordsPerPage);
                                     <td colspan="5" class="text-center">No records found for student.</td>
                                 </tr>
                             <?php endif; ?>
+                            <tr id="noDataRow" style="display: none;">
+                                <td colspan="5" class="text-center">No students found.</td>
+                            </tr>
                         </tbody>
+
+
                     </table>
 
                 </div>
@@ -189,3 +189,39 @@ $totalPages = ceil($totalCount / $recordsPerPage);
 </script>
 
 </html>
+
+<script>
+    const searchInput = document.getElementById('liveSearch');
+    const clearBtn = document.getElementById('clearSearch');
+    const tableRows = document.querySelectorAll('#studentTable tr');
+    const noDataRow = document.getElementById('noDataRow');
+
+    searchInput.addEventListener('keyup', function() {
+        const input = this.value.toLowerCase();
+        let isAnyRowVisible = false;
+
+        tableRows.forEach(row => {
+            const text = row.innerText.toLowerCase();
+            if (text.includes(input)) {
+                row.style.display = '';
+                isAnyRowVisible = true;
+            } else {
+                row.style.display = 'none';
+            }
+        });
+
+        // Show "No data found" if no rows match
+        if (!isAnyRowVisible) {
+            noDataRow.style.display = '';
+        } else {
+            noDataRow.style.display = 'none';
+        }
+    });
+
+    clearBtn.addEventListener('click', function() {
+        searchInput.value = '';
+        tableRows.forEach(row => row.style.display = '');
+        noDataRow.style.display = 'none';
+        searchInput.focus();
+    });
+</script>

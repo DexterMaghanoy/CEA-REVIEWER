@@ -1,4 +1,4 @@
-<style>
+<!-- <style>
     /* Define the transition effect */
     .back-button {
         transition: transform 0.3s, background-color 0.3s;
@@ -56,4 +56,4 @@
             window.history.back();
         }
     }
-</script>
+</script> -->

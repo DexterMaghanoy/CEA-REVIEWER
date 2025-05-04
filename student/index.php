@@ -45,7 +45,7 @@ if (isset($_POST['submit'])) {
 
             $stmt->execute();
 
-            $result = $stmt->fetch(PDO::FETCH_ASSOC);       
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
 
             if ($result && $result['stud_password'] === $password) {
                 $_SESSION['stud_fname'] = $result['stud_fname'];
@@ -143,9 +143,9 @@ if (isset($_POST['submit'])) {
                             </div>
                             <div class="g-recaptcha" data-sitekey="6Lc4H3ApAAAAAIfb-ov9xqCzXvWYsHX9pOxWOy3t"></div>
 
-                            <div class="loginLink">
+                            <!-- <div class="loginLink">
                                 <a class="password" href="forgotpass.php">Forgot your password?</a>
-                            </div>
+                            </div> -->
                             <div class="separator bottom clearfix"></div>
                             <div class="row">
                                 <div class="col-md-8">
@@ -156,9 +156,11 @@ if (isset($_POST['submit'])) {
                             </div>
                         </form>
                     </div>
-                    <div class="widget-footer text-center">
-                        <p><i class="fa fa-refresh"></i> Please enter your username and password</p>
-                    </div>
+                    <!-- <div class="widget-footer text-center">
+                        <a href="./student/index.php">Faculty Login – Click here</a>
+                    </div> -->
+                
+
                 </div>
             </div>
         </div>

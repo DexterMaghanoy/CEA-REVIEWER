@@ -140,7 +140,7 @@ $totalPages = ceil($totalCount / $recordsPerPage);
                     <div class="table-responsive">
                         <!-- <table class="table table-bordered table-custom"> -->
                         <table style="background: linear-gradient(to left, rgba(220, 210, 211, 0.3), rgba(200, 240, 241, 0.3));" class="table table-bordered table-custom" id="courseTable">
-                    
+
                             <caption>List of Students</caption>
                             <thead class="table-dark">
                                 <tr>
@@ -188,22 +188,7 @@ $totalPages = ceil($totalCount / $recordsPerPage);
 
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe" crossorigin="anonymous"></script>
-    <script>
-        const searchInput = document.getElementById('searchInput');
-        const studentRows = document.querySelectorAll('tbody tr');
 
-        searchInput.addEventListener('input', function() {
-            const searchText = this.value.trim().toLowerCase();
-            studentRows.forEach(function(row) {
-                const studentData = row.textContent.toLowerCase();
-                if (studentData.includes(searchText)) {
-                    row.style.display = '';
-                } else {
-                    row.style.display = 'none';
-                }
-            });
-        });
-    </script>
     <script>
         const hamBurger = document.querySelector(".toggle-btn");
 
@@ -226,6 +211,46 @@ $totalPages = ceil($totalCount / $recordsPerPage);
         // Add event listener to the clear search button
         document.getElementById('clearSearchButton').addEventListener('click', function() {
             clearSearch(); // Call the clearSearch function when the button is clicked
+        });
+    </script>
+
+
+    <script>
+        const searchInput = document.getElementById("searchInput");
+        const table = document.getElementById("courseTable");
+        const tbody = table.querySelector("tbody");
+
+        searchInput.addEventListener("input", function() {
+            const filter = searchInput.value.toLowerCase();
+            const rows = tbody.querySelectorAll("tr");
+            let hasVisibleRow = false;
+
+            rows.forEach(row => {
+                // Skip the "no data found" row if it already exists
+                if (row.classList.contains("no-data-row")) return;
+
+                const text = row.textContent.toLowerCase();
+                if (text.includes(filter)) {
+                    row.style.display = "";
+                    hasVisibleRow = true;
+                } else {
+                    row.style.display = "none";
+                }
+            });
+
+            // Remove existing no-data row if it exists
+            const existingNoDataRow = tbody.querySelector(".no-data-row");
+            if (existingNoDataRow) {
+                existingNoDataRow.remove();
+            }
+
+            // If no rows are visible, add a "No data found" row
+            if (!hasVisibleRow) {
+                const noDataRow = document.createElement("tr");
+                noDataRow.classList.add("no-data-row");
+                noDataRow.innerHTML = `<td colspan="4" class="text-center">No data found.</td>`;
+                tbody.appendChild(noDataRow);
+            }
         });
     </script>
 

@@ -48,7 +48,7 @@ if (isset($_SESSION['program_id'])) {
         $overallPassedAttempts = array_sum(array_column($courses, 'passed_attempts'));
         $overallFailedAttempts = array_sum(array_column($courses, 'failed_attempts'));
         $overallTotalAttempts = $overallPassedAttempts + $overallFailedAttempts;
-        $overallAveragePassRate = $overallTotalAttempts > 0 ? ($overallPassedAttempts / $overallTotalAttempts) : 0;
+        $overallAveragePassRate = $overallTotalAttempts > 0 ? ($overallPassedAttempts / $overallTotalAttempts) * 100 : 0;
     } else {
         $noResultsFound = true;
     }
@@ -112,7 +112,7 @@ if (isset($_SESSION['program_id'])) {
                         }
                         ?>
                         <?php foreach ($uniqueCourses as $index => $course) : ?>
-                            <a href="quiz_course_modules.php?course_id=<?php echo $course['course_id']; ?>&user_id=<?php echo $_SESSION['user_id']; ?>&module_id=<?php echo $course['module_id']; ?>">
+                            <a href="test_course_modules.php?course_id=<?php echo $course['course_id']; ?>&user_id=<?php echo $_SESSION['user_id']; ?>&module_id=<?php echo $course['module_id']; ?>">
                                 <div class="card subject-<?php echo ($index % 3) + 1; ?> mb-1" style="background: linear-gradient(to left, rgba(220, 210, 211, 0.3), rgba(200, 240, 241, 0.3));">
                                     <div class="card-body" style="padding: 0.5rem;">
                                         <h5 class="card-title" style="font-size: 1rem;"><?php echo $course['course_code'] . ' -  ' . $course['course_name']; ?></h5>
@@ -148,14 +148,9 @@ if (isset($_SESSION['program_id'])) {
                                         <p style="font-size: 0.8rem; margin-bottom: 0;">Rate:
                                             <?php
                                             $totalAttempts = $course['failed_attempts'] + $course['passed_attempts'];
-                                            if ($totalAttempts > 0) {
-                                                echo number_format((($course['passed_attempts'] / $totalAttempts) / $totalStudentsData['total_students']) * 100, 2);
-                                            } else {
-                                                echo 0;
-                                            }
+                                            $passRate = ($totalAttempts > 0) ? number_format(($course['passed_attempts'] / $totalAttempts) * 100, 2) : 0;
+                                            echo $passRate . "%";
                                             ?>
-
-                                            %
                                         </p>
                                     </div>
                                 </div>
@@ -188,7 +183,7 @@ if (isset($_SESSION['program_id'])) {
 
                 foreach ($uniqueCourses as $course) {
                     $totalAttempts = $course['failed_attempts'] + $course['passed_attempts'];
-                    $passRate = ($totalAttempts > 0) ? number_format((($course['passed_attempts'] / $totalAttempts) / $totalStudentsData['total_students']) * 100, 2) : 0;
+                    $passRate = ($totalAttempts > 0) ? number_format(($course['passed_attempts'] / $totalAttempts) * 100, 2) : 0;
 
                     $totalPassRate += $passRate;
                 ?>['<?php echo $course['course_code']; ?>', <?php echo $passRate; ?>, '<?php echo $passRate; ?>%'],
@@ -223,35 +218,8 @@ if (isset($_SESSION['program_id'])) {
             // Draw
             const chart = new google.visualization.BarChart(document.getElementById('myChart'));
             chart.draw(data, options);
-
         }
     </script>
+</body>
 
-
-    <script>
-        const hamBurger = document.querySelector(".toggle-btn");
-
-        hamBurger.addEventListener("click", function() {
-            document.querySelector("#sidebar").classList.toggle("expand");
-        });
-
-
-        // Add an event listener to the search input field
-        document.getElementById('searchInput').addEventListener('input', function() {
-            const searchValue = this.value.trim(); // Trim whitespace from the input value
-            fetchSearchResults(searchValue); // Call function to fetch search results
-        });
-
-        // Function to fetch search results via AJAX
-        function fetchSearchResults(searchQuery) {
-            // Make an AJAX request to the server
-            fetch(`search.php?search=${encodeURIComponent(searchQuery)}`)
-                .then(response => response.json()) // Parse response as JSON
-                .then(data => {
-                    // Update HTML content with the filtered results
-                    // You need to implement this based on your specific HTML structure
-                    console.log(data); // Log the fetched data for testing
-                })
-                .catch(error => console.error('Error fetching search results:', error));
-        }
-    </script>
+</html>

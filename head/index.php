@@ -1,21 +1,41 @@
 <?php
 session_start();
+
+// Redirect if 'created_at' is not set in the URL
+if (!isset($_GET['created_at'])) {
+    $currentYear = date('Y'); // You can also use date('Y-m-d') for full date if needed
+
+    // Preserve all existing GET parameters
+    $params = $_GET;
+    $params['created_at'] = $currentYear;
+
+    // Build the new query string with created_at added
+    $newQuery = http_build_query($params);
+
+    // Redirect to the same page with the new query string
+    header("Location: {$_SERVER['PHP_SELF']}?$newQuery");
+    exit();
+}
+
+// Continue with your normal logic below
 require '../api/db-connect.php';
 
+// Check user session
 if (!isset($_SESSION['user_id'])) {
     header("Location: ../index.php");
     exit();
 }
+
+// Your remaining PHP logic (e.g. fetching program data, etc.) goes below...
 $user_id = $_SESSION['user_id'];
 $program_id = $_SESSION['program_id'];
+
 try {
-    // Query to get program names and count of students in each program
     $stmt = $conn->prepare("SELECT p.program_name, COUNT(s.stud_id) AS num_students 
-            FROM tbl_program p
-            LEFT JOIN tbl_student s ON p.program_id = s.program_id 
-            WHERE p.program_status = 1 
-            GROUP BY p.program_id
-        ");
+        FROM tbl_program p
+        LEFT JOIN tbl_student s ON p.program_id = s.program_id 
+        WHERE p.program_status = 1 
+        GROUP BY p.program_id");
     $stmt->execute();
     $programs = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
@@ -29,21 +49,18 @@ try {
     $errorMessage = 'Database Error: ' . $e->getMessage();
 }
 
+// Optional: automatically disable old students
 try {
-    // Create connection
-    $conn = new PDO("mysql:host=$servername;dbname=$dbname", $username, $password);
-
-    $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-
     $sql = "UPDATE tbl_student SET stud_status = 0 WHERE created_at < DATE_SUB(NOW(), INTERVAL 1 YEAR)";
-
     $stmt = $conn->prepare($sql);
-
     $stmt->execute();
 } catch (PDOException $e) {
     echo "Error: " . $e->getMessage();
 }
 ?>
+
+
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -140,7 +157,7 @@ try {
             <div class="col-md-12 card custom-card mb-2">
                 <div class="card-body">
                     <h1>Program Head Dashboard
-                        
+
                     </h1>
                 </div>
             </div>
@@ -215,27 +232,29 @@ try {
                 <div class="col-md-4">
 
                     <div class="card text-bg-light text-black shadow-lg mb-3">
-                        <div class="card-header"> Course</div>
+                        <div class="card-header">Course</div>
                         <div class="card-body">
                             <?php
                             try {
-                                // Assuming you're using PDO and have a database connection
-                                $stmt = $conn->prepare("SELECT p.program_name, COUNT(*) AS student_count 
-                                FROM tbl_program p
-                                INNER JOIN tbl_student s ON p.program_id = s.program_id
-                                WHERE s.stud_status = 1 AND p.program_id = :program_id
-                                GROUP BY p.program_name");
+                                // Query to get the program name based on program_id
+                                $stmt = $conn->prepare("SELECT program_name FROM tbl_program WHERE program_id = :program_id LIMIT 1");
                                 $stmt->bindParam(':program_id', $user['program_id']);
                                 $stmt->execute();
                                 $program = $stmt->fetch(PDO::FETCH_ASSOC);
 
-                                // Display the program name and its corresponding student count
                                 if ($program) {
+                                    // Wrap the program name in a list item and an unordered list for styling
                                     echo '<ul class="list-group">';
-                                    echo '<li class="list-group-item">' . '<img height="35" width="35" src="./GIF/read.gif" alt="">' . " " . $program['program_name'] . ' <span style="font-size: 1.2em; font-weight: bold; color:black;" class="badge badge-primary badge-pill">' . '</span></li>';
+                                    echo '<li class="list-group-item">';
+                                    // Display image on the left side and program name on the right
+                                    echo '<span style="font-size: 1.2em; font-weight: bold; color:black;" class="badge badge-primary badge-pill">';
+                                    // Adding the image first (on the left side)
+                                    echo '<img height="50" width="50" src="../GIF/read.gif" alt="Program Image" style="margin-right: 10px;">';
+                                    echo htmlspecialchars($program['program_name']);
+                                    echo '</span>';
+                                    echo '</li>';
                                     echo '</ul>';
                                 } else {
-                                    // If no program found for the user's program ID
                                     echo '<p>No program found.</p>';
                                 }
                             } catch (PDOException $e) {
@@ -244,6 +263,8 @@ try {
                             ?>
                         </div>
                     </div>
+
+
 
 
 
@@ -295,7 +316,37 @@ try {
                 <div class="col-md-4">
                     <div class="card text-bg-light text-black shadow-lg mb-3">
 
-                        <div class="card-header" style="display: flex; align-items: center;">Pass Rate</div>
+                        <div class="card-header" style="display: flex; align-items: center; justify-content: space-between;">
+                            <!-- Wrap the content inside a form -->
+                            <?php
+                            // Get the current year and selected year from the URL (if available)
+                            $currentYear = date('Y');
+                            $selectedYear = $_GET['created_at'] ?? $currentYear;
+                            ?>
+
+                            <form method="get" style="width: 100%;">
+                                <div class="row w-100">
+                                    <!-- Pass Rate Label -->
+                                    <div class="col mt-2">
+                                        <label for="yearDropdown">Pass Rate</label>
+                                    </div>
+
+                                    <!-- Year Dropdown -->
+                                    <div class="col">
+                                        <select id="yearDropdown" name="created_at" class="form-control" onchange="this.form.submit()">
+                                            <?php
+                                            // Loop through the years from current year to 2020
+                                            for ($year = $currentYear; $year >= 2020; $year--) {
+                                                $selected = ($year == $selectedYear) ? 'selected' : '';
+                                                echo "<option value=\"$year\" $selected>$year</option>";
+                                            }
+                                            ?>
+                                        </select>
+                                    </div>
+                                </div>
+                            </form>
+
+                        </div>
 
 
 

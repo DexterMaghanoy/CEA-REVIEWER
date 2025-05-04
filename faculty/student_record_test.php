@@ -56,9 +56,6 @@ if (!$stud_id) {
 
     // Fetch student details
     $student_details = $stmt_student->fetch(PDO::FETCH_ASSOC);
-
-
-                     
 }
 ?>
 
@@ -79,132 +76,112 @@ if (!$stud_id) {
 <body>
     <div class="wrapper">
         <?php include 'sidebar.php'; ?>
-            <div class="container">
-                <div class="row justify-content-center mt-4">
-                    <div class="col-md-12">
-                        <div class="text-center mb-4">
-                            <h1>TEST Results: <span style="font-weight: normal;"><?php echo $student_details['stud_fname'] . " " . $student_details['stud_lname'] ?></span></h1>
+        <div class="container">
+            <div class="row justify-content-center mt-4">
+                <div class="col-md-12">
+                    <div class="text-center mb-4">
+                        <h1>TEST Results: <span style="font-weight: normal;"><?php echo $student_details['stud_fname'] . " " . $student_details['stud_lname'] ?></span></h1>
+                    </div>
+                    <?php include 'student_record_dropdown.php'; ?>
+                    <form action="" method="GET" class="mb-4" id="searchForm">
+                        <div class="input-group">
+                            <input type="text" class="form-control" placeholder="Search by module name" name="search" id="searchInput">
+                            <button class="btn btn-outline-secondary" type="button" id="clearSearchButton"><i class="lni lni-close"></i></button>
                         </div>
-                        <?php include 'student_record_dropdown.php'; ?>
-                        <form action="" method="GET" class="mb-4" id="searchForm">
-                            <div class="input-group">
-                                <input type="text" class="form-control" placeholder="Search by module name" name="search" id="searchInput">
-                                <button class="btn btn-outline-secondary" type="button" id="clearSearchButton"><i class="lni lni-close"></i></button>
-                            </div>
-                        </form>
-                        <script>
-                            const searchForm = document.getElementById("searchForm");
+                    </form>
+                    <script>
+                        const searchForm = document.getElementById("searchForm");
 
-                            searchForm.addEventListener("submit", function(event) {
-                                event.preventDefault(); // Prevent the form from submitting
-                            });
-                        </script>
+                        searchForm.addEventListener("submit", function(event) {
+                            event.preventDefault(); // Prevent the form from submitting
+                        });
+                    </script>
 
 
 
-                        <!-- Display all results in a table -->
-                        <div class="table-responsive">
-                            <table style="background: linear-gradient(to left, rgba(220, 210, 211, 0.3), rgba(200, 240, 241, 0.3));" class="table table-bordered table-custom">
-                                <caption>List of Scores</caption>
-                                <thead class="table-dark">
-                                    <tr style="text-align: center;">
-                                        <th scope="col"><a href="#" class="sortable" data-column="0">Title</a></th>
-                                        <th scope="col"><a href="#" class="sortable" data-column="1">Score</a></th>
-                                        <th scope="col"><a href="#" class="sortable" data-column="2">Result</a></th>
-                                        <th scope="col"><a href="#" class="sortable" data-column="3">Date</a></th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <?php if (!empty($results)) : ?>
-                                        <?php foreach ($results as $row) : ?>
-                                            <tr style="text-align: center;">
-                                                <td><?php echo isset($row['module_name']) ? $row['module_name'] : 'N/A'; ?></td>
-                                                <td><?php echo $row['result_score'] ?? 'N/A'; ?> / <?php echo $row['total_questions'] ?? 'N/A'; ?></td>
-                                                <td scope="col">
-                                                    <?php
-                                                    if (isset($row['result_score'], $row['total_questions'])) {
-                                                        $res = ($row['result_score'] / $row['total_questions']) * 100;
-                                                        echo $res >= 50 ? "Pass" : "Failed";
-                                                    } else {
-                                                        echo 'N/A';
-                                                    }
-                                                    ?>
-                                                </td>
-                                                <td><?php echo isset($row['created_at']) ? date("M d, Y", strtotime($row['created_at'])) : 'N/A'; ?></td>
-                                            </tr>
-                                        <?php endforeach; ?>
-                                    <?php else : ?>
-                                        <tr>
-                                            <td colspan="4" class="text-center">No records found.</td>
+                    <!-- Display all results in a table -->
+                    <div class="table-responsive">
+                        <table style="background: linear-gradient(to left, rgba(220, 210, 211, 0.3), rgba(200, 240, 241, 0.3));" class="table table-bordered table-custom">
+                            <caption>List of Scores</caption>
+                            <thead class="table-dark">
+                                <tr style="text-align: center;">
+                                    <th scope="col"><a href="#" class="sortable" data-column="0">Title</a></th>
+                                    <th scope="col"><a href="#" class="sortable" data-column="1">Score</a></th>
+                                    <th scope="col"><a href="#" class="sortable" data-column="2">Result</a></th>
+                                    <th scope="col"><a href="#" class="sortable" data-column="3">Date</a></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php if (!empty($results)) : ?>
+                                    <?php foreach ($results as $row) : ?>
+                                        <tr style="text-align: center;">
+                                            <td><?php echo isset($row['module_name']) ? $row['module_name'] : 'N/A'; ?></td>
+                                            <td><?php echo $row['result_score'] ?? 'N/A'; ?> / <?php echo $row['total_questions'] ?? 'N/A'; ?></td>
+                                            <td scope="col">
+                                                <?php
+                                                if (isset($row['result_score'], $row['total_questions'])) {
+                                                    $res = ($row['result_score'] / $row['total_questions']) * 100;
+                                                    echo $res >= 50 ? "Pass" : "Failed";
+                                                } else {
+                                                    echo 'N/A';
+                                                }
+                                                ?>
+                                            </td>
+                                            <td><?php echo isset($row['created_at']) ? date("M d, Y", strtotime($row['created_at'])) : 'N/A'; ?></td>
                                         </tr>
-                                    <?php endif; ?>
-                                </tbody>
-                            </table>
-                        </div>
+                                    <?php endforeach; ?>
+                                    <tr id="noResultsRow" style="display: none;">
+                                        <td colspan="4" class="text-center">No results found.</td>
+                                    </tr>
+                                <?php else : ?>
+                                    <tr id="noResultsRow" style="display: none;">
+                                        <td colspan="4" class="text-center">No results found.</td>
+                                    </tr>
+
+                                <?php endif; ?>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
+        </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe" crossorigin="anonymous"></script>
     <script>
         const searchInput = document.getElementById("searchInput");
         const clearSearchButton = document.getElementById("clearSearchButton");
+        const noResultsRow = document.getElementById("noResultsRow");
 
         searchInput.addEventListener("keyup", function() {
             const value = this.value.trim().toLowerCase();
-            const rows = document.querySelectorAll("tbody tr");
+            const rows = document.querySelectorAll("tbody tr:not(#noResultsRow)");
+            let visibleRowCount = 0;
 
             rows.forEach(row => {
-                const module_name = row.children[0].textContent.toLowerCase(); // Assuming module name is in the first column
-                if (module_name.includes(value)) {
+                const moduleName = row.children[0].textContent.toLowerCase();
+                if (moduleName.includes(value)) {
                     row.style.display = "";
+                    visibleRowCount++;
                 } else {
                     row.style.display = "none";
                 }
             });
+
+            // Show or hide "No results" row
+            noResultsRow.style.display = visibleRowCount === 0 ? "" : "none";
         });
 
         clearSearchButton.addEventListener("click", function() {
             searchInput.value = "";
-            const rows = document.querySelectorAll("tbody tr");
+            const rows = document.querySelectorAll("tbody tr:not(#noResultsRow)");
+
             rows.forEach(row => {
                 row.style.display = "";
             });
-        });
 
-        // JavaScript for sorting table data
-        function sortTable(columnIndex) {
-            const table = document.querySelector("table");
-            const rows = Array.from(table.querySelectorAll("tbody tr"));
-
-            rows.sort((a, b) => {
-                const aValue = a.cells[columnIndex].textContent.trim();
-                const bValue = b.cells[columnIndex].textContent.trim();
-
-                // Numeric sorting
-                if (!isNaN(aValue) && !isNaN(bValue)) {
-                    return aValue - bValue;
-                }
-
-                // String sorting
-                return aValue.localeCompare(bValue);
-            });
-
-            // Clear existing table rows
-            table.querySelector("tbody").innerHTML = "";
-
-            // Append sorted rows
-            rows.forEach(row => {
-                table.querySelector("tbody").appendChild(row);
-            });
-        }
-
-        // Attach event listeners to table headers for sorting
-        document.querySelectorAll("th").forEach((th, index) => {
-            th.addEventListener("click", () => {
-                sortTable(index);
-            });
+            // Hide the "No results" row after clearing
+            noResultsRow.style.display = "none";
         });
     </script>
 </body>

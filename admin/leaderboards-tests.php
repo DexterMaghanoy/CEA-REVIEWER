@@ -9,201 +9,43 @@ if (!isset($_SESSION['user_id']) || !isset($_SESSION['program_id'])) {
 }
 
 
-
-$user_id = $_SESSION['user_id'];
-$program_id = $_SESSION['program_id'];
-
-$sqlTotalModules = "SELECT COUNT(*) AS all_modules_count 
-                    FROM tbl_module m
-                    WHERE m.course_id IN (
-                        SELECT course_id FROM tbl_course WHERE program_id = :program_id
-                    ) 
-                    AND m.module_status = 1 
-                    AND EXISTS (
-                        SELECT 1 FROM tbl_question q WHERE q.module_id = m.module_id
-                    )"; // Ensures only modules with questions are counted
-
-$stmtTotalModules = $conn->prepare($sqlTotalModules);
-$stmtTotalModules->bindParam(':program_id', $program_id, PDO::PARAM_INT);
-$stmtTotalModules->execute();
-$modulesResult = $stmtTotalModules->fetch(PDO::FETCH_ASSOC);
-$all_modules_count = $modulesResult['all_modules_count'] ?? 0; // Default to 0 if no result
-
-
-
-
-
-// Fetch program name
-$sqlProgramName = "SELECT program_name FROM tbl_program WHERE program_id = :program_id";
-$stmtProgramName = $conn->prepare($sqlProgramName);
-$stmtProgramName->bindParam(':program_id', $program_id, PDO::PARAM_INT);
-$stmtProgramName->execute();
-$program_name = $stmtProgramName->fetch(PDO::FETCH_ASSOC)['program_name'];
-
-// Count total students
-$sqlTotalStudents = "SELECT COUNT(*) as total FROM tbl_student WHERE program_id = :program_id";
-$stmtTotalStudents = $conn->prepare($sqlTotalStudents);
-$stmtTotalStudents->bindParam(':program_id', $program_id, PDO::PARAM_INT);
-$stmtTotalStudents->execute();
-$totalCount = $stmtTotalStudents->fetch(PDO::FETCH_ASSOC)['total'];
+$selectedQuizType = $_GET['quiz_type'] ?? 1;
+$selectedProgramId = $_GET['program_id'] ?? 1;
+$selectedYear = $_GET['created_at'] ?? date('Y');
 
 // Fetch top students
+$sql = "SELECT 
+            s.stud_id,
+            s.stud_fname,
+            s.stud_lname,
+            s.stud_mname,
+            COUNT(r.result_id) AS result_status_count,
+            SUM(CASE WHEN r.result_status = 1 THEN 1 ELSE 0 END) AS passed_modules_count
+        FROM tbl_student s
+        LEFT JOIN tbl_result r ON s.stud_id = r.stud_id AND r.quiz_type = :quiz_type
+        WHERE s.program_id = :program_id AND YEAR(r.created_at) = :created_year
+        GROUP BY s.stud_id
+        ORDER BY passed_modules_count DESC";
 
-$sqlTopStudents = "SELECT 
-                        s.stud_lname,
-                        s.stud_fname,
-                        s.stud_mname,
-                        COUNT(r.result_status) AS result_status_count,
-                        SUM(CASE WHEN r.result_status = 1 THEN 1 ELSE 0 END) AS passed_result_status_count,
-                        COUNT(DISTINCT CASE WHEN r.result_status = 1 THEN r.module_id ELSE NULL END) AS passed_modules_count,
-                        IF(COUNT(r.result_status) > 0, (SUM(CASE WHEN r.result_status = 1 THEN 1 ELSE 0 END) / COUNT(r.result_status)) * 100, 0) AS pass_rate
-                    FROM 
-                        tbl_student AS s
-                    INNER JOIN 
-                        tbl_result AS r ON s.stud_id = r.stud_id
-                    WHERE
-                        r.quiz_type = 1
-                    AND
-                        s.program_id = :program_id
-                    AND
-                        YEAR(r.created_at) = YEAR(CURDATE())  -- Filter results by current year
-                    GROUP BY 
-                        s.stud_id
-                    HAVING
-                        COUNT(r.result_status) > 0  
-                    ORDER BY 
-                        passed_modules_count DESC, pass_rate DESC 
-                    LIMIT 5";
-
-
-
-
-
-$stmtTopStudents = $conn->prepare($sqlTopStudents);
-$stmtTopStudents->bindParam(':program_id', $program_id, PDO::PARAM_INT);
-$stmtTopStudents->execute();
-$totalRows = $stmtTopStudents->rowCount();
-
-$stmtCourseIds = $conn->prepare("
-    SELECT course_id 
-    FROM tbl_course 
-    WHERE program_id = :program_id
-");
-$stmtCourseIds->bindValue(':program_id', $program_id, PDO::PARAM_INT);
-$stmtCourseIds->execute();
-$courseIds = $stmtCourseIds->fetchAll(PDO::FETCH_COLUMN, 0);
-
-$totalModulesQ = 0;
-
-foreach ($courseIds as $course_id) {
-    $stmtTotalModulesWithQuestions = $conn->prepare("
-        SELECT COUNT(*) AS total_modules_q 
-        FROM (
-            SELECT module_id 
-            FROM tbl_question 
-            WHERE module_id IN (
-                SELECT module_id 
-                FROM tbl_module 
-                WHERE course_id = :course_id 
-                AND module_status = 1
-            )
-            GROUP BY module_id
-        ) AS subquery
-    ");
-    $stmtTotalModulesWithQuestions->bindValue(':course_id', $course_id, PDO::PARAM_INT);
-    $stmtTotalModulesWithQuestions->execute();
-    $stmtTotalModulesWithQ = $stmtTotalModulesWithQuestions->fetch(PDO::FETCH_ASSOC);
-    $totalModulesQ += $stmtTotalModulesWithQ['total_modules_q'];
-}
-
-
-
-?>
-
-
-
-<?php
-
-// Check if user is logged in and program ID is set
-if (!isset($_SESSION['user_id']) || !isset($_SESSION['program_id'])) {
-    header("Location: ../index.php");
-    exit();
-}
-
-$user_id = $_SESSION['user_id'];
-$program_id = isset($_GET['program_id']) ? (int)$_GET['program_id'] : $_SESSION['program_id'];
-
-
-
-// Fetch program name
-$sqlProgramName = "SELECT program_name FROM tbl_program WHERE program_id = :program_id";
-$stmtProgramName = $conn->prepare($sqlProgramName);
-$stmtProgramName->bindParam(':program_id', $program_id, PDO::PARAM_INT);
-$stmtProgramName->execute();
-$program_name = $stmtProgramName->fetch(PDO::FETCH_ASSOC)['program_name'] ?? 'Unknown';
-
-// Count total students
-$sqlTotalStudents = "SELECT COUNT(*) as total FROM tbl_student WHERE program_id = :program_id";
-$stmtTotalStudents = $conn->prepare($sqlTotalStudents);
-$stmtTotalStudents->bindParam(':program_id', $program_id, PDO::PARAM_INT);
-$stmtTotalStudents->execute();
-$totalCount = $stmtTotalStudents->fetch(PDO::FETCH_ASSOC)['total'] ?? 0;
-
-$currentYear = date("Y"); // Get the current year
-$startYear = 2020; // Define the starting year
-$selectedYear = isset($_GET['created_at']) ? (int)$_GET['created_at'] : $currentYear;
-$selectedQuizType = isset($_GET['quiz_type']) ? (int)$_GET['quiz_type'] : 1;
-$selectedProgramId = isset($_GET['program_id']) ? (int)$_GET['program_id'] : $program_id;
-
-// Fetch top students
-$sqlTopStudents = "SELECT 
-                        s.stud_lname,
-                        s.stud_fname,
-                        s.stud_mname,
-                        COUNT(r.result_status) AS result_status_count,
-                        SUM(CASE WHEN r.result_status = 1 THEN 1 ELSE 0 END) AS passed_result_status_count,
-                        COUNT(DISTINCT CASE WHEN r.result_status = 1 THEN r.module_id ELSE NULL END) AS passed_modules_count,
-                        IF(COUNT(r.result_status) > 0, (SUM(CASE WHEN r.result_status = 1 THEN 1 ELSE 0 END) / COUNT(r.result_status)) * 100, 0) AS pass_rate
-                    FROM 
-                        tbl_student AS s
-                    INNER JOIN 
-                        tbl_result AS r ON s.stud_id = r.stud_id
-                    WHERE
-                        r.quiz_type = :quiz_type
-                    AND
-                        s.program_id = :program_id
-                    AND
-                        YEAR(r.created_at) = :created_year  
-                    GROUP BY 
-                        s.stud_id
-                    HAVING
-                        COUNT(r.result_status) > 0  
-                    ORDER BY 
-                        passed_modules_count DESC, pass_rate DESC 
-                    LIMIT 5";
-
-$stmtTopStudents = $conn->prepare($sqlTopStudents);
+$stmtTopStudents = $conn->prepare($sql);
 $stmtTopStudents->bindParam(':quiz_type', $selectedQuizType, PDO::PARAM_INT);
 $stmtTopStudents->bindParam(':program_id', $selectedProgramId, PDO::PARAM_INT);
 $stmtTopStudents->bindParam(':created_year', $selectedYear, PDO::PARAM_INT);
 $stmtTopStudents->execute();
+
 $totalRows = $stmtTopStudents->rowCount();
 
-// Fetch all programs
-$sqlPrograms = "SELECT program_id, program_name FROM tbl_program";
-$stmtPrograms = $conn->prepare($sqlPrograms);
-$stmtPrograms->execute();
-$programs = $stmtPrograms->fetchAll(PDO::FETCH_ASSOC);
-
-// Map quiz types
-$quizTypes = [
-    1 => "Tests",
-    2 => "Quizzes",
-    3 => "Exam"
-];
-$selectedQuizTypeName = $quizTypes[$selectedQuizType] ?? "Unknown";
+// Fetch total modules/quizzes count for the current year
+$sqlTotalCourses = "SELECT COUNT(DISTINCT module_id) AS total_courses_count 
+                    FROM tbl_result 
+                    WHERE quiz_type = :quiz_type AND YEAR(created_at) = :created_year";
+$stmtTotalCourses = $conn->prepare($sqlTotalCourses);
+$stmtTotalCourses->bindParam(':quiz_type', $selectedQuizType, PDO::PARAM_INT);
+$stmtTotalCourses->bindParam(':created_year', $selectedYear, PDO::PARAM_INT);
+$stmtTotalCourses->execute();
+$totalCoursesResult = $stmtTotalCourses->fetch(PDO::FETCH_ASSOC);
+$all_modules_count = $totalCoursesResult['total_courses_count'] ?? 1;
 ?>
-
 
 <!DOCTYPE html>
 <html lang="en">
@@ -221,187 +63,194 @@ $selectedQuizTypeName = $quizTypes[$selectedQuizType] ?? "Unknown";
 
 </head>
 
-<link rel="stylesheet" href="leaderboard.css" type="text/css">
-
-
 <body>
     <div class="wrapper">
-        <?php include 'sidebar.php'; ?>
+        <?php
+        include 'sidebar.php';
+        ?>
+        <?php
+        include 'back.php';
+        ?>
+        <div class="container mt-5">
+            <h2 class="text-center mb-4">Leaderboard</h2>
 
-        <div class="container">
-            <div class="row justify-content-center mt-4">
-                <div class="col-md-10">
-
-                    <div class="row mb-4">
+            <!-- Filtration Form -->
+            <div class="container mt-3">
+                <form method="GET" action="leaderboards-tests.php" class="form-inline">
+                    <div class="row">
                         <div class="col-md-4">
-                            <div class="dropdown">
-                                <button class="btn btn-primary dropdown-toggle" type="button" id="programDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                                    <?= htmlspecialchars($program_name) ?>
-                                </button>
-                                <ul class="dropdown-menu" aria-labelledby="programDropdown">
-                                    <?php foreach ($programs as $program): ?>
-                                        <li>
-                                            <a class="dropdown-item <?= ($program['program_id'] == $selectedProgramId) ? 'active' : ''; ?>"
-                                                href="?program_id=<?= $program['program_id'] ?>&quiz_type=<?= $selectedQuizType ?>&created_at=<?= $selectedYear ?>">
-                                                <?= htmlspecialchars($program['program_name']) ?>
-                                            </a>
-                                        </li>
-                                    <?php endforeach; ?>
-                                </ul>
-                            </div>
+                            <label for="yearDropdown">Year</label>
+                            <select id="yearDropdown" name="created_at" class="form-control" onchange="this.form.submit()">
+                                <?php
+                                $currentYear = date('Y');
+                                for ($year = $currentYear; $year >= 2020; $year--) {
+                                    echo "<option value=\"$year\" " . ($year == $selectedYear ? 'selected' : '') . ">$year</option>";
+                                }
+                                ?>
+                            </select>
                         </div>
 
-                        <div class="col-md-4 text-center">
-                            <h1>Leaderboards</h1>
-                            <div class="dropdown-container">
-                                <select id="yearDropdown">
-                                    <?php for ($year = $currentYear; $year >= $startYear; $year--): ?>
-                                        <option value="<?= $year ?>" <?= ($year == $selectedYear) ? 'selected' : '' ?>><?= $year ?></option>
-                                    <?php endfor; ?>
-                                </select>
-                            </div>
+                        <div class="col-md-4">
+                            <label for="quizTypeDropdown">Quiz Type</label>
+                            <select id="quizTypeDropdown" name="quiz_type" class="form-control" onchange="this.form.submit()">
+                                <option value="1" <?php echo $selectedQuizType == 1 ? 'selected' : ''; ?>>Test</option>
+                                <option value="2" <?php echo $selectedQuizType == 2 ? 'selected' : ''; ?>>Quiz</option>
+                                <option value="3" <?php echo $selectedQuizType == 3 ? 'selected' : ''; ?>>Exam</option>
+                            </select>
                         </div>
 
-
-
-                        <div class="col-md-4 text-end">
-                            <div class="dropdown">
-                                <button class="btn btn-primary dropdown-toggle" type="button" id="quizDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                                    <?= htmlspecialchars($selectedQuizTypeName) ?>
-                                </button>
-                                <ul class="dropdown-menu" aria-labelledby="quizDropdown">
-                                    <?php foreach ($quizTypes as $type => $name): ?>
-                                        <li>
-                                            <a class="dropdown-item <?= ($type == $selectedQuizType) ? 'active' : ''; ?>"
-                                                href="?program_id=<?= $selectedProgramId ?>&quiz_type=<?= $type ?>&created_at=<?= $selectedYear ?>">
-                                                <?= htmlspecialchars($name) ?>
-                                            </a>
-                                        </li>
-                                    <?php endforeach; ?>
-                                </ul>
-                            </div>
+                        <div class="col-md-4">
+                            <label for="programDropdown">Program</label>
+                            <select id="programDropdown" name="program_id" class="form-control" onchange="this.form.submit()">
+                                <?php
+                                // Assuming a list of programs from the database
+                                $sqlPrograms = "SELECT program_id, program_name FROM tbl_program";
+                                $stmtPrograms = $conn->prepare($sqlPrograms);
+                                $stmtPrograms->execute();
+                                while ($program = $stmtPrograms->fetch(PDO::FETCH_ASSOC)) {
+                                    echo "<option value=\"" . $program['program_id'] . "\" " . ($selectedProgramId == $program['program_id'] ? 'selected' : '') . ">" . htmlspecialchars($program['program_name']) . "</option>";
+                                }
+                                ?>
+                            </select>
                         </div>
                     </div>
+                </form>
+            </div>
 
 
+            <div class="table-responsive">
+                <table class="table table-bordered table-custom" id="courseTable">
+                    <caption>List of Students</caption>
+                    <thead class="table-dark text-center">
+                        <tr>
+                            <th scope="col">Rank</th>
+                            <th scope="col">Fullname</th>
+                            <th scope="col">Total Attempts</th>
+                            <th scope="col">
+                                <?php
+                                if ($selectedQuizType == 1) echo "Module Passed";
+                                elseif ($selectedQuizType == 2) echo "Quiz Passed";
+                                elseif ($selectedQuizType == 3) echo "Completed";
+                                ?>
+                            </th>
+                            <th scope="col">Pass Rate</th>
+                        </tr>
+                    </thead>
+                    <tbody style="background-color: #d2f0d6;">
+                        <?php if ($totalRows > 0): ?>
+                            <?php
+                            $students = [];
 
-                    <div class="table-responsive">
-                        <table class="table table-bordered table-custom" id="courseTable">
-                            <caption>List of Students</caption>
-                            <thead class="table-dark" style="text-align: center;">
-                                <tr>
-                                    <th scope="col">Rank</th>
-                                    <th scope="col">Fullname</th>
-                                    <th scope="col">Total Attempts</th>
+                            while ($row = $stmtTopStudents->fetch(PDO::FETCH_ASSOC)) {
+                                $attempts = $row['result_status_count'] ?? 1;
+                                $passedCount = $row['passed_modules_count'] ?? 0;
 
-                                    <?php if ($selectedQuizType == 1) { ?>
-                                        <th scope="col">Module Passed</th>
-                                    <?php } elseif ($selectedQuizType == 2) { ?>
-                                        <th scope="col">Quiz Passed</th>
-                                    <?php } elseif ($selectedQuizType == 3) { ?>
-                                        <th scope="col">Completed</th> <!-- You can define the column name here -->
-                                    <?php } ?>
+                                if ($selectedQuizType == 2) {
+                                    $sqlTotalPassed = "SELECT COUNT(DISTINCT module_id) AS total_quizzes_passed 
+                        FROM tbl_result 
+                        WHERE quiz_type = 2 AND result_status = 1 AND stud_id = :stud_id";
+                                    $stmt = $conn->prepare($sqlTotalPassed);
+                                    $stmt->bindParam(':stud_id', $row['stud_id'], PDO::PARAM_INT);
+                                    $stmt->execute();
+                                    $passedCount = $stmt->fetch(PDO::FETCH_ASSOC)['total_quizzes_passed'] ?? 0;
+                                }
 
-                                    <th scope="col">Pass Rate</th>
+                                if ($selectedQuizType == 3) {
+                                    $sqlTotalPassed = "SELECT COUNT(DISTINCT module_id) AS total_exams_passed 
+                        FROM tbl_result 
+                        WHERE quiz_type = 3 AND result_status = 1 AND stud_id = :stud_id";
+                                    $stmt = $conn->prepare($sqlTotalPassed);
+                                    $stmt->bindParam(':stud_id', $row['stud_id'], PDO::PARAM_INT);
+                                    $stmt->execute();
+                                    $passedCount = $stmt->fetch(PDO::FETCH_ASSOC)['total_exams_passed'] ?? 0;
+                                }
+
+                                // Calculate adjusted rate
+                                if ($selectedQuizType == 1 || $selectedQuizType == 2) {
+                                    $rate = ($passedCount / $all_modules_count) * 100;
+                                    $efficiency = $passedCount / max($attempts, 1);
+                                    $adjustedRate = $rate * $efficiency;
+                                } elseif ($selectedQuizType == 3) {
+                                    $adjustedRate = 100 / max($attempts, 1);
+                                }
+
+                                $row['adjusted_rate'] = $adjustedRate;
+                                $row['attempts'] = $attempts;
+                                $row['passedCount'] = $passedCount;
+
+                                $students[] = $row;
+                            }
+
+                            // Sort by pass rate descending
+                            usort($students, function ($a, $b) {
+                                return $b['adjusted_rate'] <=> $a['adjusted_rate'];
+                            });
+
+                            $rank = 1;
+                            foreach ($students as $row):
+                            ?>
+                                <tr class="text-center" style="box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                                    <td>
+                                        <?php if ($rank <= 3): ?>
+                                            <?php
+                                            switch ($rank) {
+                                                case 1:
+                                                    echo '<img width="100" src="./GIF/gold.gif" alt="Gold">';
+                                                    break;
+                                                case 2:
+                                                    echo '<img width="100" src="./GIF/silver.gif" alt="Silver">';
+                                                    break;
+                                                case 3:
+                                                    echo '<img width="100" src="./GIF/bronze.gif" alt="Bronze">';
+                                                    break;
+                                            }
+                                            ?>
+                                        <?php else: ?>
+                                            <strong><?= $rank . 'th'; ?></strong>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td style="font-size: larger;">
+                                        <strong><?= htmlspecialchars($row['stud_lname'] . ', ' . $row['stud_fname'] . ' ' . $row['stud_mname']); ?></strong>
+                                    </td>
+                                    <td><?= htmlspecialchars($row['attempts']); ?></td>
+                                    <td>
+                                        <?php
+                                        if ($selectedQuizType == 1 || $selectedQuizType == 2) {
+                                            echo htmlspecialchars($row['passedCount']) . " / " . htmlspecialchars($all_modules_count);
+                                        } elseif ($selectedQuizType == 3) {
+                                            echo ($row['passedCount'] > 0 ? "Yes (" . $row['passedCount'] . ")" : "No");
+                                        }
+                                        ?>
+                                    </td>
+                                    <td><?= number_format($row['adjusted_rate'], 2) . "%"; ?></td>
                                 </tr>
+                                <?php $rank++; ?>
+                            <?php endforeach; ?>
+                        <?php else: ?>
+                            <tr>
+                                <td colspan="5" class="text-center">No records found for students.</td>
+                            </tr>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
 
-                            </thead>
-
-                            <tbody style="background-color: #d2f0d6;">
-                                <?php if ($totalRows > 0) : ?>
-                                    <?php $rank = 1; ?>
-                                    <?php while ($row = $stmtTopStudents->fetch(PDO::FETCH_ASSOC)) : ?>
-                                        <tr style="text-align: center; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">
-                                            <td>
-                                                <?php if ($rank <= 3) : ?>
-                                                    <?php switch ($rank) {
-                                                        case 1:
-                                                            echo '<img width="100" src="./GIF/gold.gif" alt="Gold">';
-                                                            break;
-                                                        case 2:
-                                                            echo '<img width="100" src="./GIF/silver.gif" alt="Silver">';
-                                                            break;
-                                                        case 3:
-                                                            echo '<img width="100" src="./GIF/bronze.gif" alt="Bronze">';
-                                                            break;
-                                                    } ?>
-                                                <?php else : ?>
-                                                    <strong><?php echo $rank . 'th'; ?></strong>
-                                                <?php endif; ?>
-                                            </td>
-                                            <td style="text-align: center; font-size: larger;">
-                                                <strong><?php echo htmlspecialchars($row['stud_lname'] . ', ' . $row['stud_fname'] . ' ' . $row['stud_mname']); ?></strong>
-                                            </td>
-                                            <td><?php echo htmlspecialchars($row['result_status_count']); ?></td>
-
-                                            <td>
-                                                <?php
-                                                if ($selectedQuizType == 1) {
-                                                    echo htmlspecialchars($row['passed_modules_count']) . " / " . htmlspecialchars($all_modules_count);
-                                                } elseif ($selectedQuizType == 2) {
-                                                    // Fetch total number of quizzes with result_status = 1 for the specific student
-                                                    $sqlTotalQuizzesPassed = "SELECT COUNT(*) AS total_quizzes_passed 
-                            FROM tbl_result 
-                            WHERE quiz_type = 2 
-                            AND result_status = 1
-                            AND stud_id = :stud_id"; // Filter by current student
-
-                                                    $stmtTotalQuizzesPassed = $conn->prepare($sqlTotalQuizzesPassed);
-                                                    $stmtTotalQuizzesPassed->bindParam(':stud_id', $row['stud_id'], PDO::PARAM_INT); // Bind the current student's ID
-                                                    $stmtTotalQuizzesPassed->execute();
-                                                    $quizResult = $stmtTotalQuizzesPassed->fetch(PDO::FETCH_ASSOC);
-                                                    $total_quizzes_passed = $quizResult['total_quizzes_passed'] ?? 0; // Default to 0 if no result
-
-                                                    echo htmlspecialchars($total_quizzes_passed);
-                                                } elseif ($selectedQuizType == 3) {
-                                                    echo "✔ / ✘";
-                                                }
-                                                ?>
-                                            </td>
-
-                                            <td>
-                                                <?php
-                                                $passRatePercentage = ($row['passed_result_status_count'] / $row['result_status_count']) * 100;
-
-                                                if ($row['passed_modules_count'] !=  $totalModulesQ) {
-                                                    echo number_format(($row['passed_modules_count'] / $totalModulesQ) * 100, 2) . "%";
-                                                } else {
-
-
-
-                                                    echo number_format($passRatePercentage) . "%";
-                                                }
-                                                ?>
-                                            </td>
-                                        </tr>
-                                        <?php $rank++; ?>
-                                    <?php endwhile; ?>
-                                <?php else : ?>
-                                    <tr>
-                                        <td colspan="5" class="text-center">No records found for students.</td>
-                                    </tr>
-                                <?php endif; ?>
-                            </tbody>
-
-                        </table>
-                    </div>
-                </div>
             </div>
         </div>
+
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         const hamBurger = document.querySelector(".toggle-btn");
-        hamBurger.addEventListener("click", function() {
+        hamBurger?.addEventListener("click", function() {
             document.querySelector("#sidebar").classList.toggle("expand");
         });
-    </script>
-    <script>
-        document.getElementById("yearDropdown").addEventListener("change", function() {
-            window.location.href = "?program_id=<?= $selectedProgramId ?>&quiz_type=<?= $selectedQuizType ?>&created_at=" + this.value;
+
+        document.getElementById("yearDropdown")?.addEventListener("change", function() {
+            window.location.href = `?program_id=<?= $selectedProgramId ?>&quiz_type=<?= $selectedQuizType ?>&created_at=${this.value}`;
         });
     </script>
+
 </body>
 
 </html>

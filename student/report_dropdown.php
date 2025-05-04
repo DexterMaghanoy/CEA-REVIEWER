@@ -1,25 +1,36 @@
-<div class="dropdown mb-3">
-    <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" aria-expanded="false">
-        Report Type
-    </button>
-    <ul class="dropdown-menu dropdown-menu-left" aria-labelledby="dropdownMenuButton">
-        <?php
-        // Define report types
-        $reports = [
-            ['title' => 'Module Tests', 'link' => 'report_questions.php'],
-            ['title' => 'Subject Quizzes', 'link' => 'report_quiz.php'],
-            ['title' => 'Exams', 'link' => 'report_exam.php']
-        ];
+<?php
+// Get the current page name
+$currentPage = basename($_SERVER['PHP_SELF']);
 
-        // Generate dropdown items dynamically
-        foreach ($reports as $report) {
-        ?>
-            <li><a class="dropdown-item btn btn-success" href="<?php echo $report['link']; ?>"><?php echo $report['title']; ?></a></li>
-        <?php
-        }
-        ?>
+// Define report button label based on current page
+$reportButtonLabel = match ($currentPage) {
+    'report_questions.php' => 'Module Test',
+    'report_quiz.php'      => 'Subject Quiz',
+    'report_exam.php'      => 'Exam',
+    default                => 'Module Test' // fallback label
+};
+
+// Define report options
+$reports = [
+    ['title' => 'Module Test', 'link' => 'report_questions.php'],
+    ['title' => 'Subject Quiz', 'link' => 'report_quiz.php'],
+    ['title' => 'Exam', 'link' => 'report_exam.php']
+];
+?>
+
+<div class="dropdown mb-3">
+    <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+        <?php echo $reportButtonLabel; ?>
+    </button>
+    <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+        <?php foreach ($reports as $report): ?>
+            <?php if ($report['title'] !== $reportButtonLabel): ?>
+                <li><a class="dropdown-item" href="<?php echo $report['link']; ?>"><?php echo $report['title']; ?></a></li>
+            <?php endif; ?>
+        <?php endforeach; ?>
     </ul>
 </div>
+
 
 <style>
     @media (min-width: 769px) {

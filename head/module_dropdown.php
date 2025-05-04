@@ -1,13 +1,14 @@
 <div class="dropdown mb-3">
     <button class="btn btn-secondary dropdown-toggle" type="button" id="moduleDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-        <span id="moduleDropdownText">Module</span> <!-- Dynamic button text -->
+        <span id="moduleDropdownText"><?php echo $module['module_name']; ?></span>
     </button>
+
     <ul class="dropdown-menu" aria-labelledby="moduleDropdown">
         <?php
         // Check if $modules is set and not empty
         if (isset($modules) && !empty($modules)) {
             // Sort $modules array by module_id in descending order
-            usort($modules, function($a, $b) {
+            usort($modules, function ($a, $b) {
                 return $b['module_id'] - $a['module_id'];
             });
 

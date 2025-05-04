@@ -123,7 +123,7 @@ foreach ($uniqueCourses as $course) {
                 format: '#\'%\''
             },
             vAxis: {
-                title: 'Course'
+                title: 'Subject'
             },
             bars: 'horizontal',
             legend: {

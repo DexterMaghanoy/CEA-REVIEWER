@@ -100,6 +100,8 @@ foreach ($uniqueCourses as $course) {
                     Total Modules: <?php echo htmlspecialchars($totalModules); ?>
                 </p>
                 <p style="font-size: 0.8rem; margin-bottom: 0;">
+
+                
                     Passed & Attempts: <?php echo htmlspecialchars($course['passed_attempts']) . " / " . htmlspecialchars($course['failed_attempts'] + $course['passed_attempts']); ?>
                 </p>
                 <p style="font-size: 0.8rem; margin-bottom: 0;">
@@ -146,7 +148,7 @@ foreach ($uniqueCourses as $course) {
                 format: '#\'%\''
             },
             vAxis: {
-                title: 'Course'
+                title: 'Subject'
             },
             bars: 'horizontal',
             legend: {

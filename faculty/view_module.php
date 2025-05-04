@@ -198,6 +198,9 @@ if (isset($_POST['moduleId']) && isset($_POST['moduleStatus'])) {
                                         </td>
                                     </tr>
                                 <?php endwhile; ?>
+                                <tr id="noResultsRow" style="display: none;">
+                                    <td colspan="4" class="text-center">No results found.</td>
+                                </tr>
                             <?php else : ?>
                                 <tr>
                                     <td colspan="5" class="text-center">No records found for modules.</td>
@@ -306,4 +309,30 @@ if (isset($_POST['moduleId']) && isset($_POST['moduleStatus'])) {
                     console.error('Error updating module status:', error);
                 });
         }
+    </script>
+
+    <script>
+        searchInput.addEventListener('input', function() {
+            const searchText = this.value.trim().toLowerCase();
+            let hasResults = false;
+
+            moduleRows.forEach(function(row) {
+                const moduleNameCell = row.cells[1];
+                if (moduleNameCell) {
+                    const moduleName = moduleNameCell.textContent.trim().toLowerCase();
+
+                    if (moduleName.includes(searchText)) {
+                        row.style.display = '';
+                        hasResults = true;
+                    } else {
+                        row.style.display = 'none';
+                    }
+                }
+            });
+
+            const noResultsRow = document.getElementById('noResultsRow');
+            if (noResultsRow) {
+                noResultsRow.style.display = hasResults ? 'none' : '';
+            }
+        });
     </script>

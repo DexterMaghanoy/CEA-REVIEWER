@@ -173,7 +173,7 @@ if (isset($_SESSION['program_id'])) {
                         <a href="exam_course_modules.php?course_id=<?php echo $course['course_id']; ?>&user_id=<?php echo $_SESSION['user_id']; ?>&module_id=<?php echo $course['module_id']; ?>">
                             <div class="card subject-1 mb-1" style="background: linear-gradient(to left, rgba(220, 210, 211, 0.3), rgba(200, 240, 241, 0.3));">
                                 <div class="card-body" style="padding: 0.5rem;">
-                                    <h5 class="card-title" style="font-size: 1rem;"><?php echo $course['course_code'] . ' -  ' . $course['course_name']; ?></h5>
+                                    <h5 class="card-title" style="font-size: 1rem;">EXAM</h5>
                                     <!-- Display consolidated data for attempts -->
                                     <p style="font-size: 0.8rem; margin-bottom: 0;">Student who answered:
                                         <?php

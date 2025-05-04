@@ -82,7 +82,6 @@ try {
 }
 ?>
 
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -99,27 +98,27 @@ try {
 
 <body>
     <div class="wrapper">
-        <?php
-        include 'sidebar.php';
-        ?>
-        <?php
-        include 'back.php';
-        ?>
+        <?php include 'sidebar.php'; ?>
+        <?php include 'back.php'; ?>
         <div class="container">
-
             <div class="row justify-content-center">
                 <div class="col-md-12">
                     <div class="text-center mt-3">
                         <h1>Subjects</h1>
                     </div>
                     <a class="btn btn-outline-primary btn-sm" href="add_course.php"><i class="lni lni-plus"></i></a><br><br>
+
                     <!-- Search bar -->
-                    <form action="" method="GET" class="mb-3">
-                        <div class="input-group">
-                            <input type="text" class="form-control" name="search" placeholder="Search...">
-                            <button class="btn btn-primary" type="submit">Search</button>
-                        </div>
+                    <div class="input-group mb-3">
+                        <input type="text" id="liveSearchInput" class="form-control" name="search" placeholder="Search" value="<?php echo htmlspecialchars($search); ?>">
+                        <button class="btn btn-outline-secondary" type="button" id="clearSearchBtn">
+                            <i class="lni lni-close"></i> <!-- You can use an "X" icon here -->
+                        </button>
+                    </div>
+                    <form action="" method="GET" id="searchForm" style="display: none;">
+                        <input type="hidden" name="search" id="hiddenSearchInput">
                     </form>
+
                     <div class="table-responsive">
                         <table style="background: linear-gradient(to left, rgba(220, 210, 211, 0.3), rgba(200, 240, 241, 0.3));" class="table table-bordered table-custom" id="courseTable">
                             <caption>List of Subjects</caption>
@@ -147,25 +146,30 @@ try {
                                                 <form method="post" style="display: inline;">
                                                     <input type="hidden" name="course_id" value="<?php echo $row['course_id']; ?>">
                                                     <button type="submit" name="toggle_status" class="btn btn-sm <?php echo $row['course_status'] == 1 ? 'btn-success' : 'btn-warning'; ?>">
-                                                        <?php if ($row['course_status'] == 1) : ?>
-                                                            <i class="lni lni-checkmark-circle"></i> <!-- Green circle icon for activated -->
-                                                        <?php else : ?>
-                                                            <i class="lni lni-checkmark-circle"></i> <!-- Yellow circle icon for deactivated -->
-                                                        <?php endif; ?>
+                                                        <i class="lni lni-checkmark-circle"></i>
                                                     </button>
                                                 </form>
                                             </td>
                                         </tr>
+
+
                                     <?php endwhile; ?>
-                                <?php else : ?>
-                                    <tr>
+                                    <tr id="noRecordsRow" style="display: none;">
                                         <td colspan="5" class="text-center">No records found for course.</td>
                                     </tr>
+
+
+                                <?php else : ?>
+                                    <tr id="noRecordsRow" style="display: none;">
+                                        <td colspan="5" class="text-center">No records found for course.</td>
+                                    </tr>
+
                                 <?php endif; ?>
                             </tbody>
-                        </table>
 
+                        </table>
                     </div>
+
                     <!-- Pagination -->
                     <nav aria-label="Page navigation">
                         <ul class="pagination justify-content-center">
@@ -176,7 +180,6 @@ try {
                             <?php endfor; ?>
                         </ul>
                     </nav>
-
                 </div>
             </div>
         </div>
@@ -184,11 +187,45 @@ try {
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe" crossorigin="anonymous"></script>
 </body>
 <script>
-    const hamBurger = document.querySelector(".toggle-btn");
+    const searchInput = document.getElementById("liveSearchInput");
+    const clearSearchBtn = document.getElementById("clearSearchBtn");
+    const rows = document.querySelectorAll("#courseTable tbody tr:not(#noRecordsRow)"); // Exclude "No records found" row
+    const noRecordsRow = document.getElementById("noRecordsRow"); // Reference to the "No records found" row
 
-    hamBurger.addEventListener("click", function() {
-        document.querySelector("#sidebar").classList.toggle("expand");
+    // Handle clear search button click
+    clearSearchBtn.addEventListener("click", function() {
+        searchInput.value = ''; // Clear the input field
+        // Trigger the live search filtering to show all rows
+        filterRows('');
     });
+
+    // Live search filtering
+    searchInput.addEventListener("input", function() {
+        const filter = this.value.toLowerCase();
+        filterRows(filter);
+    });
+
+    function filterRows(filter) {
+        let found = false; // Flag to check if any matching rows are found
+        rows.forEach(row => {
+            const rowText = row.innerText.toLowerCase();
+            if (rowText.includes(filter)) {
+                row.style.display = ""; // Show matching row
+                found = true;
+            } else {
+                row.style.display = "none"; // Hide non-matching row
+            }
+        });
+
+        // If no rows are found after filtering, show the "No records found" message
+        if (!found && rows.length > 0) {
+            noRecordsRow.style.display = ""; // Show the "No records found" row
+        } else {
+            noRecordsRow.style.display = "none"; // Hide the "No records found" row
+        }
+    }
 </script>
+
+
 
 </html>

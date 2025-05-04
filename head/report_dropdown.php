@@ -56,9 +56,34 @@ $totalPages = ceil($totalCount / $recordsPerPage);
 <!-- Bootstrap CSS -->
 
 <div class="dropdown mb-3">
-    <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" aria-expanded="false">
-        Report Type
-    </button>
+
+    <div class="row">
+
+        <div class="col">
+            <div class="d-flex flex-column align-items-start">
+                <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" aria-expanded="false">
+                    <?php
+                    // Dynamically set the button label based on the current page
+                    $currentPage = basename($_SERVER['PHP_SELF']);
+                    if ($currentPage == 'test_results.php') {
+                        echo 'Module Test';
+                    } elseif ($currentPage == 'quiz_results.php') {
+                        echo 'Subject Quiz';
+                    } elseif ($currentPage == 'exam_results.php') {
+                        echo 'Exam';
+                    } else {
+                        echo 'Select Report';
+                    }
+                    ?>
+                </button>
+            </div>
+        </div>
+
+
+    </div>
+
+
+
     <ul class="dropdown-menu dropdown-menu-left" aria-labelledby="dropdownMenuButton">
         <?php
         // Define report types

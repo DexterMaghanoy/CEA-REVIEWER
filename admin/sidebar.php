@@ -45,10 +45,11 @@ if ($stmtSidebar->rowCount() > 0) {
     <ul class="sidebar-nav">
         <li class="sidebar-item">
             <a href="index.php" class="sidebar-link">
-                <i class="lni lni-dashboard"></i>
+                <i class="lni lni-home"></i>
                 <span>Dashboard</span>
             </a>
         </li>
+
         <li class="sidebar-item">
             <a href="profile.php" class="sidebar-link">
                 <i class="lni lni-user"></i>

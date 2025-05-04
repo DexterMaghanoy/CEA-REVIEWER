@@ -48,6 +48,9 @@ try {
 } catch (PDOException $e) {
     echo "Error: " . $e->getMessage();
 }
+
+global $questionCount;
+
 ?>
 
 <!DOCTYPE html>
@@ -137,7 +140,7 @@ try {
 
                 <div class="col-lg">
 
-                <h1 class="mt-4 mb-4" style="text-align: center;">Dashboard</h1>
+                    <h1 class="mt-4 mb-4" style="text-align: center;">Dashboard</h1>
 
 
                     <div class="row justify-content-center">
@@ -159,11 +162,18 @@ try {
 
                                                         <?php
 
-                                                        $stmtTotalModules = $conn->prepare("SELECT COUNT(module_id) AS total_modules FROM tbl_module WHERE course_id = :course_id  and module_status = 1");
+                                                        $stmtTotalModules = $conn->prepare("
+SELECT COUNT(DISTINCT m.module_id) AS total_modules
+FROM tbl_module m
+INNER JOIN tbl_question q ON m.module_id = q.module_id
+WHERE m.course_id = :course_id AND m.module_status = 1
+");
                                                         $stmtTotalModules->bindValue(':course_id', $course['course_id'], PDO::PARAM_INT);
                                                         $stmtTotalModules->execute();
                                                         $totalModuleData = $stmtTotalModules->fetch(PDO::FETCH_ASSOC);
                                                         $totalModules = $totalModuleData['total_modules'];
+
+
 
 
                                                         $stmtPassedModules = $conn->prepare("SELECT COUNT(module_id) AS passed_modules FROM tbl_result WHERE course_id = :course_id AND stud_id = :stud_id AND result_status = 1 AND quiz_type = 1");
@@ -171,6 +181,9 @@ try {
                                                         $stmtPassedModules->bindValue(':stud_id', $_SESSION['stud_id'], PDO::PARAM_INT); // Changed from ':course_id' to ':stud_id'
                                                         $stmtPassedModules->execute();
                                                         $totalPassedModules = $stmtPassedModules->fetch(PDO::FETCH_ASSOC);
+
+
+
                                                         $PassedModules = $totalPassedModules['passed_modules'];
 
 

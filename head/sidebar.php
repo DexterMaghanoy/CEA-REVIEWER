@@ -43,10 +43,11 @@ if ($stmt->rowCount() > 0) {
 
         <li class="sidebar-item">
             <a href="index.php" class="sidebar-link">
-                <i class="lni lni-dashboard"></i>
-                <span>Dashboard</span>
+                <i class="lni lni-home"></i>
+                <span>Home</span>
             </a>
         </li>
+
         <li class="sidebar-item">
             <a href="profile.php" class="sidebar-link">
                 <i class="lni lni-user"></i>
@@ -79,7 +80,7 @@ if ($stmt->rowCount() > 0) {
                 <span>Reports</span>
             </a>
         </li>
-        
+
         <li class="sidebar-item">
             <a href="leaderboards-tests.php" class="sidebar-link">
                 <i class="lni lni-bar-chart"></i>

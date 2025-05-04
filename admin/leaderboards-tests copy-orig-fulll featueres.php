@@ -1,12 +1,12 @@
-<?php
-session_start();
-require("../api/db-connect.php");
+    <?php
+    session_start();
+    require("../api/db-connect.php");
 
-// Check if user is logged in and program ID is set
-if (!isset($_SESSION['user_id']) || !isset($_SESSION['program_id'])) {
-    header("Location: ../index.php");
-    exit();
-}
+    // Check if user is logged in and program ID is set
+    if (!isset($_SESSION['user_id']) || !isset($_SESSION['program_id'])) {
+        header("Location: ../index.php");
+        exit();
+    }
 
 
 
@@ -86,7 +86,6 @@ $stmtTopStudents = $conn->prepare($sqlTopStudents);
 $stmtTopStudents->bindParam(':program_id', $program_id, PDO::PARAM_INT);
 $stmtTopStudents->execute();
 $totalRows = $stmtTopStudents->rowCount();
-
 
 $stmtCourseIds = $conn->prepare("
     SELECT course_id 
@@ -289,8 +288,6 @@ $selectedQuizTypeName = $quizTypes[$selectedQuizType] ?? "Unknown";
                         </div>
                     </div>
 
-
-
                     <div class="table-responsive">
                         <table class="table table-bordered table-custom" id="courseTable">
                             <caption>List of Students</caption>
@@ -313,170 +310,177 @@ $selectedQuizTypeName = $quizTypes[$selectedQuizType] ?? "Unknown";
 
                             </thead>
 
-                            <tbody style="background-color: #d2f0d6;">  
+                            <tbody style="background-color: #d2f0d6;">
 
 
                                 <?php
-                                
+
                                 if ($totalRows >   0) : ?>
                                     <?php $rank = 1; ?>
-                                    <?php while ($row = $stmtTopStudents->fetch(PDO::FETCH_ASSOC)) : ?>
-                                        <tr style="text-align: center; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">
-                                            <td>
-                                                <?php if ($rank <= 3) : ?>
-                                                    <?php switch ($rank) {
-                                                        case 1:
-                                                            echo '<img width="100" src="./GIF/gold.gif" alt="Gold">';
-                                                            break;
-                                                        case 2:
-                                                            echo '<img width="100" src="./GIF/silver.gif" alt="Silver">';
-                                                            break;
-                                                        case 3:
-                                                            echo '<img width="100" src="./GIF/bronze.gif" alt="Bronze">';
-                                                            break;
-                                                    } ?>
-                                                <?php else : ?>
-                                                    <strong><?php echo $rank . 'th'; ?></strong>
-                                                <?php endif; ?>
-                                            </td>
-                                            <td style="text-align: center; font-size: larger;">
-                                                <strong><?php echo htmlspecialchars($row['stud_lname'] . ', ' . $row['stud_fname'] . ' ' . $row['stud_mname']); ?></strong>
-                                            </td>
-                                            <td><?php echo htmlspecialchars($row['result_status_count']); ?></td>
 
-                                            <td>
-                                                <?php
-                                                if ($selectedQuizType == 1) {
-                                                    echo htmlspecialchars($row['passed_modules_count']) . " / " . htmlspecialchars($all_modules_count);
-                                                } elseif ($selectedQuizType == 2) {
-                                                    // Debugging: Check if stud_id exists in $row
-                                                    if (!isset($row['stud_id'])) {
-                                                        echo "Error: 'stud_id' is missing from the query result!";
-                                                        var_dump($row); // Debugging: Check what data is available
-                                                        exit(); // Stop execution
-                                                    }
+                                    <?php if ($stmtTopStudents->rowCount() > 0) : ?>
+                                        <?php while ($row = $stmtTopStudents->fetch(PDO::FETCH_ASSOC)) : ?>
+                                            <tr style="text-align: center; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">
+                                                <td>
+                                                    <?php if ($rank <= 3) : ?>
+                                                        <?php switch ($rank) {
+                                                            case 1:
+                                                                echo '<img width="100" src="./GIF/gold.gif" alt="Gold">';
+                                                                break;
+                                                            case 2:
+                                                                echo '<img width="100" src="./GIF/silver.gif" alt="Silver">';
+                                                                break;
+                                                            case 3:
+                                                                echo '<img width="100" src="./GIF/bronze.gif" alt="Bronze">';
+                                                                break;
+                                                        } ?>
+                                                    <?php else : ?>
+                                                        <strong><?php echo $rank . 'th'; ?></strong>
+                                                    <?php endif; ?>
+                                                </td>
+                                                <td style="text-align: center; font-size: larger;">
+                                                    <strong><?php echo htmlspecialchars($row['stud_lname'] . ', ' . $row['stud_fname'] . ' ' . $row['stud_mname']); ?></strong>
+                                                </td>
+                                                <td><?php echo htmlspecialchars($row['result_status_count']); ?></td>
 
-                                                    // Fetch total number of quizzes with result_status = 1 for the specific student
-                                                    $sqlTotalQuizzesPassed = "SELECT COUNT(DISTINCT module_id) AS total_quizzes_passed 
+                                                <td>
+                                                    <?php
+                                                    if ($selectedQuizType == 1) {
+                                                        echo htmlspecialchars($row['passed_modules_count']) . " / " . htmlspecialchars($all_modules_count);
+                                                    } elseif ($selectedQuizType == 2) {
+                                                        // Debugging: Check if stud_id exists in $row
+                                                        if (!isset($row['stud_id'])) {
+                                                            echo "Error: 'stud_id' is missing from the query result!";
+                                                            var_dump($row); // Debugging: Check what data is available
+                                                            exit(); // Stop execution
+                                                        }
+
+                                                        // Fetch total number of quizzes with result_status = 1 for the specific student
+                                                        $sqlTotalQuizzesPassed = "SELECT COUNT(DISTINCT module_id) AS total_quizzes_passed 
                                                                               FROM tbl_result 
                                                                               WHERE quiz_type = 2 
                                                                               AND result_status = 1
                                                                               AND stud_id = :stud_id"; // Filter by current student
 
-                                                    $stmtTotalQuizzesPassed = $conn->prepare($sqlTotalQuizzesPassed);
-                                                    $stmtTotalQuizzesPassed->bindParam(':stud_id', $row['stud_id'], PDO::PARAM_INT); // Bind the current student's ID
+                                                        $stmtTotalQuizzesPassed = $conn->prepare($sqlTotalQuizzesPassed);
+                                                        $stmtTotalQuizzesPassed->bindParam(':stud_id', $row['stud_id'], PDO::PARAM_INT); // Bind the current student's ID
 
-                                                    // Debugging: Check if query executes correctly
-                                                    if (!$stmtTotalQuizzesPassed->execute()) {
-                                                        echo "Query Execution Failed!";
-                                                        print_r($stmtTotalQuizzesPassed->errorInfo()); // Show SQL errors
-                                                        exit();
-                                                    }
+                                                        // Debugging: Check if query executes correctly
+                                                        if (!$stmtTotalQuizzesPassed->execute()) {
+                                                            echo "Query Execution Failed!";
+                                                            print_r($stmtTotalQuizzesPassed->errorInfo()); // Show SQL errors
+                                                            exit();
+                                                        }
 
-                                                    $quizResult = $stmtTotalQuizzesPassed->fetch(PDO::FETCH_ASSOC);
-                                                    $total_quizzes_passed = $quizResult['total_quizzes_passed'] ?? 0; // Default to 0 if no result
+                                                        $quizResult = $stmtTotalQuizzesPassed->fetch(PDO::FETCH_ASSOC);
+                                                        $total_quizzes_passed = $quizResult['total_quizzes_passed'] ?? 0; // Default to 0 if no result
 
 
-                                                    $sqlTotalCourses = "SELECT COUNT(DISTINCT module_id) AS total_courses_count 
+                                                        $sqlTotalCourses = "SELECT COUNT(DISTINCT module_id) AS total_courses_count 
                                                     FROM tbl_result 
                                                     WHERE quiz_type = :quiz_type
                                                     AND YEAR(created_at) = :created_year";
-                                                    $stmtTotalCourses = $conn->prepare($sqlTotalCourses);
-                                                    $stmtTotalCourses->bindParam(':quiz_type', $selectedQuizType, PDO::PARAM_INT);
-                                                    $stmtTotalCourses->bindParam(':created_year', $selectedYear, PDO::PARAM_INT);
-                                                    $stmtTotalCourses->execute();
-                                                    $totalCoursesResult = $stmtTotalCourses->fetch(PDO::FETCH_ASSOC);
-                                                    $totalCoursesCount = $totalCoursesResult['total_courses_count'] ?? 0; // Default to 0 if no data
+                                                        $stmtTotalCourses = $conn->prepare($sqlTotalCourses);
+                                                        $stmtTotalCourses->bindParam(':quiz_type', $selectedQuizType, PDO::PARAM_INT);
+                                                        $stmtTotalCourses->bindParam(':created_year', $selectedYear, PDO::PARAM_INT);
+                                                        $stmtTotalCourses->execute();
+                                                        $totalCoursesResult = $stmtTotalCourses->fetch(PDO::FETCH_ASSOC);
+                                                        $totalCoursesCount = $totalCoursesResult['total_courses_count'] ?? 0; // Default to 0 if no data
 
 
-                                                    // Debugging: Display stud_id and result
-                                                    // echo "Student ID: " . htmlspecialchars($row['stud_id']) . "<br>";
-                                                    // echo "Total Quizzes Passed: " . htmlspecialchars($total_quizzes_passed) . "<br>";
+                                                        // Debugging: Display stud_id and result
+                                                        // echo "Student ID: " . htmlspecialchars($row['stud_id']) . "<br>";
+                                                        // echo "Total Quizzes Passed: " . htmlspecialchars($total_quizzes_passed) . "<br>";
 
-                                                    // echo "All Subject Count: " . htmlspecialchars($totalCoursesCount) . "<br>";
+                                                        // echo "All Subject Count: " . htmlspecialchars($totalCoursesCount) . "<br>";
 
-                                                    echo htmlspecialchars($total_quizzes_passed) . " / " . htmlspecialchars($totalCoursesCount) . "<br>";
-                                                } elseif ($selectedQuizType == 3) {
-                                                    // Prepare the SQL query
-                                                    $sqlTotalExamPassed = "SELECT COUNT(DISTINCT module_id) AS total_quizzes_passed 
+                                                        echo htmlspecialchars($total_quizzes_passed) . " / " . htmlspecialchars($totalCoursesCount) . "<br>";
+                                                    } elseif ($selectedQuizType == 3) {
+                                                        // Prepare the SQL query
+                                                        $sqlTotalExamPassed = "SELECT COUNT(DISTINCT module_id) AS total_quizzes_passed 
                                                                            FROM tbl_result 
                                                                            WHERE quiz_type = 3
                                                                            AND result_status = 1
                                                                            AND stud_id = :stud_id";
 
-                                                    $stmtTotalExamPassed = $conn->prepare($sqlTotalExamPassed);
-                                                    $stmtTotalExamPassed->bindParam(':stud_id', $row['stud_id'], PDO::PARAM_INT);
+                                                        $stmtTotalExamPassed = $conn->prepare($sqlTotalExamPassed);
+                                                        $stmtTotalExamPassed->bindParam(':stud_id', $row['stud_id'], PDO::PARAM_INT);
 
-                                                    // Execute the query
-                                                    if ($stmtTotalExamPassed->execute()) {
-                                                        $examResult = $stmtTotalExamPassed->fetch(PDO::FETCH_ASSOC);
-                                                        $totalExamsPassed = $examResult['total_quizzes_passed'] ?? 0; // Default to 0 if no data
+                                                        // Execute the query
+                                                        if ($stmtTotalExamPassed->execute()) {
+                                                            $examResult = $stmtTotalExamPassed->fetch(PDO::FETCH_ASSOC);
+                                                            $totalExamsPassed = $examResult['total_quizzes_passed'] ?? 0; // Default to 0 if no data
 
-                                                        // Debugging: Check the fetched value
-                                                        echo "Total Exams Passed: " . htmlspecialchars($totalExamsPassed) . "<br>";
+                                                            // Debugging: Check the fetched value
+                                                            echo "Total Exams Passed: " . htmlspecialchars($totalExamsPassed) . "<br>";
 
-                                                        // Show "Yes" if at least one result exists, otherwise "No"
-                                                        echo ($totalExamsPassed > 0) ? "Yes" : "No";
-                                                    } else {
-                                                        echo "Query execution failed!";
-                                                        print_r($stmtTotalExamPassed->errorInfo()); // Debugging SQL errors
+                                                            // Show "Yes" if at least one result exists, otherwise "No"
+                                                            echo ($totalExamsPassed > 0) ? "Yes" : "No";
+                                                        } else {
+                                                            echo "Query execution failed!";
+                                                            print_r($stmtTotalExamPassed->errorInfo()); // Debugging SQL errors
+                                                        }
                                                     }
-                                                }
 
 
 
-                                                ?>
-                                            </td>
+                                                    ?>
+                                                </td>
 
-                                            <td>
-                                                <?php
-                                                if ($selectedQuizType == 1) {
-                                                    // Ensure variables exist to prevent division errors
-                                                    $totalAttempts = $row['result_status_count'] ?? 1;
-                                                    $totalPassedModules = $row['passed_modules_count'] ?? 0;
-                                                    $totalModules = $totalModulesQ ?? 1;
-                                                    $allModules = $all_modules_count ?? 1;
+                                                <td>
+                                                    <?php
+                                                    if ($selectedQuizType == 1) {
+                                                        // Ensure variables exist to prevent division errors
+                                                        $totalAttempts = $row['result_status_count'] ?? 1;
+                                                        $totalPassedModules = $row['passed_modules_count'] ?? 0;
+                                                        $totalModules = $totalModulesQ ?? 1;
+                                                        $allModules = $all_modules_count ?? 1;
 
-                                                    // Modules failed
-                                                    $failedModules = $totalModules - $totalPassedModules;
+                                                        // Modules failed
+                                                        $failedModules = $totalModules - $totalPassedModules;
 
-                                                    // **Pass Rate Calculation: Penalizing more attempts**
-                                                    $passRateByModules = ($totalPassedModules / $totalModules) * 100; // Module-based pass rate
-                                                    $efficiencyFactor = ($totalPassedModules / max($totalAttempts, 1)); // Penalize high attempts
+                                                        // **Pass Rate Calculation: Penalizing more attempts**
+                                                        $passRateByModules = ($totalPassedModules / $totalModules) * 100; // Module-based pass rate
+                                                        $efficiencyFactor = ($totalPassedModules / max($totalAttempts, 1)); // Penalize high attempts
 
-                                                    // **Final Adjusted Pass Rate**
-                                                    $adjustedPassRate = $passRateByModules * $efficiencyFactor;
+                                                        // **Final Adjusted Pass Rate**
+                                                        $adjustedPassRate = $passRateByModules * $efficiencyFactor;
 
-                                                    echo number_format($adjustedPassRate, 2) . "%";
-                                                } elseif ($selectedQuizType == 2) {
-                                                    // Fetch the total quizzes passed properly
-                                                    $totalQuizPassed = $total_quizzes_passed; // Fetch as integer
+                                                        echo number_format($adjustedPassRate, 2) . "%";
+                                                    } elseif ($selectedQuizType == 2) {
+                                                        // Fetch the total quizzes passed properly
+                                                        $totalQuizPassed = $total_quizzes_passed; // Fetch as integer
 
-                                                    // Ensure values are correctly initialized
-                                                    $totalQuizAttempts = $row['result_status_count'] ?? 1; // Total attempts made
-                                                    $totalCoursesToPass = $totalCoursesCount ?? 1; // Ensure it's not zero
+                                                        // Ensure values are correctly initialized
+                                                        $totalQuizAttempts = $row['result_status_count'] ?? 1; // Total attempts made
+                                                        $totalCoursesToPass = $totalCoursesCount ?? 1; // Ensure it's not zero
 
-                                                    // **Courses failed**
-                                                    $failedCourses = $totalCoursesToPass - $totalQuizPassed;
+                                                        // **Courses failed**
+                                                        $failedCourses = $totalCoursesToPass - $totalQuizPassed;
 
-                                                    // **Pass Rate Calculation: Penalizing more attempts**
-                                                    $passRateByCourses = ($totalQuizPassed / $totalCoursesToPass) * 100; // Course-based pass rate
-                                                    $efficiencyFactor = ($totalQuizPassed / max($totalQuizAttempts, 1)); // Penalize high attempts
+                                                        // **Pass Rate Calculation: Penalizing more attempts**
+                                                        $passRateByCourses = ($totalQuizPassed / $totalCoursesToPass) * 100; // Course-based pass rate
+                                                        $efficiencyFactor = ($totalQuizPassed / max($totalQuizAttempts, 1)); // Penalize high attempts
 
-                                                    // **Final Adjusted Pass Rate**
-                                                    $adjustedPassRate = $passRateByCourses * $efficiencyFactor;
+                                                        // **Final Adjusted Pass Rate**
+                                                        $adjustedPassRate = $passRateByCourses * $efficiencyFactor;
 
-                                                    echo number_format($adjustedPassRate, 2) . "%";
-                                                } elseif ($selectedQuizType == 3) {
+                                                        echo number_format($adjustedPassRate, 2) . "%";
+                                                    } elseif ($selectedQuizType == 3) {
 
-                                                    echo htmlspecialchars(100 / $row['result_status_count']) . "%";
-                                                }
-                                                ?>
-                                            </td>
+                                                        echo htmlspecialchars(100 / $row['result_status_count']) . "%";
+                                                    }
+                                                    ?>
+                                                </td>
+                                            </tr>
+                                            <?php $rank++; ?>
+                                        <?php endwhile; ?>
+
+                                    <?php else : ?>
+                                        <tr>
+                                            <td colspan="5" class="text-center">No records found for students.</td>
                                         </tr>
-                                        <?php $rank++; ?>
-
-                                    <?php endwhile; ?>
+                                    <?php endif; ?>
                                 <?php else : ?>
                                     <tr>
                                         <td colspan="5" class="text-center">No records found for students.</td>

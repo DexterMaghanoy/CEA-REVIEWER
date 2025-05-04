@@ -171,9 +171,19 @@ if (isset($_POST['update'])) {
                             <!-- Password Input -->
                             <div class="mb-3">
                                 <label for="user_password" class="form-label">Password</label>
-                                <div class="password-input-container">
-                                    <input type="password" class="form-control" id="user_password" name="user_password" value="<?php echo $user_password; ?>" pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{12,}" title="Must contain at least one number and one uppercase and lowercase letter, and at least 12 or more characters" required>
-                                    <span class="toggle-password" onclick="togglePasswordVisibility()"><i class="far fa-eye-slash"></i></span>
+                                <div class="input-group">
+                                    <input
+                                        type="password"
+                                        class="form-control"
+                                        id="user_password"
+                                        name="user_password"
+                                        value="<?php echo htmlspecialchars($user_password); ?>"
+                                        pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{12,}"
+                                        title="Must contain at least one number, one uppercase and lowercase letter, and at least 12 characters"
+                                        required>
+                                    <button type="button" class="btn btn-outline-secondary" onclick="togglePasswordVisibility()">
+                                        <i id="toggleIcon" class="far fa-eye-slash"></i>
+                                    </button>
                                 </div>
                             </div>
                             <!-- Hidden Employee ID and Submit Button -->
@@ -192,19 +202,24 @@ if (isset($_POST['update'])) {
     hamBurger.addEventListener("click", function() {
         document.querySelector("#sidebar").classList.toggle("expand");
     });
+</script>
 
+
+
+<!-- Toggle Password Visibility Script -->
+<script>
     function togglePasswordVisibility() {
-        var passwordInput = document.getElementById("user_password");
-        var icon = document.querySelector('.toggle-password i');
+        const passwordField = document.getElementById("user_password");
+        const toggleIcon = document.getElementById("toggleIcon");
 
-        if (passwordInput.type === "password") {
-            passwordInput.type = "text";
-            icon.classList.remove('fa-eye-slash');
-            icon.classList.add('fa-eye');
+        if (passwordField.type === "password") {
+            passwordField.type = "text";
+            toggleIcon.classList.remove("fa-eye-slash");
+            toggleIcon.classList.add("fa-eye");
         } else {
-            passwordInput.type = "password";
-            icon.classList.remove('fa-eye');
-            icon.classList.add('fa-eye-slash');
+            passwordField.type = "password";
+            toggleIcon.classList.remove("fa-eye");
+            toggleIcon.classList.add("fa-eye-slash");
         }
     }
 </script>
